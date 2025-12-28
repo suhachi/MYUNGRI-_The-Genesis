@@ -1,0 +1,24 @@
+.contextBox {
+    /* Token-only background using color-mix instead of hardcoded rgba */
+    background-color: color-mix(in srgb, var(--bg) 30%, transparent);
+    border-left: 4px solid var(--muted);
+    padding: 16px 20px;
+    margin: 1.5rem 0;
+}
+
+.label {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.content {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--ink);
+}

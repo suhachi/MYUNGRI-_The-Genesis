@@ -1,0 +1,30 @@
+.adviceBox {
+    /* Token-only accent background using color-mix instead of hardcoded rgba */
+    background-color: color-mix(in srgb, var(--accent) 2%, transparent);
+    border: 1px solid var(--accent);
+    padding: 24px;
+    position: relative;
+    margin: 2rem 0;
+    border-radius: 2px;
+}
+
+.badge {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background-color: var(--accent);
+    color: var(--card);
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.content {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--ink);
+    line-height: 1.7;
+}
