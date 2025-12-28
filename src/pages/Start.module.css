@@ -1,0 +1,180 @@
+.startPage {
+    min-height: 100vh;
+    padding-bottom: 4rem;
+}
+
+.container {
+    padding-top: 3rem;
+    max-width: 600px;
+}
+
+.pageHeader {
+    margin-bottom: 2.5rem;
+    text-align: center;
+}
+
+.title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--ink);
+}
+
+.helperText {
+    font-family: var(--font-sans);
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.formCard {
+    padding: 2.5rem;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.labelRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.label {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--ink);
+}
+
+.input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background-color: var(--card);
+    border: 1px solid var(--line);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--ink);
+    border-radius: 4px;
+    transition: border-color 0.2s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--muted);
+}
+
+.inputError {
+    border-color: var(--accent);
+}
+
+.readOnly {
+    background-color: color-mix(in srgb, var(--bg) 20%, transparent);
+    cursor: default;
+}
+
+.errorMsg {
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-family: var(--font-sans);
+}
+
+.toggleWrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox {
+    accent-color: var(--accent);
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.toggleLabel {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.segmentControl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: color-mix(in srgb, var(--bg) 30%, transparent);
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+}
+
+.segmentBtn {
+    padding: 0.75rem;
+    border: none;
+    background: transparent;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.segmentBtn:hover {
+    color: var(--ink);
+}
+
+.active {
+    background-color: var(--card);
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.submitBtn {
+    margin-top: 1rem;
+    padding: 1.25rem;
+    background-color: var(--ink);
+    color: var(--card);
+    border: none;
+    border-top: none;
+    border-radius: 4px;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.submitBtn:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.submitBtn:disabled {
+    background-color: var(--muted);
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-top: 2rem;
+    }
+
+    .formCard {
+        padding: 1.5rem;
+    }
+
+    .title {
+        font-size: 1.75rem;
+    }
+}

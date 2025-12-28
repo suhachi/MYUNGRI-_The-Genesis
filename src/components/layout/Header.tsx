@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { BrandLockup } from '../common/BrandLockup';
 import { Container } from './Container';
 import styles from './Header.module.css';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+    lockupDisplay?: 'kr_lockup' | 'en_name';
+}
+
+export const Header: React.FC<HeaderProps> = ({ lockupDisplay = 'kr_lockup' }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -11,12 +16,14 @@ export const Header: React.FC = () => {
     return (
         <header className={styles.header}>
             <Container className={styles.headerContainer}>
-                <BrandLockup display="kr_lockup" variant="default" as="div" className={styles.brand} />
+                <Link to="/" className={styles.brandLink}>
+                    <BrandLockup display={lockupDisplay} variant="default" as="div" className={styles.brand} />
+                </Link>
 
                 <nav className={styles.desktopNav}>
-                    <a href="/" className={styles.navLink}>Home</a>
-                    <a href="/about" className={styles.navLink}>Principles</a>
-                    <button className={styles.ctaButton}>분석하기</button>
+                    <Link to="/" className={styles.navLink}>Home</Link>
+                    <Link to="/about" className={styles.navLink}>Principles</Link>
+                    <Link to="/start" className={styles.ctaButton}>분석하기</Link>
                 </nav>
 
                 <button className={styles.mobileMenuBtn} onClick={toggleMenu} aria-label="Toggle Menu">
@@ -26,9 +33,9 @@ export const Header: React.FC = () => {
 
             <div className={`${styles.mobileMenu} ${isMenuOpen ? styles.mobileMenuVisible : ''}`}>
                 <nav className={styles.mobileNav}>
-                    <a href="/" className={styles.mobileNavLink} onClick={toggleMenu}>Home</a>
-                    <a href="/about" className={styles.mobileNavLink} onClick={toggleMenu}>Principles</a>
-                    <button className={styles.mobileCtaButton}>분석하기</button>
+                    <Link to="/" className={styles.mobileNavLink} onClick={toggleMenu}>Home</Link>
+                    <Link to="/about" className={styles.mobileNavLink} onClick={toggleMenu}>Principles</Link>
+                    <Link to="/start" className={styles.mobileCtaButton} onClick={toggleMenu}>분석하기</Link>
                 </nav>
             </div>
         </header>

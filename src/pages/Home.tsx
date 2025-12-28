@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card';
 import { ContextBox } from '../components/ui/ContextBox';
 import { AdviceBox } from '../components/ui/AdviceBox';
 import { BrandLockup } from '../components/common/BrandLockup';
+import { Link } from 'react-router-dom';
 import styles from './Home.module.css';
 
 export const Home: React.FC = () => {
@@ -19,7 +20,7 @@ export const Home: React.FC = () => {
                             명리: 제네시스를 통해 당신의 내일과 소통하십시오.
                         </p>
                         <div className={styles.ctaGroup}>
-                            <button className={styles.primaryBtn}>내 사주 분석하기 →</button>
+                            <Link to="/start" className={styles.primaryBtn}>내 사주 분석하기 →</Link>
                             <button className={styles.secondaryBtn}>샘플 리포트</button>
                         </div>
                     </div>
