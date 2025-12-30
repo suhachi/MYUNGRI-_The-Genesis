@@ -98,7 +98,7 @@
     opacity: 0.6;
 }
 
-/* Accessibility: Respect prefers-reduced-motion */
+/* Accessibility: Strict prefers-reduced-motion enforcement */
 @media (prefers-reduced-motion: reduce) {
     .spinner {
         animation: none;
@@ -107,10 +107,17 @@
 
     .triviaText {
         animation: none;
+        transition: none;
     }
 
     .dot {
         transition: none;
+        animation: none;
+    }
+
+    * {
+        animation: none !important;
+        transition: none !important;
     }
 }
 

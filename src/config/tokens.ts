@@ -10,7 +10,7 @@ export const colors = {
     ink: "#1C1C1C",
     muted: "#5A5A5A",
     accent: "#D9381E",
-    line: "rgba(28, 28, 28, 0.12)",
+    line: "color-mix(in srgb, var(--ink) 12%, transparent)",
 } as const;
 
 export const fonts = {
