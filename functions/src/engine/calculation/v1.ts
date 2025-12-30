@@ -1,9 +1,12 @@
 /**
- * Calculation Engine v1 (Real Calculation Pipeline)
- * [L=1] Lunar/Solar Conversion
- * [T=1] True Solar Time Correction
+ * Calculation Engine v1.2 (Hardened)
+ * [L=1+] Fixed Import, Hanja Ganji Mapping, Leap-Month Wolgeon Safety
+ * [T=1+] UTC-based Date Math (Timezone Independent)
  */
-import { toSolar, toLunar } from "kor-lunar";
+// [L=1+] Safe Import for kor-lunar (README recommended style with fallback)
+const kl = require("kor-lunar");
+const toSolar = kl.toSolar || kl.default?.toSolar;
+const toLunar = kl.toLunar || kl.default?.toLunar;
 
 export interface AstroInput {
     birthDate: string; // YYYY-MM-DD
@@ -49,14 +52,52 @@ export interface AstroCalculationV1 {
     warnings: string[];
 }
 
+// Hanja Ganji Mapping (L=1+)
+const STEMS_H = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
+const BRANCHES_H = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
 const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
-function getEquationOfTime(date: Date): number {
-    const startOfYear = new Date(date.getFullYear(), 0, 0);
-    const diff = date.getTime() - startOfYear.getTime();
-    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+function toHanjaGanji(labelHangul: string): Pillar {
+    if (!labelHangul || labelHangul.length < 2) {
+        return { stem: "?", branch: "?", label: "UNKNOWN" };
+    }
+    const s = labelHangul[0];
+    const b = labelHangul[1];
+    const si = STEMS_H.indexOf(s);
+    const bi = BRANCHES_H.indexOf(b);
 
+    if (si < 0 || bi < 0) {
+        return { stem: "?", branch: "?", label: "UNKNOWN" };
+    }
+
+    return {
+        stem: STEMS[si],
+        branch: BRANCHES[bi],
+        label: `${STEMS[si]}${BRANCHES[bi]}`
+    };
+}
+
+// UTC Utilities (T=1+)
+function parseYMDToUTCDate(ymd: string): Date {
+    const [y, m, d] = ymd.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d));
+}
+
+function addDaysUTC(date: Date, days: number): Date {
+    const next = new Date(date.getTime());
+    next.setUTCDate(next.getUTCDate() + days);
+    return next;
+}
+
+function dayOfYearUTC(date: Date): number {
+    const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+    const diff = date.getTime() - start;
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+function getEquationOfTimeUTC(date: Date): number {
+    const dayOfYear = dayOfYearUTC(date);
     const b = (360 / 365.24) * (dayOfYear - 81) * (Math.PI / 180);
     const eot = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
     return parseFloat(eot.toFixed(2));
@@ -65,6 +106,11 @@ function getEquationOfTime(date: Date): number {
 export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     const warnings: string[] = [];
     const [year, month, day] = input.birthDate.split('-').map(Number);
+
+    // [Safety Net] Strict Year Range Check
+    if (year < 1890 || year > 2050) {
+        throw new Error("Year out of supported range [1890-2050]");
+    }
 
     // 1. [L=1] Lunar/Solar Normalization
     let solarYMD: { year: number; month: number; day: number };
@@ -77,7 +123,7 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     }
 
     const solarDateStr = `${solarYMD.year}-${String(solarYMD.month).padStart(2, '0')}-${String(solarYMD.day).padStart(2, '0')}`;
-    const solarDateObj = new Date(solarDateStr);
+    const solarDateObj = parseYMDToUTCDate(solarDateStr);
 
     // 2. [T=1] True Solar Time Correction
     let forensic: AstroCalculationV1['forensicTime'] | undefined;
@@ -90,7 +136,7 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
         const longitude = 127.0;
         const stdMeridian = 135.0;
         const longitudeOffset = (longitude - stdMeridian) * 4;
-        const eot = getEquationOfTime(solarDateObj);
+        const eot = getEquationOfTimeUTC(solarDateObj);
         const totalOffset = eot + longitudeOffset;
 
         let trueSolarMinutes = localMinutes + totalOffset;
@@ -110,15 +156,10 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
 
         let classification = "일반";
         if (trueSolarMinutes >= 1410 || trueSolarMinutes < 90) {
-            if (trueSolarMinutes >= 1410) {
-                classification = "야자시";
-            } else if (trueSolarMinutes < 90) {
-                classification = "조자시";
-            }
+            classification = (trueSolarMinutes >= 1410) ? "야자시" : "조자시";
         }
 
-        effectiveDate = new Date(solarDateObj);
-        effectiveDate.setDate(effectiveDate.getDate() + dayShift);
+        effectiveDate = addDaysUTC(solarDateObj, dayShift);
 
         forensic = {
             localTime: input.birthTime,
@@ -131,37 +172,46 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
         };
     }
 
-    // 3. Pillars (사주 간지)
-    // 보정된 양력 날짜를 다시 음력 변환 객체(LunarDate)로 바꾸면 간지가 나옴
-    const finalLunarData = toLunar(effectiveDate.getFullYear(), effectiveDate.getMonth() + 1, effectiveDate.getDate());
+    // 3. Pillars Mapping & Normalization
+    const finalLunarData = toLunar(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth() + 1, effectiveDate.getUTCDate());
 
-    const yearPillar: Pillar = { stem: finalLunarData.secha[0], branch: finalLunarData.secha[1], label: finalLunarData.secha };
-    const monthPillar: Pillar = { stem: finalLunarData.wolgeon[0], branch: finalLunarData.wolgeon[1], label: finalLunarData.wolgeon };
-    const dayPillar: Pillar = { stem: finalLunarData.iljin[0], branch: finalLunarData.iljin[1], label: finalLunarData.iljin };
+    // [L=1+] Year/Day Pillars
+    const yearPillar = toHanjaGanji(finalLunarData.secha);
+    const dayPillar = toHanjaGanji(finalLunarData.iljin);
 
+    // [L=1+] Month Pillar with Wolgeon Safety
+    let monthPillar: Pillar;
+    if (finalLunarData.wolgeon) {
+        monthPillar = toHanjaGanji(finalLunarData.wolgeon);
+    } else {
+        monthPillar = { stem: "?", branch: "?", label: "UNKNOWN" };
+        warnings.push("윤달 월건 미제공(라이브러리 사계) → 절기 기반 월주 산출(Phase 3-C-02)로 보완 예정");
+    }
+
+    // [L=1+] Hour Pillar Calculation
     let hourPillar: Pillar | null = null;
     if (forensic) {
-        const trueHH = parseInt(forensic.trueSolarHHmm.split(':')[0]);
-        const trueMM = parseInt(forensic.trueSolarHHmm.split(':')[1]);
+        const [trueHH, trueMM] = forensic.trueSolarHHmm.split(':').map(Number);
         const tMinutes = trueHH * 60 + trueMM;
-
         let branchIdx = Math.floor((tMinutes + 30) / 120) % 12;
 
         const dayStemIdx = STEMS.indexOf(dayPillar.stem);
-        const startHourStemIdx = ((dayStemIdx % 5) * 2) % 10;
-        const hourStemIdx = (startHourStemIdx + branchIdx) % 10;
+        if (dayStemIdx !== -1) {
+            const startHourStemIdx = ((dayStemIdx % 5) * 2) % 10;
+            const hourStemIdx = (startHourStemIdx + branchIdx) % 10;
 
-        hourPillar = {
-            stem: STEMS[hourStemIdx],
-            branch: BRANCHES[branchIdx],
-            label: `${STEMS[hourStemIdx]}${BRANCHES[branchIdx]}`
-        };
-    } else {
+            hourPillar = {
+                stem: STEMS[hourStemIdx],
+                branch: BRANCHES[branchIdx],
+                label: `${STEMS[hourStemIdx]}${BRANCHES[branchIdx]}`
+            };
+        }
+    } else if (!input.timeUnknown) {
         warnings.push("시간 정보가 없어 시주(時柱)를 산출하지 못했습니다.");
     }
 
     return {
-        algorithmVersion: "Genesis-V1.1-RealCalc",
+        algorithmVersion: "Genesis-V1.2-Hardened",
         schemaVersion: "report/v1",
         computedAt: new Date().toISOString(),
         normalization: {

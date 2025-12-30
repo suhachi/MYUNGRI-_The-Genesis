@@ -14,7 +14,7 @@ import { ShareActions } from '../components/share/ShareActions';
 import styles from './Report.module.css';
 
 /**
- * Report Page v3.1-B (Hardened)
+ * Report Page v3.2.1 (Hardened)
  * 1. 데이터 소스: Firestore reports/{reportId} (sections[] 우선)
  * 2. 렌더링: 서버 제공 섹션 기반 동적 리스트 구성
  * 3. INDEX: 렌더링된 섹션에 맞춰 자동 갱신
@@ -98,6 +98,7 @@ export const Report: React.FC = () => {
     }
 
     const inputData = reportData?.input;
+    const calc = reportData?.calculation;
 
     return (
         <div className={styles.reportPage}>
@@ -164,34 +165,41 @@ export const Report: React.FC = () => {
                                     )}
 
                                     {/* [Phase 3-C] Pillars Display in Section 2 or 3 */}
-                                    {section.id === 2 && reportData?.calculation?.pillars && (
+                                    {section.id === 2 && calc?.pillars && (
                                         <div className={styles.pillarsGrid}>
                                             <div className={styles.pillarItem}>
                                                 <span className={styles.pillarLabel}>HOUR</span>
                                                 <div className={styles.pillarGanji}>
-                                                    <span className={styles.stem}>{reportData.calculation.pillars.hour?.stem || '?'}</span>
-                                                    <span className={styles.branch}>{reportData.calculation.pillars.hour?.branch || '?'}</span>
+                                                    <span className={styles.stem}>{calc.pillars.hour?.stem || '?'}</span>
+                                                    <span className={styles.branch}>{calc.pillars.hour?.branch || '?'}</span>
                                                 </div>
                                             </div>
                                             <div className={styles.pillarItem}>
                                                 <span className={styles.pillarLabel}>DAY</span>
                                                 <div className={styles.pillarGanji}>
-                                                    <span className={styles.stem}>{reportData.calculation.pillars.day.stem}</span>
-                                                    <span className={styles.branch}>{reportData.calculation.pillars.day.branch}</span>
+                                                    <span className={styles.stem}>{calc.pillars.day?.stem || '?'}</span>
+                                                    <span className={styles.branch}>{calc.pillars.day?.branch || '?'}</span>
                                                 </div>
                                             </div>
                                             <div className={styles.pillarItem}>
                                                 <span className={styles.pillarLabel}>MONTH</span>
-                                                <div className={styles.pillarGanji}>
-                                                    <span className={styles.stem}>{reportData.calculation.pillars.month.stem}</span>
-                                                    <span className={styles.branch}>{reportData.calculation.pillars.month.branch}</span>
-                                                </div>
+                                                {calc.pillars.month?.label === 'UNKNOWN' ? (
+                                                    <div className={styles.pillarUnknown}>
+                                                        <span className={styles.unknownLabel}>UNKNOWN</span>
+                                                        <span className={styles.unknownHint}>윤달 월주 미제공</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className={styles.pillarGanji}>
+                                                        <span className={styles.stem}>{calc.pillars.month?.stem || '?'}</span>
+                                                        <span className={styles.branch}>{calc.pillars.month?.branch || '?'}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className={styles.pillarItem}>
                                                 <span className={styles.pillarLabel}>YEAR</span>
                                                 <div className={styles.pillarGanji}>
-                                                    <span className={styles.stem}>{reportData.calculation.pillars.year.stem}</span>
-                                                    <span className={styles.branch}>{reportData.calculation.pillars.year.branch}</span>
+                                                    <span className={styles.stem}>{calc.pillars.year?.stem || '?'}</span>
+                                                    <span className={styles.branch}>{calc.pillars.year?.branch || '?'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -201,29 +209,42 @@ export const Report: React.FC = () => {
                                         <div className={styles.formDataSummary}>
                                             <p><strong>BIRTH:</strong> {inputData.birthDate} {inputData.calendar === 'lunar' ? `(음력${inputData.isLeapMonth ? ' 윤달' : ''})` : '(양력)'}</p>
                                             <p><strong>SEX:</strong> {inputData.sex === 'male' ? '남성' : '여성'}</p>
-                                            <p><strong>NORMALIZED:</strong> {reportData?.calculation?.normalization?.solarDate} (Solar)</p>
+                                            <p><strong>NORMALIZED:</strong> {calc?.normalization?.solarDate || 'N/A'} (Solar)</p>
                                         </div>
                                     )}
 
                                     {/* [Phase 3-C] Forensic Time Display in Section 5 */}
-                                    {section.id === 5 && reportData?.calculation?.forensicTime && (
+                                    {section.id === 5 && calc?.forensicTime && (
                                         <div className={styles.forensicDetails}>
                                             <div className={styles.forensicRow}>
                                                 <span>Local Clock</span>
-                                                <span>{reportData.calculation.forensicTime.localTime}</span>
+                                                <span>{calc.forensicTime.localTime || 'N/A'}</span>
                                             </div>
                                             <div className={styles.forensicRow}>
                                                 <span>EoT + Longitude Offset</span>
-                                                <span>{reportData.calculation.forensicTime.totalOffsetMin}m</span>
+                                                <span>{calc.forensicTime.totalOffsetMin ?? '0'}m</span>
                                             </div>
                                             <div className={styles.forensicRow}>
                                                 <span>True Solar Time</span>
-                                                <span className={styles.highlight}>{reportData.calculation.forensicTime.trueSolarHHmm}</span>
+                                                <span className={styles.highlight}>{calc.forensicTime.trueSolarHHmm || 'N/A'}</span>
                                             </div>
                                             <div className={styles.forensicRow}>
                                                 <span>Classification</span>
-                                                <span>{reportData.calculation.forensicTime.classification}</span>
+                                                <span>{calc.forensicTime.classification || '일반'}</span>
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {/* Warnings Display */}
+                                    {section.id === 12 && calc?.warnings?.length > 0 && (
+                                        <div className={styles.primitiveBox}>
+                                            <AdviceBox>
+                                                <ul style={{ paddingLeft: '1.2rem', margin: 0 }}>
+                                                    {calc.warnings.map((msg: string, i: number) => (
+                                                        <li key={i} style={{ fontSize: '0.9rem' }}>{msg}</li>
+                                                    ))}
+                                                </ul>
+                                            </AdviceBox>
                                         </div>
                                     )}
                                 </Card>

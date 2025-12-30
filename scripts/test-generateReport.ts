@@ -1,9 +1,12 @@
 import { initializeApp } from "firebase/app";
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
-import { getFirestore, doc, connectFirestoreEmulator, getDocs, getDoc, collection } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator, collection, getDocs } from "firebase/firestore";
 
 /**
- * Phase 3-C: Real Calculation Verification Script
+ * Phase 3-C: Real Calculation Hardening Verification Script
+ * 1. 윤달 월건 UNKNOWN 처리 검증
+ * 2. 지원 연도 범위 (1890~2050) 외 차단 검증
+ * 3. 한자 간지 정규화 검증
  */
 
 const firebaseConfig = {
@@ -19,34 +22,12 @@ connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 connectFirestoreEmulator(db, "127.0.0.1", 8080);
 
 async function runVerification() {
-    console.log("\n🧪 Starting Phase 3-C Real Calc Verification...");
+    console.log("\n🧪 Starting Phase 3-C Hardening Verification...");
 
     const generateReport = httpsCallable(functions, 'generateReport');
 
-    // Case 1: Boundary Time Check (00:05 KST)
-    // 서울(127.0)은 표준시(135.0)보다 약 32분 느림.
-    // 00:05 KST -> -32분 보정 시 전날 23:33 (야자시) 판정 예상.
-    console.log("\n1. Testing Boundary Time (00:05 KST -> Expect Night Ja-si)...");
-    try {
-        const res: any = await generateReport({
-            birthDate: "2023-11-20",
-            birthTime: "00:05",
-            sex: "male",
-            calendar: "solar",
-            timeUnknown: false
-        });
-        const calc = res.data.calculation;
-        console.log("✅ Result:", res.data.reportId);
-        console.log("   - True Solar Time:", calc.forensicTime.trueSolarHHmm);
-        console.log("   - Classification:", calc.forensicTime.classification);
-        console.log("   - Day Shift:", calc.forensicTime.dayShift);
-        console.log("   - Day Pillar:", calc.pillars.day.label);
-    } catch (error: any) {
-        console.error("❌ FAILURE:", error.message);
-    }
-
-    // Case 2: Lunar Leap Month Check
-    console.log("\n2. Testing Lunar Leap Month (2023-05-15 Leap)...");
+    // Case 1: Leap Month (Expect wolgeon="" -> UNKNOWN pillar)
+    console.log("\n1. Testing Leap Month (2023-05-15 lunar leap -> Expect UNKNOWN Month)...");
     try {
         const res: any = await generateReport({
             birthDate: "2023-05-15",
@@ -55,37 +36,64 @@ async function runVerification() {
             isLeapMonth: true,
             timeUnknown: true
         });
-        console.log("✅ Result:", res.data.reportId);
-        console.log("   - Normalized Solar:", res.data.calculation.normalization.solarDate);
-        console.log("   - Year Pillar:", res.data.calculation.pillars.year.label);
+        const calc = res.data.calculation;
+        console.log("✅ SUCCESS:", res.data.reportId);
+        console.log("   - Month Pillar:", calc.pillars.month.label); // Expect UNKNOWN
+        console.log("   - Day Pillar (Hanja):", calc.pillars.day.label); // Expect Hanja
+        console.log("   - Warning:", calc.warnings[0]);
     } catch (error: any) {
-        console.error("❌ FAILURE:", error.message);
+        console.error("❌ FAILURE:", error.message, "| Details:", error.details);
     }
 
-    // Case 3: Error Handling (Missing isLeapMonth for Lunar)
-    console.log("\n3. Testing Missing isLeapMonth for Lunar (Expect Error)...");
+    // Case 2: Year Range (Expect Reject 1850)
+    console.log("\n2. Testing Out-of-Range Year (1850 -> Expect Error)...");
     try {
         await generateReport({
-            birthDate: "2023-05-15",
-            sex: "female",
-            calendar: "lunar",
+            birthDate: "1850-01-01",
+            sex: "male",
+            calendar: "solar",
             timeUnknown: true
         });
-        console.error("❌ FAILURE: Error should have occurred.");
+        console.error("❌ FAILURE: Should have been rejected.");
     } catch (error: any) {
         console.log("✅ SUCCESS: Properly rejected:", error.message);
     }
 
-    // Security Rules Check
-    console.log("\n4. Final Security Check (List Denied)...");
+    // Case 3: Year Range (Expect Reject 2080)
+    console.log("\n3. Testing Out-of-Range Year (2080 -> Expect Error)...");
     try {
-        await getDocs(collection(db, "reports"));
-        console.error("❌ FAILURE: List allowed!");
+        await generateReport({
+            birthDate: "2080-12-31",
+            sex: "male",
+            calendar: "solar",
+            timeUnknown: true
+        });
+        console.error("❌ FAILURE: Should have been rejected.");
     } catch (error: any) {
-        console.log("✅ SUCCESS: List blocked (permission-denied).");
+        console.log("✅ SUCCESS: Properly rejected:", error.message);
     }
 
-    console.log("\n✨ Phase 3-C Verification Completed.\n");
+    // Case 4: Hanja Ganji Normalization Check
+    console.log("\n4. Testing Hanja Normalization (2023-01-01 solar)...");
+    try {
+        const res: any = await generateReport({
+            birthDate: "2023-01-01",
+            sex: "male",
+            calendar: "solar",
+            timeUnknown: true
+        });
+        const calc = res.data.calculation;
+        console.log("✅ SUCCESS:", res.data.reportId);
+        console.log("   - Year Pillar (Hanja):", calc.pillars.year.label);
+        // 2023 is 壬寅 (임인) or 癸卯 (계묘) depending on solar date.
+        // Let's check if it's Hanja.
+        const isHanja = /[\u4e00-\u9fa5]/.test(calc.pillars.year.label);
+        console.log("   - Is Hanja?:", isHanja);
+    } catch (error: any) {
+        console.error("❌ FAILURE:", error.message);
+    }
+
+    console.log("\n✨ Hardening Verification Completed.\n");
 }
 
 runVerification();

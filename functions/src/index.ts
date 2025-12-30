@@ -1,27 +1,29 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { setGlobalOptions } from "firebase-functions/v2";
-import * as admin from "firebase-admin";
-import { logger } from "firebase-functions";
-import { calculateV1, AstroInput } from "./engine/calculation/v1";
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { setGlobalOptions } = require("firebase-functions/v2");
+const admin = require("firebase-admin");
+const { logger } = require("firebase-functions");
+const { calculateV1 } = require("./engine/calculation/v1");
 
 // [Stability Patch] App Check Visibility
 const REGION = "asia-northeast3";
 const ENFORCE_APP_CHECK = process.env.FUNCTIONS_EMULATOR !== "true";
-logger.info(`[BOOT] Region: ${REGION} | EnforceAppCheck: ${ENFORCE_APP_CHECK} | Emulator: ${process.env.FUNCTIONS_EMULATOR === "true"}`);
 
 setGlobalOptions({ region: REGION });
 admin.initializeApp();
 
+logger.info(`[System] App Check Enforced: ${ENFORCE_APP_CHECK} (Emulator: ${process.env.FUNCTIONS_EMULATOR})`);
+
 /**
  * generateReport (Callable Function v2)
- * Phase 3-C: Real Calculation & Rich Section Generation
+ * Phase 3-C: Real Calculation & Rich Section Generation (Hardened)
+ * v3.2.1-H: Zero Tolerance Production Patch
  */
-export const generateReport = onCall({
+exports.generateReport = onCall({
     enforceAppCheck: ENFORCE_APP_CHECK
-}, async (request) => {
+}, async (request: any) => {
     const rawData = request.data;
 
-    // 1. 입력 검증 (Fail Fast)
+    // 1. 입력 검증 (Fail Fast - Hardened)
     const allowedSex = ["male", "female"];
     const allowedCalendar = ["solar", "lunar"];
 
@@ -29,9 +31,8 @@ export const generateReport = onCall({
         throw new HttpsError("invalid-argument", "지정된 성별 또는 달력 형식이 유효하지 않습니다.");
     }
 
-    // calendar=lunar 일 때 isLeapMonth 필수 체크
     if (rawData.calendar === "lunar" && typeof rawData.isLeapMonth !== "boolean") {
-        throw new HttpsError("invalid-argument", "음력 선택 시 윤달 여부(isLeapMonth)를 반드시 지정해야 합니다.");
+        throw new HttpsError("invalid-argument", "음력 선택 시 윤달 여부(isLeapMonth)를 반드시 boolean 값으로 지정해야 합니다.");
     }
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -39,8 +40,13 @@ export const generateReport = onCall({
         throw new HttpsError("invalid-argument", "생년월일 형식이 올바르지 않습니다 (YYYY-MM-DD).");
     }
 
+    const birthYear = parseInt(rawData.birthDate.split('-')[0]);
+    if (birthYear < 1890 || birthYear > 2050) {
+        throw new HttpsError("invalid-argument", "분석 가능한 연도 범위를 벗어났습니다 (1890년 ~ 2050년 지원).");
+    }
+
     const timeUnknown = !!rawData.timeUnknown;
-    let birthTime: string | null = null;
+    let birthTime = null;
     if (!timeUnknown) {
         const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
         if (!rawData.birthTime || !timeRegex.test(rawData.birthTime)) {
@@ -49,18 +55,18 @@ export const generateReport = onCall({
         birthTime = rawData.birthTime;
     }
 
-    const input: AstroInput = {
+    const input = {
         birthDate: rawData.birthDate,
         birthTime: birthTime,
         timeUnknown: timeUnknown,
-        sex: rawData.sex as 'male' | 'female',
-        calendar: rawData.calendar as 'solar' | 'lunar',
-        isLeapMonth: rawData.isLeapMonth,
+        sex: rawData.sex,
+        calendar: rawData.calendar,
+        isLeapMonth: !!rawData.isLeapMonth, // Always normalized to boolean
         timezone: "Asia/Seoul"
     };
 
     try {
-        // 2. 실계산 실행
+        // 2. 실계산 실행 (Hardened Engine v1.2)
         const calculation = calculateV1(input);
         const { pillars, forensicTime } = calculation;
 
@@ -84,17 +90,17 @@ export const generateReport = onCall({
             { id: 12, title: "SYSTEM ARCHIVE", category: "META", type: "context", content: `Algorithm: ${calculation.algorithmVersion} | Schema: ${calculation.schemaVersion} | Forensic standard applied.` }
         ];
 
-        // 4. 데이터 저장
+        // 4. 리포트 데이터 영구 보관 (D3)
         const reportData = {
             createdAt: admin.firestore.Timestamp.now(),
-            version: "v3.2.0-C",
+            version: "v3.2.1-H",
             schemaVersion: "report/v1",
             algorithmVersion: calculation.algorithmVersion,
             input: input,
             calculation: calculation,
             reportMeta: {
-                title: "GENESIS ANALYSIS v1.1",
-                summary: "포렌식 시간 보정 기반의 정밀 패턴 분석 결과입니다.",
+                title: "GENESIS ANALYSIS v1.2",
+                summary: "포렌식 시간 보정 및 정규화 간지 기반의 정밀 패턴 분석 결과입니다.",
                 strategistMeta: {
                     disclaimer: "본 분석은 과학적 보정 공식을 적용한 통계적 제언이며, 실제 삶의 현장에서의 최종 선택은 사용자의 주도적 의지가 결정합니다."
                 }
