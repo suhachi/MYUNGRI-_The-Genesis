@@ -55,13 +55,16 @@ exports.generateReport = onCall({
         birthTime = rawData.birthTime;
     }
 
+    // [Step B] Strict isLeapMonth enforcement for Solar
+    const normalizedIsLeapMonth = rawData.calendar === "solar" ? false : !!rawData.isLeapMonth;
+
     const input = {
         birthDate: rawData.birthDate,
         birthTime: birthTime,
         timeUnknown: timeUnknown,
         sex: rawData.sex,
         calendar: rawData.calendar,
-        isLeapMonth: !!rawData.isLeapMonth, // Always normalized to boolean
+        isLeapMonth: normalizedIsLeapMonth,
         timezone: "Asia/Seoul"
     };
 
@@ -120,6 +123,15 @@ exports.generateReport = onCall({
     } catch (error: any) {
         logger.error("Report Generation Error:", error);
         if (error instanceof HttpsError) throw error;
-        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${error.message || 'Unknown'}`);
+
+        const msg = error.message || "";
+        // [Step B] Error classification for friendly invalid-argument fallback
+        if (msg.includes("range") ||
+            msg.includes("KOR_LUNAR_EXPORT_MISSING:") ||
+            msg.includes("KOR_LUNAR_CONVERT_FAILED:")) {
+            throw new HttpsError("invalid-argument", `입력 데이터 또는 엔진 설정 오류: ${msg}`);
+        }
+
+        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${msg || 'Unknown'}`);
     }
 });

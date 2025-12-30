@@ -665,6 +665,13 @@ const kl = require("kor-lunar");
 const toSolar = kl.toSolar || kl.default?.toSolar;
 const toLunar = kl.toLunar || kl.default?.toLunar;
 
+// [Step A] Export Guard
+function assertKorLunarExports() {
+    if (typeof toSolar !== 'function' || typeof toLunar !== 'function') {
+        throw new Error("KOR_LUNAR_EXPORT_MISSING: toSolar or toLunar is not a function.");
+    }
+}
+
 export interface AstroInput {
     birthDate: string; // YYYY-MM-DD
     birthTime: string | null; // HH:mm
@@ -764,6 +771,9 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     const warnings: string[] = [];
     const [year, month, day] = input.birthDate.split('-').map(Number);
 
+    // [Step A] Initial Guard
+    assertKorLunarExports();
+
     // [Safety Net] Strict Year Range Check
     if (year < 1890 || year > 2050) {
         throw new Error("Year out of supported range [1890-2050]");
@@ -773,8 +783,12 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     let solarYMD: { year: number; month: number; day: number };
 
     if (input.calendar === 'lunar') {
-        const converted = toSolar(year, month, day, input.isLeapMonth || false);
-        solarYMD = { year: converted.year, month: converted.month, day: converted.day };
+        try {
+            const converted = toSolar(year, month, day, input.isLeapMonth || false);
+            solarYMD = { year: converted.year, month: converted.month, day: converted.day };
+        } catch (e: any) {
+            throw new Error(`KOR_LUNAR_CONVERT_FAILED: toSolar failed - ${e.message}`);
+        }
     } else {
         solarYMD = { year, month, day };
     }
@@ -830,7 +844,12 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     }
 
     // 3. Pillars Mapping & Normalization
-    const finalLunarData = toLunar(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth() + 1, effectiveDate.getUTCDate());
+    let finalLunarData: any;
+    try {
+        finalLunarData = toLunar(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth() + 1, effectiveDate.getUTCDate());
+    } catch (e: any) {
+        throw new Error(`KOR_LUNAR_CONVERT_FAILED: toLunar failed - ${e.message}`);
+    }
 
     // [L=1+] Year/Day Pillars
     const yearPillar = toHanjaGanji(finalLunarData.secha);
@@ -952,13 +971,16 @@ exports.generateReport = onCall({
         birthTime = rawData.birthTime;
     }
 
+    // [Step B] Strict isLeapMonth enforcement for Solar
+    const normalizedIsLeapMonth = rawData.calendar === "solar" ? false : !!rawData.isLeapMonth;
+
     const input = {
         birthDate: rawData.birthDate,
         birthTime: birthTime,
         timeUnknown: timeUnknown,
         sex: rawData.sex,
         calendar: rawData.calendar,
-        isLeapMonth: !!rawData.isLeapMonth, // Always normalized to boolean
+        isLeapMonth: normalizedIsLeapMonth,
         timezone: "Asia/Seoul"
     };
 
@@ -1017,7 +1039,16 @@ exports.generateReport = onCall({
     } catch (error: any) {
         logger.error("Report Generation Error:", error);
         if (error instanceof HttpsError) throw error;
-        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${error.message || 'Unknown'}`);
+
+        // [Step B] Specific Error Classification
+        const msg = error.message || "";
+        if (msg.includes("Year out of supported range") ||
+            msg.includes("KOR_LUNAR_EXPORT_MISSING:") ||
+            msg.includes("KOR_LUNAR_CONVERT_FAILED:")) {
+            throw new HttpsError("invalid-argument", `입력 데이터 또는 엔진 설정 오류: ${msg}`);
+        }
+
+        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${msg || 'Unknown'}`);
     }
 });
 
@@ -3733,15 +3764,15 @@ export const Report: React.FC = () => {
                                             </div>
                                             <div className={styles.pillarItem}>
                                                 <span className={styles.pillarLabel}>MONTH</span>
-                                                {calc.pillars.month?.label === 'UNKNOWN' ? (
+                                                {(calc?.pillars?.month?.label === 'UNKNOWN' || !calc?.pillars?.month?.label || calc?.pillars?.month?.stem === '?') ? (
                                                     <div className={styles.pillarUnknown}>
                                                         <span className={styles.unknownLabel}>UNKNOWN</span>
                                                         <span className={styles.unknownHint}>윤달 월주 미제공</span>
                                                     </div>
                                                 ) : (
                                                     <div className={styles.pillarGanji}>
-                                                        <span className={styles.stem}>{calc.pillars.month?.stem || '?'}</span>
-                                                        <span className={styles.branch}>{calc.pillars.month?.branch || '?'}</span>
+                                                        <span className={styles.stem}>{calc.pillars.month.stem}</span>
+                                                        <span className={styles.branch}>{calc.pillars.month.branch}</span>
                                                     </div>
                                                 )}
                                             </div>

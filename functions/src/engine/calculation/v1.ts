@@ -8,6 +8,14 @@ const kl = require("kor-lunar");
 const toSolar = kl.toSolar || kl.default?.toSolar;
 const toLunar = kl.toLunar || kl.default?.toLunar;
 
+// [Step A] Module-Level Export Guard (Cold-start safety)
+function assertKorLunarExports() {
+    if (typeof toSolar !== 'function' || typeof toLunar !== 'function') {
+        throw new Error("KOR_LUNAR_EXPORT_MISSING: toSolar or toLunar is not a function.");
+    }
+}
+assertKorLunarExports();
+
 export interface AstroInput {
     birthDate: string; // YYYY-MM-DD
     birthTime: string | null; // HH:mm
@@ -58,24 +66,38 @@ const BRANCHES_H = ["자", "축", "인", "묘", "진", "사", "오", "미", "신
 const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
-function toHanjaGanji(labelHangul: string): Pillar {
-    if (!labelHangul || labelHangul.length < 2) {
+function toHanjaGanji(label: string): Pillar {
+    if (!label || label.length < 2) {
         return { stem: "?", branch: "?", label: "UNKNOWN" };
     }
-    const s = labelHangul[0];
-    const b = labelHangul[1];
-    const si = STEMS_H.indexOf(s);
-    const bi = BRANCHES_H.indexOf(b);
+    const s = label[0];
+    const b = label[1];
 
-    if (si < 0 || bi < 0) {
-        return { stem: "?", branch: "?", label: "UNKNOWN" };
+    // Case 1: Hangul mapping
+    const siHandul = STEMS_H.indexOf(s);
+    const biHangul = BRANCHES_H.indexOf(b);
+
+    if (siHandul >= 0 && biHangul >= 0) {
+        return {
+            stem: STEMS[siHandul],
+            branch: BRANCHES[biHangul],
+            label: `${STEMS[siHandul]}${BRANCHES[biHangul]}`
+        };
     }
 
-    return {
-        stem: STEMS[si],
-        branch: BRANCHES[bi],
-        label: `${STEMS[si]}${BRANCHES[bi]}`
-    };
+    // Case 2: Already Hanja or passthrough
+    const siHanja = STEMS.indexOf(s);
+    const biHanja = BRANCHES.indexOf(b);
+
+    if (siHanja >= 0 && biHanja >= 0) {
+        return {
+            stem: STEMS[siHanja],
+            branch: BRANCHES[biHanja],
+            label: `${STEMS[siHanja]}${BRANCHES[biHanja]}`
+        };
+    }
+
+    return { stem: "?", branch: "?", label: "UNKNOWN" };
 }
 
 // UTC Utilities (T=1+)
@@ -107,7 +129,7 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     const warnings: string[] = [];
     const [year, month, day] = input.birthDate.split('-').map(Number);
 
-    // [Safety Net] Strict Year Range Check
+    // [Safety Net Layer 1] Input Year Range Check
     if (year < 1890 || year > 2050) {
         throw new Error("Year out of supported range [1890-2050]");
     }
@@ -116,8 +138,18 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     let solarYMD: { year: number; month: number; day: number };
 
     if (input.calendar === 'lunar') {
-        const converted = toSolar(year, month, day, input.isLeapMonth || false);
-        solarYMD = { year: converted.year, month: converted.month, day: converted.day };
+        try {
+            const converted = toSolar(year, month, day, input.isLeapMonth || false);
+            solarYMD = { year: converted.year, month: converted.month, day: converted.day };
+
+            // [Safety Net Layer 2] Post-Conversion Year Range Check (Boundary Case)
+            if (solarYMD.year < 1890 || solarYMD.year > 2050) {
+                throw new Error("Year out of supported range [1890-2050] after conversion");
+            }
+        } catch (e: any) {
+            if (e.message.includes("range")) throw e;
+            throw new Error(`KOR_LUNAR_CONVERT_FAILED: toSolar failed - ${e.message}`);
+        }
     } else {
         solarYMD = { year, month, day };
     }
@@ -173,7 +205,12 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     }
 
     // 3. Pillars Mapping & Normalization
-    const finalLunarData = toLunar(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth() + 1, effectiveDate.getUTCDate());
+    let finalLunarData: any;
+    try {
+        finalLunarData = toLunar(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth() + 1, effectiveDate.getUTCDate());
+    } catch (e: any) {
+        throw new Error(`KOR_LUNAR_CONVERT_FAILED: toLunar failed - ${e.message}`);
+    }
 
     // [L=1+] Year/Day Pillars
     const yearPillar = toHanjaGanji(finalLunarData.secha);
@@ -185,7 +222,7 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
         monthPillar = toHanjaGanji(finalLunarData.wolgeon);
     } else {
         monthPillar = { stem: "?", branch: "?", label: "UNKNOWN" };
-        warnings.push("윤달 월건 미제공(라이브러리 사계) → 절기 기반 월주 산출(Phase 3-C-02)로 보완 예정");
+        warnings.push("윤달 월건 미제공(라이브러리 사양) → 절기 기반 월주 산출(Phase 3-C-02)로 보완 예정");
     }
 
     // [L=1+] Hour Pillar Calculation

@@ -183,15 +183,15 @@ export const Report: React.FC = () => {
                                             </div>
                                             <div className={styles.pillarItem}>
                                                 <span className={styles.pillarLabel}>MONTH</span>
-                                                {calc.pillars.month?.label === 'UNKNOWN' ? (
+                                                {(calc?.pillars?.month?.label === 'UNKNOWN' || !calc?.pillars?.month?.label || calc?.pillars?.month?.stem === '?') ? (
                                                     <div className={styles.pillarUnknown}>
                                                         <span className={styles.unknownLabel}>UNKNOWN</span>
                                                         <span className={styles.unknownHint}>윤달 월주 미제공</span>
                                                     </div>
                                                 ) : (
                                                     <div className={styles.pillarGanji}>
-                                                        <span className={styles.stem}>{calc.pillars.month?.stem || '?'}</span>
-                                                        <span className={styles.branch}>{calc.pillars.month?.branch || '?'}</span>
+                                                        <span className={styles.stem}>{calc.pillars.month.stem}</span>
+                                                        <span className={styles.branch}>{calc.pillars.month.branch}</span>
                                                     </div>
                                                 )}
                                             </div>
