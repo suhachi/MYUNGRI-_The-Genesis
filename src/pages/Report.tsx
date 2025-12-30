@@ -1,34 +1,105 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Container } from '../components/layout/Container';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
+import { ContextBox } from '../components/ui/ContextBox';
+import { AdviceBox } from '../components/ui/AdviceBox';
+import { REPORT_SECTIONS, ReportPage } from '../config/reportTemplate';
 import styles from './Report.module.css';
 
 export const Report: React.FC = () => {
     const location = useLocation();
     const formData = location.state;
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    // 섹션 이동 핸들러
+    const scrollToSection = (id: number) => {
+        const element = document.getElementById(`page-${id}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+            setIsMenuOpen(false);
+        }
+    };
 
     return (
         <div className={styles.reportPage}>
+            {/* 인쇄 시 헤더 숨김 처리 고려 (CSS에서 처리) */}
             <Header lockupDisplay="en_name" />
 
-            <Container className={styles.container}>
-                <div className={styles.content}>
-                    <h2 className={styles.title}>분석 결과 리포트</h2>
+            <Container className={styles.mainLayout}>
+                {/* 사이드바 네비게이션 (데스크탑) / 드롭다운 메뉴 (모바일) */}
+                <aside className={`${styles.sidebar} ${isMenuOpen ? styles.sidebarOpen : ''}`}>
+                    <div className={styles.sidebarHeader}>
+                        <h3>리포트 목차</h3>
+                        <button className={styles.closeBtn} onClick={() => setIsMenuOpen(false)}>✕</button>
+                    </div>
+                    <nav className={styles.nav}>
+                        {REPORT_SECTIONS.map((section) => (
+                            <button
+                                key={section.id}
+                                className={styles.navItem}
+                                onClick={() => scrollToSection(section.id)}
+                            >
+                                <span className={styles.pageNum}>{String(section.id).padStart(2, '0')}</span>
+                                <span className={styles.pageTitle}>{section.title}</span>
+                            </button>
+                        ))}
+                    </nav>
+                </aside>
 
-                    <Card className={styles.placeholderCard}>
-                        <p className={styles.placeholderText}>
-                            {formData
-                                ? `${formData.birthDate} 탄생 데이터 분석이 완료되었습니다.`
-                                : '분석 결과 데이터를 불러올 수 없습니다. 다시 시도해 주세요.'}
-                        </p>
-                        <hr className={styles.divider} />
-                        <p className={styles.status}>
-                            Step 2-D: "명리 엔진 연동 및 리포트 UI" 단계에서 실제 분석 내용과 고품질의 제네시스 북 스타일 레이아웃이 구현될 예정입니다.
-                        </p>
-                    </Card>
-                </div>
+                {/* 모바일 메뉴 트리거 */}
+                <button className={styles.mobileNavTrigger} onClick={() => setIsMenuOpen(true)}>
+                    목차 열기
+                </button>
+
+                {/* 리포트 본문 콘텐츠 */}
+                <main className={styles.reportContent}>
+                    {!formData && (
+                        <Card className={styles.noticeCard}>
+                            <p>입력 데이터가 없습니다. 본 리포트는 샘플 데이터를 기준으로 렌더링되었습니다.</p>
+                        </Card>
+                    )}
+
+                    {REPORT_SECTIONS.map((section) => (
+                        <section
+                            key={section.id}
+                            id={`page-${section.id}`}
+                            className={`${styles.pageSection} ${styles[`type-${section.type}`]}`}
+                        >
+                            <div className={styles.pageHeader}>
+                                <span className={styles.categoryTag}>{section.category}</span>
+                                <span className={styles.pageIdentifier}>P. {section.id}</span>
+                            </div>
+
+                            <Card className={styles.contentCard}>
+                                <h2 className={styles.sectionTitle}>{section.title}</h2>
+                                <p className={styles.sectionContent}>{section.content}</p>
+
+                                {/* 섹션 타입에 따른 프리미티브 재사용 예시 */}
+                                {section.type === 'analysis' && (
+                                    <ContextBox className={styles.primitiveBox}>
+                                        명리: 제네시스 분석 엔진의 초원자 단위 데이터 대조 결과입니다.
+                                    </ContextBox>
+                                )}
+
+                                {section.type === 'action' && (
+                                    <AdviceBox className={styles.primitiveBox}>
+                                        지혜로운 변화를 위해 위 내용을 일상에 즉시 적용해 보십시오.
+                                    </AdviceBox>
+                                )}
+
+                                {section.id === 3 && formData && (
+                                    <div className={styles.formDataSummary}>
+                                        <p><strong>생년월일:</strong> {formData.birthDate}</p>
+                                        <p><strong>성별:</strong> {formData.sex === 'male' ? '남성' : '여성'}</p>
+                                        <p><strong>달력:</strong> {formData.calendar === 'solar' ? '양력' : '음력'}</p>
+                                    </div>
+                                )}
+                            </Card>
+                        </section>
+                    ))}
+                </main>
             </Container>
         </div>
     );
