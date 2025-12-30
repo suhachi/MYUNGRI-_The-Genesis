@@ -1,10 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../lib/firebase';
 import { Container } from '../components/layout/Container';
 import { Header } from '../components/layout/Header';
 import { TRIVIA_LINES } from '../config/trivia';
 import styles from './Processing.module.css';
 
+/**
+ * Processing Page
+ * 1. 호출: generateReport Callable API 호출
+ * 2. 대기: 최소 시각적 대기 시간을 확보하며 트리비아 롤링
+ * 3. 이동: 생성된 reportId 경로로 이동
+ */
 export const Processing: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -13,72 +21,98 @@ export const Processing: React.FC = () => {
     const [triviaIndex, setTriviaIndex] = useState(0);
     const [progressStep, setProgressStep] = useState(0);
 
-    // Route hardening: Redirect if accessed without state
+    // [Hardening] 데이터 없이 직접 접근 시 즉시 차단
     useEffect(() => {
         if (!formData) {
             navigate('/start', { replace: true });
         }
     }, [formData, navigate]);
 
-    // Random duration between 3s and 5s
-    const [totalDuration] = useState(() => Math.floor(Math.random() * 2000) + 3000);
+    // 최소 시각적 대기 시간 (3.5s ~ 5s 랜덤)
+    const [visualDuration] = useState(() => Math.floor(Math.random() * 1500) + 3500);
 
     const nextTrivia = useCallback(() => {
         setTriviaIndex((prev) => (prev + 1) % TRIVIA_LINES.length);
     }, []);
 
-    // Trivia rolling timer
     useEffect(() => {
-        const triviaInterval = setInterval(nextTrivia, 1000); // ~1000ms interval
-        return () => clearInterval(triviaInterval);
+        const interval = setInterval(nextTrivia, 1200);
+        return () => clearInterval(interval);
     }, [nextTrivia]);
 
-    // Progress step timer (visual dots/steps)
     useEffect(() => {
-        const stepInterval = setInterval(() => {
+        const interval = setInterval(() => {
             setProgressStep((prev) => (prev + 1) % 4);
         }, 500);
-        return () => clearInterval(stepInterval);
+        return () => clearInterval(interval);
     }, []);
 
-    // Completion timer
+    // 서버 사이드 리포트 생성 및 이동
     useEffect(() => {
-        const timer = setTimeout(() => {
-            navigate('/report', { state: formData });
-        }, totalDuration);
-        return () => clearTimeout(timer);
-    }, [navigate, totalDuration, formData]);
+        let isMounted = true;
+
+        const executeGeneration = async () => {
+            const startTime = Date.now();
+
+            try {
+                // A. 서버 엔진 호출
+                const generateReportFunc = httpsCallable(functions, 'generateReport');
+                const result = await generateReportFunc(formData);
+                const { reportId } = result.data as { reportId: string };
+
+                // B. 최소 시각적 시간 보장
+                const elapsedTime = Date.now() - startTime;
+                const remainingTime = Math.max(0, visualDuration - elapsedTime);
+
+                if (remainingTime > 0) {
+                    await new Promise(resolve => setTimeout(resolve, remainingTime));
+                }
+
+                if (isMounted) {
+                    navigate(`/report/${reportId}`, { replace: true });
+                }
+            } catch (error) {
+                console.error("Analysis Failed:", error);
+                if (isMounted) {
+                    navigate('/start', { replace: true });
+                }
+            }
+        };
+
+        if (formData) {
+            executeGeneration();
+        }
+
+        return () => { isMounted = false; };
+    }, [formData, navigate, visualDuration]);
 
     return (
         <div className={styles.processingPage}>
             <Header lockupDisplay="en_name" />
-
-            <Container className={styles.container}>
-                <div className={styles.content}>
-                    <div className={styles.spinner} aria-hidden="true" />
-
-                    <h2 className={styles.title}>분석 준비 중…</h2>
-
-                    <div className={styles.triviaWrapper} aria-live="polite">
-                        <p key={triviaIndex} className={styles.triviaText}>
-                            {TRIVIA_LINES[triviaIndex]}
-                        </p>
+            <Container className={styles.loadingContainer}>
+                <div className={styles.visualizer}>
+                    <div className={styles.orbit}>
+                        <div className={`${styles.node} ${styles.n1}`}></div>
+                        <div className={`${styles.node} ${styles.n2}`}></div>
+                        <div className={`${styles.node} ${styles.n3}`}></div>
                     </div>
+                </div>
 
-                    <div className={styles.progressIndicator}>
-                        <span className={styles.dots}>
-                            {Array.from({ length: 3 }).map((_, i) => (
-                                <span
-                                    key={i}
-                                    className={`${styles.dot} ${i < progressStep ? styles.dotActive : ''}`}
-                                />
-                            ))}
+                <div className={styles.messageBox}>
+                    <p className={styles.triviaLine}>{TRIVIA_LINES[triviaIndex]}</p>
+                    <div className={styles.progressBar}>
+                        <span className={styles.progressState}>
+                            분석 중{'.'.repeat(progressStep + 1)}
                         </span>
                     </div>
-
-                    <p className={styles.subtext}>초원자 단위 데이터 엔진 가동 중</p>
                 </div>
             </Container>
+
+            <footer className={styles.footer}>
+                <Container>
+                    <p className={styles.copyright}>&copy; 2025 MYUNGRI: The Genesis. All rights reserved.</p>
+                </Container>
+            </footer>
         </div>
     );
 };

@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Option B: Strict Security Policy [S1]
+    // Reports can only be 'get' by individual ID, but never 'list' or 'write' by client SDK.
+    match /reports/{reportId} {
+      allow get: if true;         // Allow direct individual lookup
+      allow list: if false;       // Deny collection queries (list/query) to prevent mass data scraping
+      allow write: if false;      // Deny all client-side writes
+    }
+
+    // Default deny for all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

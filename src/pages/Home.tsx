@@ -30,7 +30,7 @@ export const Home: React.FC = () => {
                         <Card className={styles.principleCard} hasAccentBar>
                             <h3 className={styles.cardTitle}>서비스 원칙</h3>
                             <ul className={styles.principleList}>
-                                <li>만세력 알고리즘 100% 하드코딩</li>
+                                <li>독자 개발된 만세력 정밀 알고리즘</li>
                                 <li>Reason Card 기반 근거 중심 해석</li>
                                 <li>AI는 문장 리라이팅에만 제한적으로 사용</li>
                             </ul>

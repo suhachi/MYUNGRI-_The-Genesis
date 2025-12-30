@@ -11,6 +11,7 @@ interface FormData {
     timeUnknown: boolean;
     sex: 'male' | 'female' | '';
     calendar: 'solar' | 'lunar' | '';
+    isLeapMonth: boolean;
     timezone: 'Asia/Seoul';
 }
 
@@ -28,6 +29,7 @@ export const Start: React.FC = () => {
         timeUnknown: false,
         sex: '',
         calendar: '',
+        isLeapMonth: false,
         timezone: 'Asia/Seoul'
     });
 
@@ -196,6 +198,23 @@ export const Start: React.FC = () => {
                                 <span className={styles.errorMsg}>{errors.calendar}</span>
                             )}
                         </div>
+
+                        {/* Leap Month (Conditional) */}
+                        {formData.calendar === 'lunar' && (
+                            <div className={styles.field}>
+                                <div className={styles.toggleWrapper}>
+                                    <input
+                                        type="checkbox"
+                                        id="isLeapMonth"
+                                        name="isLeapMonth"
+                                        checked={formData.isLeapMonth}
+                                        onChange={handleChange}
+                                        className={styles.checkbox}
+                                    />
+                                    <label htmlFor="isLeapMonth" className={styles.toggleLabel}>음력 윤달입니다</label>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Timezone (Read-only) */}
                         <div className={styles.field}>

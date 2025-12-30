@@ -41,6 +41,7 @@ function App() {
         <Route path="/start" element={<Start />} />
         <Route path="/processing" element={<Processing />} />
         <Route path="/report" element={<Report />} />
+        <Route path="/report/:reportId" element={<Report />} />
       </Routes>
     </PaperBackground>
   );
