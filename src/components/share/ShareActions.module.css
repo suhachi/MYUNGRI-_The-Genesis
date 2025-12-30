@@ -1,0 +1,89 @@
+.shareContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.shareBtn {
+    padding: 0.5rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink);
+    background-color: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shareBtn:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--bg) 30%, transparent);
+}
+
+.shareBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.kakaoBtn {
+    background-color: #FEE500;
+    /* Kakao Official Yellow - Branding is allowed here */
+    border-color: #FEE500;
+    color: #191919;
+}
+
+.kakaoBtn:hover:not(:disabled) {
+    background-color: #FADA0A;
+    border-color: #FADA0A;
+}
+
+.toast {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background-color: var(--ink);
+    color: var(--card);
+    font-size: 0.75rem;
+    border-radius: 4px;
+    z-index: 20;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .shareBtn,
+    .toast {
+        transition: none;
+        animation: none;
+    }
+}
+
+/* Hide in print */
+@media print {
+    .shareContainer {
+        display: none !important;
+    }
+}

@@ -13,6 +13,13 @@ export const Processing: React.FC = () => {
     const [triviaIndex, setTriviaIndex] = useState(0);
     const [progressStep, setProgressStep] = useState(0);
 
+    // Route hardening: Redirect if accessed without state
+    useEffect(() => {
+        if (!formData) {
+            navigate('/start', { replace: true });
+        }
+    }, [formData, navigate]);
+
     // Random duration between 3s and 5s
     const [totalDuration] = useState(() => Math.floor(Math.random() * 2000) + 3000);
 

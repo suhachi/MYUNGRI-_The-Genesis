@@ -193,7 +193,7 @@
 /* 인쇄 스타일 [IMPORTANT] */
 @media print {
     .reportPage {
-        background-color: white !important;
+        background-color: var(--bg) !important;
     }
 
     .mainLayout {
@@ -222,7 +222,7 @@
         border: none !important;
         box-shadow: none !important;
         padding: 0 !important;
-        background: transparent !important;
+        background: none !important;
     }
 
     .sectionTitle {

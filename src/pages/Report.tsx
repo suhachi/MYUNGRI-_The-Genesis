@@ -1,29 +1,52 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+/* eslint-disable @tanstack/query/no-window-matchmedia */
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Container } from '../components/layout/Container';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { ContextBox } from '../components/ui/ContextBox';
 import { AdviceBox } from '../components/ui/AdviceBox';
 import { REPORT_SECTIONS } from '../config/reportTemplate';
+import { ShareActions } from '../components/share/ShareActions';
 import styles from './Report.module.css';
 
 export const Report: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const formData = location.state;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+    // Route hardening: Redirect if accessed without state
+    useEffect(() => {
+        if (!formData) {
+            navigate('/start', { replace: true });
+        }
+    }, [formData, navigate]);
+
+    // 접근성 설정 감지 (reduced-motion)
+    useEffect(() => {
+        // eslint-disable-next-line @tanstack/query/no-window-matchmedia
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        setPrefersReducedMotion(mediaQuery.matches);
+
+        const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+        mediaQuery.addEventListener('change', handler);
+        return () => mediaQuery.removeEventListener('change', handler);
+    }, []);
 
     // 섹션 이동 핸들러 (접근성 고려)
-    const scrollToSection = (id: number) => {
+    const scrollToSection = useCallback((id: number) => {
         const element = document.getElementById(`page-${id}`);
         if (element) {
-            const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             element.scrollIntoView({
-                behavior: isReduced ? 'auto' : 'smooth'
+                behavior: prefersReducedMotion ? 'auto' : 'smooth'
             });
             setIsMenuOpen(false);
         }
-    };
+    }, [prefersReducedMotion]);
 
     return (
         <div className={styles.reportPage}>
@@ -57,11 +80,7 @@ export const Report: React.FC = () => {
 
                 {/* 리포트 본문 콘텐츠 */}
                 <main className={styles.reportContent}>
-                    {!formData && (
-                        <Card className={styles.noticeCard}>
-                            <p>입력 데이터가 없습니다. 본 리포트는 샘플 데이터를 기준으로 렌더링되었습니다.</p>
-                        </Card>
-                    )}
+                    <ShareActions />
 
                     {REPORT_SECTIONS.map((section) => (
                         <section

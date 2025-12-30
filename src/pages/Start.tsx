@@ -65,7 +65,7 @@ export const Start: React.FC = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleBlur = (e: React.FocusEvent<any>) => {
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         const { name } = e.target;
         setTouched(prev => ({ ...prev, [name]: true }));
         validate(name);
