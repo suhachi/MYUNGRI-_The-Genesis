@@ -109,10 +109,13 @@
 }
 
 .pageSection {
-    scroll-margin-top: 6rem;
+    scroll-margin-top: var(--header-height, 6rem);
+    /* Header height + buffer */
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    break-inside: avoid;
+    /* 인쇄 시 요소 쪼개짐 방지 */
 }
 
 .pageHeader {
@@ -210,6 +213,7 @@
 
     .pageSection {
         page-break-after: always !important;
+        break-after: page !important;
         padding: 2cm !important;
         /* 인쇄 여백 */
     }

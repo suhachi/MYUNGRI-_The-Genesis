@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Container } from '../components/layout/Container';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { ContextBox } from '../components/ui/ContextBox';
 import { AdviceBox } from '../components/ui/AdviceBox';
-import { REPORT_SECTIONS, ReportPage } from '../config/reportTemplate';
+import { REPORT_SECTIONS } from '../config/reportTemplate';
 import styles from './Report.module.css';
 
 export const Report: React.FC = () => {
@@ -13,18 +13,20 @@ export const Report: React.FC = () => {
     const formData = location.state;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // 섹션 이동 핸들러
+    // 섹션 이동 핸들러 (접근성 고려)
     const scrollToSection = (id: number) => {
         const element = document.getElementById(`page-${id}`);
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+            const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            element.scrollIntoView({
+                behavior: isReduced ? 'auto' : 'smooth'
+            });
             setIsMenuOpen(false);
         }
     };
 
     return (
         <div className={styles.reportPage}>
-            {/* 인쇄 시 헤더 숨김 처리 고려 (CSS에서 처리) */}
             <Header lockupDisplay="en_name" />
 
             <Container className={styles.mainLayout}>
@@ -79,7 +81,7 @@ export const Report: React.FC = () => {
                                 {/* 섹션 타입에 따른 프리미티브 재사용 예시 */}
                                 {section.type === 'analysis' && (
                                     <ContextBox className={styles.primitiveBox}>
-                                        명리: 제네시스 분석 엔진의 초원자 단위 데이터 대조 결과입니다.
+                                        분석 엔진의 초원자 단위 데이터 대조 결과입니다.
                                     </ContextBox>
                                 )}
 
