@@ -665,12 +665,13 @@ const kl = require("kor-lunar");
 const toSolar = kl.toSolar || kl.default?.toSolar;
 const toLunar = kl.toLunar || kl.default?.toLunar;
 
-// [Step A] Export Guard
+// [Step A] Module-Level Export Guard (Cold-start safety)
 function assertKorLunarExports() {
     if (typeof toSolar !== 'function' || typeof toLunar !== 'function') {
         throw new Error("KOR_LUNAR_EXPORT_MISSING: toSolar or toLunar is not a function.");
     }
 }
+assertKorLunarExports();
 
 export interface AstroInput {
     birthDate: string; // YYYY-MM-DD
@@ -722,24 +723,38 @@ const BRANCHES_H = ["자", "축", "인", "묘", "진", "사", "오", "미", "신
 const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
-function toHanjaGanji(labelHangul: string): Pillar {
-    if (!labelHangul || labelHangul.length < 2) {
+function toHanjaGanji(label: string): Pillar {
+    if (!label || label.length < 2) {
         return { stem: "?", branch: "?", label: "UNKNOWN" };
     }
-    const s = labelHangul[0];
-    const b = labelHangul[1];
-    const si = STEMS_H.indexOf(s);
-    const bi = BRANCHES_H.indexOf(b);
+    const s = label[0];
+    const b = label[1];
 
-    if (si < 0 || bi < 0) {
-        return { stem: "?", branch: "?", label: "UNKNOWN" };
+    // Case 1: Hangul mapping
+    const siHandul = STEMS_H.indexOf(s);
+    const biHangul = BRANCHES_H.indexOf(b);
+
+    if (siHandul >= 0 && biHangul >= 0) {
+        return {
+            stem: STEMS[siHandul],
+            branch: BRANCHES[biHangul],
+            label: `${STEMS[siHandul]}${BRANCHES[biHangul]}`
+        };
     }
 
-    return {
-        stem: STEMS[si],
-        branch: BRANCHES[bi],
-        label: `${STEMS[si]}${BRANCHES[bi]}`
-    };
+    // Case 2: Already Hanja or passthrough
+    const siHanja = STEMS.indexOf(s);
+    const biHanja = BRANCHES.indexOf(b);
+
+    if (siHanja >= 0 && biHanja >= 0) {
+        return {
+            stem: STEMS[siHanja],
+            branch: BRANCHES[biHanja],
+            label: `${STEMS[siHanja]}${BRANCHES[biHanja]}`
+        };
+    }
+
+    return { stem: "?", branch: "?", label: "UNKNOWN" };
 }
 
 // UTC Utilities (T=1+)
@@ -771,10 +786,7 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
     const warnings: string[] = [];
     const [year, month, day] = input.birthDate.split('-').map(Number);
 
-    // [Step A] Initial Guard
-    assertKorLunarExports();
-
-    // [Safety Net] Strict Year Range Check
+    // [Safety Net Layer 1] Input Year Range Check
     if (year < 1890 || year > 2050) {
         throw new Error("Year out of supported range [1890-2050]");
     }
@@ -786,7 +798,13 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
         try {
             const converted = toSolar(year, month, day, input.isLeapMonth || false);
             solarYMD = { year: converted.year, month: converted.month, day: converted.day };
+
+            // [Safety Net Layer 2] Post-Conversion Year Range Check (Boundary Case)
+            if (solarYMD.year < 1890 || solarYMD.year > 2050) {
+                throw new Error("Year out of supported range [1890-2050] after conversion");
+            }
         } catch (e: any) {
+            if (e.message.includes("range")) throw e;
             throw new Error(`KOR_LUNAR_CONVERT_FAILED: toSolar failed - ${e.message}`);
         }
     } else {
@@ -861,7 +879,7 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
         monthPillar = toHanjaGanji(finalLunarData.wolgeon);
     } else {
         monthPillar = { stem: "?", branch: "?", label: "UNKNOWN" };
-        warnings.push("윤달 월건 미제공(라이브러리 사계) → 절기 기반 월주 산출(Phase 3-C-02)로 보완 예정");
+        warnings.push("윤달 월건 미제공(라이브러리 사양) → 절기 기반 월주 산출(Phase 3-C-02)로 보완 예정");
     }
 
     // [L=1+] Hour Pillar Calculation
@@ -1040,9 +1058,9 @@ exports.generateReport = onCall({
         logger.error("Report Generation Error:", error);
         if (error instanceof HttpsError) throw error;
 
-        // [Step B] Specific Error Classification
         const msg = error.message || "";
-        if (msg.includes("Year out of supported range") ||
+        // [Step B] Error classification for friendly invalid-argument fallback
+        if (msg.includes("range") ||
             msg.includes("KOR_LUNAR_EXPORT_MISSING:") ||
             msg.includes("KOR_LUNAR_CONVERT_FAILED:")) {
             throw new HttpsError("invalid-argument", `입력 데이터 또는 엔진 설정 오류: ${msg}`);
@@ -1097,6 +1115,8 @@ exports.generateReport = onCall({
 
   <!-- SEO & Metadata [Strategist Protocol] -->
   <title>MYUNGRI: The Genesis</title>
+  <meta name="author" content="KS Company" />
+  <meta name="copyright" content="KS Company" />
   <meta name="description" content="데이터 기반의 현대적 명리 전략 분석 솔루션" />
 
   <!-- OpenGraph / Facebook -->
@@ -1141,6 +1161,7 @@ exports.generateReport = onCall({
 ```json
 {
   "name": "myungri-the-genesis",
+  "author": "KS Company <suhachi78@gmail.com>",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -1172,7 +1193,6 @@ exports.generateReport = onCall({
     "vite": "^7.2.4"
   }
 }
-
 ```
 
 ---
@@ -1566,6 +1586,7 @@ import { Start } from './pages/Start';
 import { Processing } from './pages/Processing';
 import { Report } from './pages/Report';
 import styles from './App.module.css';
+import { Footer } from './components/layout/Footer';
 
 function App() {
   const [showHome, setShowHome] = useState(false);
@@ -1601,6 +1622,7 @@ function App() {
         <Route path="/report" element={<Report />} />
         <Route path="/report/:reportId" element={<Report />} />
       </Routes>
+      <Footer />
     </PaperBackground>
   );
 }
@@ -1705,6 +1727,76 @@ export const Container: React.FC<ContainerProps> = ({
         <Component className={`${styles.container} ${className}`.trim()}>
             {children}
         </Component>
+    );
+};
+
+```
+
+---
+
+## File: src/components/layout/Footer.module.css
+
+```css
+.footer {
+    padding: 2rem 0;
+    border-top: 1px solid var(--line);
+    margin-top: auto;
+    text-align: center;
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+}
+
+.copyright {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.25rem;
+}
+
+.companyInfo {
+    opacity: 0.8;
+}
+
+.divider {
+    margin: 0 0.5rem;
+    opacity: 0.3;
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 1.5rem 0;
+    }
+}
+```
+
+---
+
+## File: src/components/layout/Footer.tsx
+
+```tsx
+import React from 'react';
+import styles from './Footer.module.css';
+
+export const Footer: React.FC = () => {
+    return (
+        <footer className={styles.footer}>
+            <div className={styles.container}>
+                <div className={styles.copyright}>
+                    Copyright © 2025 MYUNGRI: The Genesis.
+                </div>
+                <div className={styles.companyInfo}>
+                    KS컴퍼니 <span className={styles.divider}>|</span> 대표: 배종수, 석경선 <span className={styles.divider}>|</span> 문의: suhachi78@gmail.com
+                </div>
+            </div>
+        </footer>
     );
 };
 
