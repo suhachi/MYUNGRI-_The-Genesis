@@ -1,23 +1,25 @@
 .processingPage {
     min-height: 100vh;
+    background-color: var(--bg);
 }
 
 .container {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 70vh;
+    min-height: 80vh;
 }
 
 .content {
     text-align: center;
-    max-width: 500px;
+    max-width: 600px;
+    padding: 0 20px;
 }
 
 .spinner {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 2rem;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 2.5rem;
     border: 3px solid var(--line);
     border-top-color: var(--accent);
     border-radius: 50%;
@@ -31,21 +33,93 @@
 }
 
 .title {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.85rem;
+    margin-bottom: 2rem;
     color: var(--ink);
+    letter-spacing: -0.01em;
 }
 
-.text {
+.triviaWrapper {
+    height: 4.5rem;
+    /* Reserve space for 2 lines of text */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+
+.triviaText {
     font-family: var(--font-sans);
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     color: var(--muted);
     line-height: 1.6;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.progressIndicator {
     margin-bottom: 3rem;
+}
+
+.dots {
+    display: inline-flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--line);
+    transition: background-color 0.3s ease;
+}
+
+.dotActive {
+    background-color: var(--accent);
 }
 
 .subtext {
     font-family: var(--font-sans);
     font-size: 0.85rem;
-    color: var(--line);
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.6;
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .spinner {
+        animation: none;
+        border-top-color: var(--line);
+    }
+
+    .triviaText {
+        animation: none;
+    }
+
+    .dot {
+        transition: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .triviaText {
+        font-size: 1rem;
+    }
 }

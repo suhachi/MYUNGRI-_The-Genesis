@@ -6,6 +6,7 @@ import { BrandLockup } from './components/common/BrandLockup';
 import { Home } from './pages/Home';
 import { Start } from './pages/Start';
 import { Processing } from './pages/Processing';
+import { Report } from './pages/Report';
 import styles from './App.module.css';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
         } />
         <Route path="/start" element={<Start />} />
         <Route path="/processing" element={<Processing />} />
+        <Route path="/report" element={<Report />} />
       </Routes>
     </PaperBackground>
   );
