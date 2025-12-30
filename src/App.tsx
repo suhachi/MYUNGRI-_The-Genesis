@@ -8,6 +8,7 @@ import { Start } from './pages/Start';
 import { Processing } from './pages/Processing';
 import { Report } from './pages/Report';
 import styles from './App.module.css';
+import { Footer } from './components/layout/Footer';
 
 function App() {
   const [showHome, setShowHome] = useState(false);
@@ -43,6 +44,7 @@ function App() {
         <Route path="/report" element={<Report />} />
         <Route path="/report/:reportId" element={<Report />} />
       </Routes>
+      <Footer />
     </PaperBackground>
   );
 }
