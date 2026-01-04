@@ -1,92 +1,179 @@
 .processingPage {
     min-height: 100vh;
-    background-color: var(--bg);
+    background-color: #0F0F0F;
+    /* Deep Black */
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.processingPage::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url('/assets/paper-noise.png');
+    background-repeat: repeat;
+    background-size: 150px;
+    opacity: 0.1;
+    /* Stronger CRT noise */
+    pointer-events: none;
+    z-index: 100;
 }
 
 .container {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
+    padding: 20px;
 }
 
-.content {
-    text-align: center;
-    max-width: 600px;
-    padding: 0 20px;
+.terminal {
+    width: 100%;
+    max-width: 800px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    color: #33FF00;
+    /* Terminal Green */
+    background: rgba(0, 0, 0, 0.4);
+    padding: 40px;
+    border-radius: 4px;
+    border: 1px solid rgba(51, 255, 0, 0.2);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 1);
 }
 
-.spinner {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 2.5rem;
-    border: 3px solid var(--line);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 1s infinite linear;
+.logLine {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 8px;
+    display: block;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+.cursor {
+    display: inline-block;
+    width: 10px;
+    height: 2px;
+    background-color: #33FF00;
+    margin-left: 4px;
+    animation: blink 0.5s infinite;
 }
 
-.title {
-    font-size: 1.85rem;
-    margin-bottom: 2rem;
-    color: var(--ink);
-    letter-spacing: -0.01em;
-}
+@keyframes blink {
 
-.triviaWrapper {
-    height: 4.5rem;
-    /* Reserve space for 2 lines of text */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 2.5rem;
-}
-
-.triviaText {
-    font-family: var(--font-sans);
-    font-size: 1.15rem;
-    color: var(--muted);
-    line-height: 1.6;
-    animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(5px);
-    }
-
-    to {
+    0%,
+    100% {
         opacity: 1;
-        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 0;
     }
 }
 
-.progressIndicator {
-    margin-bottom: 3rem;
+.footer {
+    padding: 24px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.dots {
-    display: inline-flex;
-    gap: 8px;
+.copyright {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: center;
 }
 
-.dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: var(--line);
-    transition: background-color 0.3s ease;
+/* Phase 27: Error UI */
+.errorCard {
+    max-width: 500px;
+    width: 90%;
+    padding: 40px;
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid rgba(198, 40, 40, 0.3);
+    text-align: center;
+    backdrop-filter: blur(10px);
 }
 
-.dotActive {
-    background-color: var(--accent);
+.errorHeader {
+    margin-bottom: 24px;
+}
+
+.errorTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ff5252;
+    margin-bottom: 8px;
+}
+
+.errorCode {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: rgba(255, 82, 82, 0.6);
+    background: rgba(255, 82, 82, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.errorText {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-main);
+    margin-bottom: 32px;
+}
+
+.detailsBox {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 32px;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detailsBox pre {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: #888;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.actionRow {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.retryBtn {
+    padding: 12px 24px;
+    background: #c62828;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.retryBtn:hover {
+    background: #e53935;
+    transform: translateY(-2px);
+}
+
+.cancelBtn {
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border-main);
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--text-main);
 }
 
 .subtext {

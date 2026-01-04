@@ -1,8 +1,7 @@
 .contextBox {
-    /* Token-only background using color-mix instead of hardcoded rgba */
-    background-color: color-mix(in srgb, var(--bg) 30%, transparent);
-    border-left: 4px solid var(--muted);
-    padding: 16px 20px;
+    background-color: #F7F7F7;
+    border-left: 4px solid #8C8C8C;
+    padding: 20px;
     margin: 1.5rem 0;
 }
 

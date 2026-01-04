@@ -5,7 +5,7 @@
 
 .container {
     padding-top: 3rem;
-    max-width: 600px;
+    max-width: 480px;
 }
 
 .pageHeader {
@@ -27,7 +27,10 @@
 }
 
 .formCard {
-    padding: 2.5rem;
+    padding: 40px;
+    background: #FFFFFF;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
 }
 
 .form {
@@ -57,23 +60,42 @@
 
 .input {
     width: 100%;
-    padding: 0.85rem 1rem;
-    background-color: var(--card);
-    border: 1px solid var(--line);
+    height: 52px;
+    padding: 0 1rem;
+    background-color: #F9F9F9;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     font-family: var(--font-sans);
     font-size: 1rem;
     color: var(--ink);
-    border-radius: 4px;
-    transition: border-color 0.2s;
+    border-radius: 2px;
+    transition: all 0.2s;
 }
 
 .input:focus {
     outline: none;
-    border-color: var(--muted);
+    background-color: #FFF;
+    border: 1px solid var(--ink);
 }
 
 .inputError {
-    border-color: var(--accent);
+    border: 1px solid var(--accent);
+    animation: shake 0.4s;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
 }
 
 .readOnly {

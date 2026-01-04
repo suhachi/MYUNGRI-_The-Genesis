@@ -1,0 +1,80 @@
+.reasonCardsContainer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid rgba(198, 40, 40, 0.15);
+}
+
+.sectionTitle {
+    font-family: "Noto Serif KR", serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #c62828;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+}
+
+.reasonCard {
+    background-color: rgba(198, 40, 40, 0.02);
+    border-left: 4px solid #c62828;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0 4px 4px 0;
+}
+
+.cardTitle {
+    font-family: "Noto Serif KR", serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1c1c1c;
+    margin-bottom: 1rem;
+}
+
+.evidenceSection,
+.patchSection,
+.riskSection {
+    margin-top: 1rem;
+}
+
+.label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+.evidenceList,
+.patchList {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.evidenceList li,
+.patchList li {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: rgba(0, 0, 0, 0.8);
+    margin-bottom: 0.5rem;
+}
+
+.patchList li {
+    font-weight: 500;
+    color: #1c1c1c;
+}
+
+.riskText {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: rgba(198, 40, 40, 0.9);
+    font-weight: 500;
+}
+
+@media print {
+    .reasonCardsContainer {
+        page-break-inside: avoid;
+    }
+
+    .reasonCard {
+        page-break-inside: avoid;
+        background-color: rgba(198, 40, 40, 0.05);
+    }
+}

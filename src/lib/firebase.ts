@@ -1,13 +1,19 @@
 /// <reference types="vite/client" />
 import { initializeApp } from "firebase/app";
+import type { FirebaseApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+import { getFirestore } from "firebase/firestore";
+import type { Firestore } from "firebase/firestore";
+import { connectFirestoreEmulator } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
+import type { Functions } from "firebase/functions";
+import { connectFunctionsEmulator } from "firebase/functions";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 /**
- * Firebase 초기화 및 보안 하드닝 [S2: App Check]
+ * Firebase 초기화 및 보안 하드닝 [Phase 12: Authoritative Patch]
  */
+
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -18,37 +24,81 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
+export let firebaseConfigError: string | null = null;
+export let isAppCheckReady = false;
+export let appCheckError: string | null = null;
 
-// App Check 초기화 (Web: reCAPTCHA v3)
-if (typeof window !== 'undefined') {
-    // 로컬 개발 환경(localhost)에서는 Debug Provider 활성화
-    if (import.meta.env.DEV) {
-        // @ts-ignore
-        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-    }
+let app: FirebaseApp | undefined;
+let db: Firestore | undefined;
+let functions: Functions | undefined;
 
-    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
-    if (siteKey) {
-        initializeAppCheck(app, {
-            provider: new ReCaptchaV3Provider(siteKey),
-            isTokenAutoRefreshEnabled: true
-        });
-    } else if (!import.meta.env.DEV) {
-        console.warn("App Check Site Key is missing in production environment.");
+// [Zero Tolerance] 전 필드 엄격 검증 (PROD 크래시 차단)
+const isConfigValid = !!(
+    firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId &&
+    firebaseConfig.appId &&
+    firebaseConfig.messagingSenderId &&
+    firebaseConfig.storageBucket &&
+    firebaseConfig.projectId !== 'undefined'
+);
+
+if (isConfigValid) {
+    try {
+        console.log("[Firebase] Config validated. Initializing app...");
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        functions = getFunctions(app, 'asia-northeast3');
+
+        if (typeof window !== 'undefined') {
+            if (import.meta.env.DEV) {
+                // @ts-ignore
+                self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+                isAppCheckReady = true;
+                console.log("[AppCheck] Debug mode enabled.");
+            }
+
+            const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+            if (siteKey && siteKey !== 'REPLACE') {
+                try {
+                    initializeAppCheck(app, {
+                        provider: new ReCaptchaV3Provider(siteKey),
+                        isTokenAutoRefreshEnabled: true
+                    });
+                    isAppCheckReady = true;
+                    console.log("[AppCheck] Initialized successfully.");
+                } catch (err) {
+                    appCheckError = "APPCHECK_INIT_FAILED";
+                    console.error("Critical: App Check initialization threw an error:", err);
+                }
+            } else if (import.meta.env.PROD) {
+                appCheckError = "MISSING_SITE_KEY";
+                console.error("Critical: App Check Site Key is missing in production.");
+            }
+        }
+    } catch (e) {
+        firebaseConfigError = "INIT_FAILED";
+        console.error("Firebase Initialization Failed:", e);
     }
+} else if (import.meta.env.PROD) {
+    firebaseConfigError = "MISSING_FIREBASE_CONFIG";
+    console.error("Critical: Firebase configuration values are missing or invalid in production.");
 }
 
-// 가용 환경에서만 Analytics 초기화
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+export const analytics = (app && typeof window !== 'undefined') ? getAnalytics(app) : null;
 
-export const db = getFirestore(app);
-export const functions = getFunctions(app, 'asia-northeast3');
-
-// 에뮬레이터 연결
-if (import.meta.env.DEV) {
+if (app && db && functions && import.meta.env.DEV) {
     connectFirestoreEmulator(db, '127.0.0.1', 8080);
     connectFunctionsEmulator(functions, '127.0.0.1', 5001);
 }
 
+export const dbInstance = db as Firestore;
+/**
+ * [Phase 27] Authoritative KR Region Instance
+ * 모든 Callable 호출은 이 인스턴스를 통해 asia-northeast3로 강제됩니다.
+ */
+export const functionsKR = functions as Functions;
+export const functionsInstance = functions as Functions; // 하위 호환성 유지
+export { app, db, functions };
 export default app;
+

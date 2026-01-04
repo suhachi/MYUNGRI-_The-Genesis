@@ -1,0 +1,78 @@
+/* P9-ATOMIC-003: Print Optimization */
+
+@media print {
+
+    /* Hide interactive elements */
+    .no-print,
+    button,
+    nav,
+    footer,
+    .calendarModal {
+        /* Don't print modals */
+        display: none !important;
+    }
+
+    /* Page Setup */
+    @page {
+        size: A4;
+        margin: 20mm;
+    }
+
+    body {
+        background-color: white !important;
+        color: black !important;
+        font-family: "Noto Serif KR", serif !important;
+        font-size: 11pt;
+        line-height: 1.6;
+    }
+
+    /* Container Reset */
+    .reportContainer {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* Typography */
+    h1,
+    h2,
+    h3 {
+        page-break-after: avoid;
+        color: black !important;
+    }
+
+    p {
+        orphans: 3;
+        widows: 3;
+        text-align: justify;
+    }
+
+    /* Section Breaks */
+    .reportSection {
+        page-break-inside: avoid;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #ddd;
+    }
+
+    /* Color Adjustment for Ink Saving */
+    .gradeGood {
+        background-color: transparent !important;
+        border: 1px solid #2e7d32;
+        color: #2e7d32 !important;
+    }
+
+    .gradeWarn {
+        background-color: transparent !important;
+        border: 1px solid #fbc02d;
+        color: #f9a825 !important;
+    }
+
+    .gradeCaution {
+        background-color: transparent !important;
+        border: 1px solid #c62828;
+        color: #c62828 !important;
+    }
+}

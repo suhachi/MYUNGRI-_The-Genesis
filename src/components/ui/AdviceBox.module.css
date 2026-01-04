@@ -1,30 +1,29 @@
 .adviceBox {
-    /* Token-only accent background using color-mix instead of hardcoded rgba */
-    background-color: color-mix(in srgb, var(--accent) 2%, transparent);
-    border: 1px solid var(--accent);
-    padding: 24px;
+    background-color: transparent;
+    border: none;
+    padding: 0;
     position: relative;
     margin: 2rem 0;
-    border-radius: 2px;
 }
 
 .badge {
-    position: absolute;
-    top: -12px;
-    left: 20px;
-    background-color: var(--accent);
-    color: var(--card);
-    padding: 4px 12px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    font-family: var(--font-sans);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    display: none;
+    /* Hide badge, using icon instead */
 }
 
 .content {
-    font-family: var(--font-sans);
-    font-size: 1rem;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.05rem;
     color: var(--ink);
     line-height: 1.7;
+    display: flex;
+    align-items: flex-start;
+}
+
+.content::before {
+    content: "💡";
+    font-style: normal;
+    margin-right: 12px;
+    font-size: 1.2rem;
 }

@@ -607,7 +607,8 @@ service cloud.firestore {
     "dependencies": {
         "firebase-admin": "^12.7.0",
         "firebase-functions": "^6.6.0",
-        "kor-lunar": "^1.4.0"
+        "kor-lunar": "^1.4.0",
+        "openai": "^6.15.0"
     },
     "devDependencies": {
         "typescript": "^5.1.6"
@@ -934,13 +935,17 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
 ```ts
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { setGlobalOptions } = require("firebase-functions/v2");
+const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+const { Timestamp } = require("firebase-admin/firestore");
 const { logger } = require("firebase-functions");
+const { OpenAI } = require("openai");
 const { calculateV1 } = require("./engine/calculation/v1");
 
-// [Stability Patch] App Check Visibility
+// [Stability Patch] App Check Visibility & Secrets
 const REGION = "asia-northeast3";
 const ENFORCE_APP_CHECK = process.env.FUNCTIONS_EMULATOR !== "true";
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 
 setGlobalOptions({ region: REGION });
 admin.initializeApp();
@@ -949,11 +954,67 @@ logger.info(`[System] App Check Enforced: ${ENFORCE_APP_CHECK} (Emulator: ${proc
 
 /**
  * generateReport (Callable Function v2)
- * Phase 3-C: Real Calculation & Rich Section Generation (Hardened)
- * v3.2.1-H: Zero Tolerance Production Patch
+ * Phase 23: OpenAI JSON Mode & Action Plan Integration
+ * v4.1.0-AI-JSON: Zero Tolerance AI Activation
  */
+/**
+ * Phase 25: System Audit Report Structure
+ */
+export const REPORT_STRUCTURE = [
+    { id: "01_intro", title: "제네시스 오버뷰", category: "SUMMARY" },
+    { id: "02_code", title: "제네시스 코드", category: "ARCH" },
+    { id: "03_logic", title: "분석 알고리즘 명세", category: "SPEC" },
+    { id: "04_os", title: "운영체제 타입", category: "SYSTEM" },
+    { id: "05_core", title: "코어 엘리먼트", category: "CORE" },
+    { id: "06_dual", title: "듀얼 프로세서", category: "CORE" },
+    { id: "07_balance", title: "에너지 구조 및 밸런스", category: "RESOURCE" },
+    { id: "08_bug", title: "고질적 버그 리포트", category: "DEBUG" },
+    { id: "09_crash", title: "반복되는 시스템 충돌", category: "DEBUG" },
+    { id: "10_leak", title: "에너지 누수 구간", category: "DEBUG" },
+    { id: "11_defense", title: "방어 기제 및 방화벽", category: "SECURITY" },
+    { id: "12_killer", title: "킬러 애플리케이션", category: "APP" },
+    { id: "13_process", title: "업무 처리 프로세스", category: "APP" },
+    { id: "14_wealth", title: "리소스 할당 전략", category: "STRATEGY" },
+    { id: "15_decision", title: "의사결정 병목 해결", category: "STRATEGY" },
+    { id: "16_social", title: "인터랙션 프로토콜", category: "NETWORK" },
+    { id: "17_love", title: "호환성 검사", category: "NETWORK" },
+    { id: "18_traffic", title: "네트워크 트래픽 관리", category: "NETWORK" },
+    { id: "19_current", title: "현재 시스템 부하", category: "STATUS" },
+    { id: "20_major", title: "업데이트 일정", category: "ROADMAP" },
+    { id: "21_roadmap", title: "단기 패치 노트", category: "ROADMAP" },
+    { id: "22_wave", title: "바이오리듬 및 파동", category: "STATUS" },
+    { id: "23_boost", title: "시스템 부스팅", category: "PATCH" },
+    { id: "24_archive", title: "시스템 아카이브", category: "META" },
+] as const;
+
+/**
+ * Master Myungri – 시스템 감사관 페르소나
+ */
+const SYSTEM_PROMPT = `
+당신은 "Master Myungri", 선임 시스템 감사관(Senior System Auditor)입니다.
+당신은 인간을 하나의 "Human OS"로 분석합니다.
+
+Mandatory rules:
+- 오직 IT/시스템 메타포만 사용하십시오.
+- 일간(Day Master) = CPU/Kernel
+- 운(Fate) = System Traffic
+- 충(Clash) = System Crash
+- 흉신(Demon God) = Malware
+- 용신(Useful God) = Optimization Patch
+- 논리가 먼저이고 결론이 뒤따라야 합니다.
+- 위로나 점술적인 톤은 배제하십시오. 오직 감사 결과에만 집중합니다.
+- 시스템의 버그를 지적하고 구체적인 Action Plan을 제시하십시오.
+- 각 섹션은 반드시 최소 3-4문단으로 구성하십시오. (매우 중요)
+- 섹션 ID와 제목을 변경하지 마십시오.
+- 리포트 전체 분량을 축소하지 마십시오. 총 공백 제외 30,000자 이상의 밀도 높은 분석을 지향합니다.
+- 반드시 유효한 JSON 형식으로만 응답하며, 마크다운 태그 기입은 금지합니다.
+`;
+
 exports.generateReport = onCall({
-    enforceAppCheck: ENFORCE_APP_CHECK
+    enforceAppCheck: ENFORCE_APP_CHECK,
+    secrets: [OPENAI_API_KEY],
+    timeoutSeconds: 300, // Increase timeout for longer reports
+    memory: "512MiB"
 }, async (request: any) => {
     const rawData = request.data;
 
@@ -974,6 +1035,31 @@ exports.generateReport = onCall({
         throw new HttpsError("invalid-argument", "생년월일 형식이 올바르지 않습니다 (YYYY-MM-DD).");
     }
 
+    // Optional userName and scriptType
+    let userName: string | undefined;
+    let scriptType: 'hanja' | 'hangul' | 'unknown' | undefined;
+
+    if (rawData.userName) {
+        const trimmed = rawData.userName.trim();
+        if (trimmed.length < 2 || trimmed.length > 20) {
+            throw new HttpsError("invalid-argument", "이름은 2자 이상 20자 이하여야 합니다.");
+        }
+        userName = trimmed;
+
+        // Compute scriptType if not provided
+        if (rawData.scriptType) {
+            scriptType = rawData.scriptType;
+        } else {
+            if (/\p{Script=Han}/u.test(trimmed)) {
+                scriptType = 'hanja';
+            } else if (/\p{Script=Hangul}/u.test(trimmed)) {
+                scriptType = 'hangul';
+            } else {
+                scriptType = 'unknown';
+            }
+        }
+    }
+
     const birthYear = parseInt(rawData.birthDate.split('-')[0]);
     if (birthYear < 1890 || birthYear > 2050) {
         throw new HttpsError("invalid-argument", "분석 가능한 연도 범위를 벗어났습니다 (1890년 ~ 2050년 지원).");
@@ -989,10 +1075,9 @@ exports.generateReport = onCall({
         birthTime = rawData.birthTime;
     }
 
-    // [Step B] Strict isLeapMonth enforcement for Solar
     const normalizedIsLeapMonth = rawData.calendar === "solar" ? false : !!rawData.isLeapMonth;
 
-    const input = {
+    const input: any = {
         birthDate: rawData.birthDate,
         birthTime: birthTime,
         timeUnknown: timeUnknown,
@@ -1002,46 +1087,98 @@ exports.generateReport = onCall({
         timezone: "Asia/Seoul"
     };
 
+    // Only include userName if it exists
+    if (userName) {
+        input.userName = userName;
+        input.scriptType = scriptType;
+    }
+
     try {
-        // 2. 실계산 실행 (Hardened Engine v1.2)
+        // 2. 사주 실계산 실행
         const calculation = calculateV1(input);
-        const { pillars, forensicTime } = calculation;
+        const { pillars } = calculation;
 
-        // 3. 리포트 섹션 생성 (12개 섹션 고도화)
-        const sections = [
-            { id: 1, title: "GENESIS OVERVIEW", category: "SUMMARY", type: "intro", content: `당신의 고유한 생체 시간적 좌표를 확인했습니다. ${calculation.normalization.solarDate} (True Solar)를 기점으로 분석을 시작합니다.` },
-            { id: 2, title: "THE ARCHETYPE", category: "PILLARS", type: "analysis", content: `당신의 근원적 에너지는 [${pillars.year.label} ${pillars.month.label} ${pillars.day.label}]의 구조를 가집니다.` },
-            { id: 3, title: "CORE ELEMENT: DAY STEM", category: "ANALYSIS", type: "analysis", content: `나를 상징하는 일간(日干)은 '${pillars.day.stem}'입니다. 이는 당신의 본질적인 성향과 가치관의 핵심 엔진입니다.` },
-            { id: 4, title: "TEMPORAL FREQUENCY", category: "ANALYSIS", type: "analysis", content: `태어난 월(${pillars.month.branch})은 당신이 속한 환경의 계절적 압력과 사회적 지향점을 의미합니다.` },
-            {
-                id: 5, title: "TEMPORAL PRECISION", category: "FORENSIC", type: "context", content: forensicTime
-                    ? `현지시각(${forensicTime.localTime})에 진태양시 정정 ${forensicTime.totalOffsetMin}분을 적용하여 '${forensicTime.classification}'로 특정했습니다.`
-                    : "시간 미정 상태로, 일간 중심의 분석을 수행합니다."
-            },
-            { id: 6, title: "ENERGY DYNAMICS", category: "PRACTICAL", type: "analysis", content: "각 요소들 간의 상호작용을 통해 사회적 성취와 개인적 만족의 균형 패턴을 분석합니다." },
-            { id: 7, title: "STRATEGIC BEHAVIOR", category: "BEHAVIOR", type: "action", content: "당신의 패턴은 선제적 대응보다는 상황의 흐름을 파악하고 최적의 시점에 개입하는 전략에 최적화되어 있습니다." },
-            { id: 8, title: "DECISION-MAKING STYLE", category: "BEHAVIOR", type: "action", content: "중요한 경계선에서는 직관보다 데이터와 과거의 경험적 패턴을 신뢰하는 것이 리스크를 최소화합니다." },
-            { id: 9, title: "RESOURCE ALLOCATION", category: "ACTION", type: "action", content: "현재의 에너지 구조에서는 단기적 성과보다 장기적 시스템 구축에 자원을 집중하는 것이 유리합니다." },
-            { id: 10, title: "RISK MANAGEMENT", category: "ACTION", type: "action", content: "불확실성이 높은 환경에서는 고정된 계획보다 유연한 대응 시나리오를 여러 개 준비하는 전략이 권장됩니다." },
-            { id: 11, title: "PROBABILISTIC FUTURE", category: "ACTION", type: "action", content: "통계적으로 유사한 에너지 패턴을 가진 군집에서는 특정 변곡점에서 시스템적 확장이 일어나는 경향을 보입니다." },
-            { id: 12, title: "SYSTEM ARCHIVE", category: "META", type: "context", content: `Algorithm: ${calculation.algorithmVersion} | Schema: ${calculation.schemaVersion} | Forensic standard applied.` }
-        ];
+        // 3. OpenAI 해석 엔진 가동 (gpt-4o)
+        const openai = new OpenAI({
+            apiKey: OPENAI_API_KEY.value(),
+        });
 
-        // 4. 리포트 데이터 영구 보관 (D3)
+        const userPrompt = `
+INPUT DATA:
+- 이름: ${userName || "Anonymous"}
+- 연주: ${pillars.year.label}
+- 월주: ${pillars.month.label}
+- 일주: ${pillars.day.label}
+- 시주: ${pillars.hour ? pillars.hour.label : "미상"}
+- 일간(日干): ${pillars.day.stem}
+- 성별: ${rawData.sex === "male" ? "남성" : "여성"}
+- 기준일: ${calculation.normalization.solarDate}
+
+Generate a full audit report strictly following the 24-section structure below.
+The response must be in JSON format. Do NOT skip any sections.
+
+STRUCTURE:
+${JSON.stringify(REPORT_STRUCTURE.map(s => ({ id: s.id, title: s.title })), null, 2)}
+
+OUTPUT FORMAT:
+{
+  "sections": [
+    { "id": "...", "title": "...", "content": "Korean text..." }
+  ]
+}
+`;
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: userPrompt }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.2,
+        });
+
+        const aiResponse = JSON.parse(completion.choices[0]?.message?.content || "{}");
+        logger.info("[AI-Engine] Raw AI Response received.");
+
+        if (!aiResponse.sections || !Array.isArray(aiResponse.sections)) {
+            throw new Error("INVALID_AI_RESPONSE_SCHEMA");
+        }
+
+        // 4. Map AI sections to report structure
+        const sections = REPORT_STRUCTURE.map(meta => {
+            const aiSec = aiResponse.sections.find((s: any) => s.id === meta.id);
+            return {
+                id: meta.id,
+                title: meta.id === "24_archive" ? meta.title : (aiSec?.title || meta.title),
+                category: meta.category,
+                content: aiSec?.content || "데이터 분석 중 오류가 발생했습니다.",
+                type: (meta.id === "01_intro") ? "intro" : "analysis"
+            };
+        });
+
+        // 5. Build reportMeta
+        const reportMeta = {
+            title: userName ? `${userName} 님의 SYSTEM AUDIT v5.0` : "SYSTEM AUDIT v5.0",
+            userName: userName,
+            summary: "Human OS Integrity & Performance Audit Report. 명리 엔진과 GPT-4o 감사관의 정밀 분석 결과입니다.",
+            strategistMeta: {
+                disclaimer: "본 감사 보고서는 시스템적 패턴 분석이며, 최종적인 기동 결정은 운영자 본인에게 있습니다."
+            }
+        };
+
+        // 6. 리포트 데이터 영구 보관
         const reportData = {
-            createdAt: admin.firestore.Timestamp.now(),
-            version: "v3.2.1-H",
-            schemaVersion: "report/v1",
+            createdAt: Timestamp.now(),
+            version: "v5.0.0-AUDIT",
+            schemaVersion: "report/v2",
             algorithmVersion: calculation.algorithmVersion,
             input: input,
-            calculation: calculation,
-            reportMeta: {
-                title: "GENESIS ANALYSIS v1.2",
-                summary: "포렌식 시간 보정 및 정규화 간지 기반의 정밀 패턴 분석 결과입니다.",
-                strategistMeta: {
-                    disclaimer: "본 분석은 과학적 보정 공식을 적용한 통계적 제언이며, 실제 삶의 현장에서의 최종 선택은 사용자의 주도적 의지가 결정합니다."
-                }
+            calculation: {
+                ...calculation,
+                forensicTime: calculation.forensicTime ?? null
             },
+            reportMeta,
             sections: sections
         };
 
@@ -1050,23 +1187,13 @@ exports.generateReport = onCall({
         return {
             reportId: reportRef.id,
             version: reportData.version,
-            schemaVersion: reportData.schemaVersion,
-            algorithmVersion: reportData.algorithmVersion
+            sections: sections
         };
 
-    } catch (error: any) {
-        logger.error("Report Generation Error:", error);
-        if (error instanceof HttpsError) throw error;
-
-        const msg = error.message || "";
-        // [Step B] Error classification for friendly invalid-argument fallback
-        if (msg.includes("range") ||
-            msg.includes("KOR_LUNAR_EXPORT_MISSING:") ||
-            msg.includes("KOR_LUNAR_CONVERT_FAILED:")) {
-            throw new HttpsError("invalid-argument", `입력 데이터 또는 엔진 설정 오류: ${msg}`);
-        }
-
-        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${msg || 'Unknown'}`);
+    } catch (err: any) {
+        logger.error("Report Generation Error:", err);
+        if (err instanceof HttpsError) throw err;
+        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${err.message || 'LLM_INTERPRETATION_FAILED'}`);
     }
 });
 
@@ -1140,9 +1267,10 @@ exports.generateReport = onCall({
     href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@300;400;500;700;900&family=Inter:wght@300;400;500;700&display=swap"
     rel="stylesheet">
 
-  <!-- Kakao SDK [Fixed Load Option A] -->
+  <!-- Kakao SDK [Fixed Load Option A] 
+       Pined SRI hash to match production integrity check (sha384 computed by browser) -->
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
-    integrity="sha384-S4VR7PzRyM4yD5bWjUrMvBgr0zkY73Xv9C/p7nP+Q5R1e/P1zCym9F7/u6fMzk/+" crossorigin="anonymous"
+    integrity="sha384-DKYJZ8NLiK8MN4/C5P2dtSmLQ4KwPaoqAfyA/DfmEc1VDxu4yyC7wy6K1Hs90nka" crossorigin="anonymous"
     defer></script>
 </head>
 
@@ -1167,6 +1295,7 @@ exports.generateReport = onCall({
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/check-env.cjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -1273,6 +1402,160 @@ export default defineConfig([
   },
 ])
 ```
+
+```
+
+---
+
+## File: scripts/check-env.cjs
+
+```cjs
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * [Zero Tolerance] Environment Validation Script (Authoritative)
+ * 빌드 시점에 필수 변수가 없거나 비어 있으면 즉시 중단합니다.
+ * 우선순위: .env.production.local > process.env (CI 오염 방지)
+ */
+
+const REQUIRED_VARS = [
+    'VITE_FIREBASE_API_KEY',
+    'VITE_FIREBASE_AUTH_DOMAIN',
+    'VITE_FIREBASE_PROJECT_ID',
+    'VITE_FIREBASE_APP_ID',
+    'VITE_FIREBASE_MESSAGING_SENDER_ID',
+    'VITE_FIREBASE_STORAGE_BUCKET',
+    'VITE_RECAPTCHA_SITE_KEY'
+];
+
+function parseEnvFile(filePath) {
+    if (!fs.existsSync(filePath)) return {};
+    const content = fs.readFileSync(filePath, 'utf8');
+    const env = {};
+    content.split(/\r?\n/).forEach(line => {
+        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+        if (match) {
+            let value = match[2] || '';
+            // 따옴표 제거
+            if (value.length > 0 && value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+            if (value.length > 0 && value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+            env[match[1]] = value.trim();
+        }
+    });
+    return env;
+}
+
+function checkEnv() {
+    console.log('🔍 [Release Engineer] Hard-validating environment for production build...');
+
+    // 1. .env.production.local 로드 (권위적 우선순위)
+    const envPath = path.resolve(__dirname, '../.env.production.local');
+    const fileEnv = parseEnvFile(envPath);
+
+    const missingOrEmpty = [];
+
+    REQUIRED_VARS.forEach(key => {
+        // [Zero Tolerance] Local File 우선 (CI/쉘 잔류값 overriding 방지)
+        const value = fileEnv[key] || process.env[key];
+
+        const isEmpty = !value || value.trim() === '';
+        const isPlaceholder = value && (
+            value.includes('YOUR_') ||
+            value.includes('REPLACE') ||
+            value.includes('AIzaSyAL...') // 런북 예시값 방지
+        );
+
+        if (isEmpty || isPlaceholder) {
+            missingOrEmpty.push(key);
+        }
+    });
+
+    if (missingOrEmpty.length > 0) {
+        console.error('\n❌ [CRITICAL FAIL] Production build aborted due to missing/empty environment variables:');
+        missingOrEmpty.forEach(k => console.error(`   - ${k}`));
+        console.error('\n👉 FIX: Update your .env.production.local with valid credentials.');
+        console.error('👉 REF: Check .env.production.example for the list of required keys.\n');
+        process.exit(1);
+    }
+
+    console.log('✅ Environment validation passed. Proceeding to build...\n');
+}
+
+checkEnv();
+
+```
+
+---
+
+## File: scripts/ci-gate.cjs
+
+```cjs
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+/**
+ * [Zero Tolerance] CI Release Gate Script
+ * 1. Pre-build: 환경 변수 엄격 검증 (check-env.cjs 재사용)
+ * 2. Post-build: 빌드 결과물(Bundle) 내 필수 식별자(projectId 등) 존재 확인
+ */
+
+function runPreBuildCheck() {
+    console.log('🚀 [CI Gate] Step 1: Pre-build Environment Validation...');
+    try {
+        execSync('node scripts/check-env.cjs', { stdio: 'inherit' });
+    } catch (err) {
+        console.error('❌ [CI Gate] Pre-build validation failed.');
+        process.exit(1);
+    }
+}
+
+function runPostBuildCheck() {
+    console.log('🚀 [CI Gate] Step 2: Post-build Bundle Integrity Check...');
+    const distPath = path.resolve(__dirname, '../dist');
+
+    if (!fs.existsSync(distPath)) {
+        console.error('❌ [CI Gate] Build directory (dist) not found. Run "npm run build" first.');
+        process.exit(1);
+    }
+
+    // 번들 파일들 내에서 projectId가 실제로 포함되어 있는지 검색 (Vite define 검증)
+    // 실제 projectId 값 대신 플레이스홀더나 빈 자리가 남지 않았는지 확인
+    const assetsPath = path.join(distPath, 'assets');
+    const files = fs.readdirSync(assetsPath).filter(f => f.endsWith('.js'));
+
+    let projectIdFound = false;
+    for (const file of files) {
+        const content = fs.readFileSync(path.join(assetsPath, file), 'utf8');
+        // projectId가 실제 빌드될 때 "myungri-genesis"와 같은 문자열로 박혔는지 확인
+        // (참고: 빌드 시 환경변수는 문자열 리터럴로 치환됨)
+        if (content.includes('myungri-genesis')) {
+            projectIdFound = true;
+            break;
+        }
+    }
+
+    if (!projectIdFound) {
+        console.error('❌ [CI Gate] INTEGRITY FAIL: "projectId" (myungri-genesis) was not detected in JS bundles.');
+        console.error('👉 This indicates a failed Vite environment injection at build time.');
+        process.exit(1);
+    }
+
+    console.log('✅ [CI Gate] Bundle integrity verified. "projectId" detected.');
+}
+
+function main() {
+    const isPostBuild = process.argv.includes('--post-build');
+
+    if (isPostBuild) {
+        runPostBuildCheck();
+    } else {
+        runPreBuildCheck();
+    }
+}
+
+main();
 
 ```
 
@@ -1411,6 +1694,118 @@ function generateMarkdown() {
 
 // --- Execute ---
 generateMarkdown();
+
+```
+
+---
+
+## File: scripts/generate-design-docs.cjs
+
+```cjs
+const fs = require('fs');
+const path = require('path');
+
+// --- Configuration ---
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+const OUTPUT_DIR = path.join(PROJECT_ROOT, 'project_docs');
+const OUTPUT_FILE = path.join(OUTPUT_DIR, 'design_code_complete.md');
+
+// Directories to focus on for "Design"
+const DESIGN_PATHS = [
+    'src/components',
+    'src/pages',
+    'src/styles',
+    'src/config'
+];
+
+// Extensions to include
+const ALLOW_EXTENSIONS = ['.tsx', '.css', '.module.css', '.ts'];
+
+// Files to explicitly include even if not in DESIGN_PATHS
+const SPECIFIC_FILES = [
+    'index.html',
+    'src/App.tsx',
+    'src/main.tsx'
+];
+
+function ensureDir(dir) {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+}
+
+function isDesignRelated(filePath) {
+    const relativePath = path.relative(PROJECT_ROOT, filePath).replace(/\\/g, '/');
+
+    // Check if it's in a design-related directory
+    const isInDesignDir = DESIGN_PATHS.some(p => relativePath.startsWith(p));
+
+    // Check if it's a specific file
+    const isSpecific = SPECIFIC_FILES.includes(relativePath);
+
+    // Check extension
+    const ext = path.extname(filePath).toLowerCase();
+    const isAllowedExt = ALLOW_EXTENSIONS.includes(ext);
+
+    // Business logic exclusion: exclude calculation engine logic even if in src/config if it's not design
+    if (relativePath.includes('engine') || relativePath.includes('functions/src')) {
+        return false;
+    }
+
+    return (isInDesignDir || isSpecific) && isAllowedExt;
+}
+
+function getFileList(dir, fileList = []) {
+    const files = fs.readdirSync(dir);
+
+    files.forEach(file => {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+
+        if (stat.isDirectory()) {
+            if (file !== 'node_modules' && !file.startsWith('.')) {
+                getFileList(filePath, fileList);
+            }
+        } else {
+            if (isDesignRelated(filePath)) {
+                fileList.push(filePath);
+            }
+        }
+    });
+
+    return fileList;
+}
+
+function generateDesignMarkdown() {
+    console.log(`🎨 Gathering design-related code from: ${PROJECT_ROOT}`);
+    const files = getFileList(PROJECT_ROOT);
+    console.log(`✨ Found ${files.length} design-related files.`);
+
+    ensureDir(OUTPUT_DIR);
+
+    let content = `# MYUNGRI: The Genesis - Full Design Code Documentation\n`;
+    content += `Generated on: ${new Date().toLocaleString()}\n\n`;
+    content += `> [!NOTE]\n`;
+    content += `> This document contains all CSS, UI Components, Layouts, and Design Tokens.\n\n---\n`;
+
+    for (const filePath of files) {
+        const relativePath = path.relative(PROJECT_ROOT, filePath).replace(/\\/g, '/');
+        try {
+            const fileContent = fs.readFileSync(filePath, 'utf8');
+            const ext = path.extname(filePath).substring(1) || 'text';
+
+            content += `\n## File: ${relativePath}\n\n`;
+            content += `\`\`\`${ext}\n${fileContent}\n\`\`\`\n\n---\n`;
+        } catch (err) {
+            console.error(`❌ Error reading ${relativePath}:`, err.message);
+        }
+    }
+
+    fs.writeFileSync(OUTPUT_FILE, content, 'utf8');
+    console.log(`✅ Success! Design documentation created at: ${OUTPUT_FILE}`);
+}
+
+generateDesignMarkdown();
 
 ```
 
@@ -1576,7 +1971,7 @@ runVerification();
 ## File: src/App.tsx
 
 ```tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { PaperBackground } from './components/layout/PaperBackground';
 import { Header } from './components/layout/Header';
@@ -1587,9 +1982,42 @@ import { Processing } from './pages/Processing';
 import { Report } from './pages/Report';
 import styles from './App.module.css';
 import { Footer } from './components/layout/Footer';
+import { isAppCheckReady, appCheckError as libAppCheckError, firebaseConfigError } from './lib/firebase';
+import { SecurityShield } from './components/system/SecurityShield';
 
 function App() {
   const [showHome, setShowHome] = useState(false);
+  const [appCheckTimeout, setAppCheckTimeout] = useState(false);
+
+  // [Zero Tolerance] Initializing UI Timeout (Prevent hanging)
+  useEffect(() => {
+    if (import.meta.env.PROD && !isAppCheckReady && !libAppCheckError && !firebaseConfigError) {
+      const timer = setTimeout(() => {
+        setAppCheckTimeout(true);
+      }, 5000); // 5s Limit
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const effectiveAppCheckError = libAppCheckError || (appCheckTimeout ? "APPCHECK_TIMEOUT" : null);
+
+  // [Zero Tolerance] Security Gate: Block on config error or initialization failure
+  if (import.meta.env.PROD) {
+    if (firebaseConfigError || effectiveAppCheckError) {
+      return <SecurityShield reason={firebaseConfigError || effectiveAppCheckError} />;
+    }
+
+    if (!isAppCheckReady) {
+      return (
+        <div style={{
+          height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'var(--bg-main)', color: 'var(--muted)', fontSize: '0.9rem'
+        }}>
+          Security Initializing...
+        </div>
+      );
+    }
+  }
 
   return (
     <PaperBackground>
@@ -2295,6 +2723,88 @@ export const ShareActions: React.FC<ShareActionsProps> = ({
                 </div>
             )}
         </div>
+    );
+};
+
+```
+
+---
+
+## File: src/components/system/SecurityShield.tsx
+
+```tsx
+import React from 'react';
+import { PaperBackground } from '../layout/PaperBackground';
+import { Footer } from '../layout/Footer';
+
+interface SecurityShieldProps {
+    reason: string | null;
+}
+
+export const SecurityShield: React.FC<SecurityShieldProps> = ({ reason }) => {
+    return (
+        <PaperBackground>
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100vh',
+                textAlign: 'center',
+                padding: '2rem',
+                fontFamily: 'var(--font-sans)',
+                background: 'rgba(0,0,0,0.02)'
+            }}>
+                <div style={{
+                    fontSize: '3rem',
+                    marginBottom: '1.5rem',
+                    filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.3))'
+                }}>
+                    🛡️
+                </div>
+                <h1 style={{
+                    color: 'var(--accent)',
+                    marginBottom: '1rem',
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 900,
+                    letterSpacing: '0.1em'
+                }}>
+                    SECURITY SHIELD ACTIVE
+                </h1>
+                <p style={{
+                    color: 'var(--text-main)',
+                    fontSize: '1rem',
+                    lineHeight: '1.8',
+                    maxWidth: '400px',
+                    wordBreak: 'keep-all'
+                }}>
+                    {reason === "MISSING_FIREBASE_CONFIG"
+                        ? "Vite 빌드 타임에 필수 Firebase 설정(Project ID 등)이 주입되지 않아 앱 실행이 원천 차단되었습니다."
+                        : "이 빌드에 필수 보안 설정(reCAPTCHA Site Key)이 누락되어 배포 및 API 호출이 원격 차단되었습니다."
+                    }
+                </p>
+                <div style={{
+                    marginTop: '2rem',
+                    padding: '1rem',
+                    background: 'var(--surface)',
+                    borderRadius: '4px',
+                    fontSize: '0.8rem',
+                    fontFamily: 'monospace',
+                    color: '#e74c3c',
+                    border: '1px solid rgba(231,76,60,0.2)'
+                }}>
+                    ERRORCODE: {reason || "UNKNOWN_SECURITY_FAIL"}
+                </div>
+                <p style={{
+                    marginTop: '1.5rem',
+                    color: 'var(--muted)',
+                    fontSize: '0.8rem'
+                }}>
+                    관리자 가이드에 따라 .env.production.local 설정을 확인하십시오.
+                </p>
+            </div>
+            <Footer />
+        </PaperBackground>
     );
 };
 
@@ -3160,7 +3670,7 @@ export const Home: React.FC = () => {
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../lib/firebase';
+import { functionsInstance as functions } from '../lib/firebase';
 import { Container } from '../components/layout/Container';
 import { Header } from '../components/layout/Header';
 import { TRIVIA_LINES } from '../config/trivia';
@@ -3362,296 +3872,183 @@ export const Processing: React.FC = () => {
 }
 
 .pageNum {
-    font-family: var(--font-sans);
-    font-size: 0.75rem;
-    color: var(--muted);
-    font-weight: 700;
+    background: rgba(198, 40, 40, 0.05);
 }
 
-.pageTitle {
-    font-family: var(--font-sans);
+.navItem .pageNum {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #c62828;
+    width: 20px;
+}
+
+.navItem .pageTitle {
     font-size: 0.85rem;
-    color: var(--ink);
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* 리포트 콘텐츠 스타일 */
 .reportContent {
-    display: flex;
-    flex-direction: column;
-    gap: 4rem;
+    flex: 1;
+    max-width: 860px;
 }
 
-.noticeCard {
-    padding: 1.5rem;
-    background-color: color-mix(in srgb, var(--accent) 5%, transparent);
-    border-left: 4px solid var(--accent);
-    color: var(--ink);
-    font-family: var(--font-sans);
-    font-size: 0.95rem;
+.reportHeader {
+    margin-bottom: 80px;
+    text-align: left;
+}
+
+.mainTitle {
+    font-family: "Noto Serif KR", serif;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+}
+
+.mainSummary {
+    font-size: 1.1rem;
+    color: rgba(0, 0, 0, 0.6);
+    line-height: 1.6;
+    max-width: 600px;
 }
 
 .pageSection {
-    scroll-margin-top: var(--header-height, 6rem);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    break-inside: avoid;
+    margin-bottom: 120px;
+    scroll-margin-top: 40px;
 }
 
 .pageHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 0.5rem;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #1c1c1c;
+    padding-bottom: 8px;
 }
 
 .categoryTag {
-    font-family: var(--font-sans);
     font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
+    font-weight: 800;
     letter-spacing: 0.05em;
+    color: #1c1c1c;
 }
 
 .pageIdentifier {
-    font-family: var(--font-sans);
-    font-size: 0.8rem;
-    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #c62828;
 }
 
 .contentCard {
-    padding: 4rem;
-    min-height: 600px;
+    background: #fdfcf8 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06) !important;
+    padding: 56px !important;
 }
 
 .sectionTitle {
+    font-family: "Noto Serif KR", serif;
     font-size: 2.25rem;
-    margin-bottom: 2rem;
-    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: #1c1c1c;
 }
 
-.sectionContent {
-    font-family: var(--font-serif);
-    font-size: 1.25rem;
-    color: var(--ink);
+.textContent p {
+    margin-bottom: 24px;
     line-height: 1.8;
+    font-size: 1.05rem;
+    color: #333;
+    text-align: justify;
 }
 
-.primitiveBox {
-    margin-top: 3rem;
+.visualBox {
+    border: 2px solid #1c1c1c;
+    padding: 32px;
+    margin: 40px 0;
 }
 
-.formDataSummary {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background-color: color-mix(in srgb, var(--bg) 20%, transparent);
-    border-radius: 4px;
-    font-family: var(--font-sans);
+.visualTitle {
+    font-family: "Noto Serif KR", serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+    color: #1c1c1c;
+}
+
+.placeholder {
+    height: 320px;
+    background: repeating-linear-gradient(45deg,
+            rgba(0, 0, 0, 0.03),
+            rgba(0, 0, 0, 0.03) 10px,
+            transparent 10px,
+            transparent 20px);
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-/* Phase 3-C: Real Calculation Visuals */
-.pillarsGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    margin-top: 3rem;
-    max-width: 600px;
-}
-
-.pillarItem {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
-}
-
-.pillarLabel {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-}
-
-.pillarGanji {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem 1rem;
-    background-color: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    width: 100%;
-}
-
-.pillarGanji .stem {
-    font-family: var(--font-serif);
-    font-size: 2rem;
-    font-weight: 900;
-    line-height: 1;
-}
-
-.pillarGanji .branch {
-    font-family: var(--font-serif);
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--muted);
-    line-height: 1;
-    margin-top: 0.25rem;
-}
-
-.forensicDetails {
-    margin-top: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-width: 400px;
-    font-family: var(--font-sans);
-}
-
-.forensicRow {
-    display: flex;
-    justify-content: space-between;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--line);
-    font-size: 0.9rem;
-}
-
-.forensicRow .highlight {
-    font-weight: 700;
-    color: var(--accent);
-}
-
-/* 모바일 전용 요소 */
-.mobileNavTrigger {
-    display: none;
-    position: sticky;
-    top: 5rem;
-    z-index: 5;
-    width: 100%;
-    padding: 1rem;
-    background-color: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    font-family: var(--font-sans);
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--ink) 5%, transparent);
-}
-
-/* 인쇄 스타일 */
-@media print {
-    .reportPage {
-        background-color: var(--bg) !important;
-    }
-
-    .mainLayout {
-        display: block !important;
-        padding: 0 !important;
-    }
-
-    .sidebar,
-    .mobileNavTrigger,
-    .closeBtn,
-    .noticeCard {
-        display: none !important;
-    }
-
-    .reportContent {
-        gap: 0 !important;
-    }
-
-    .pageSection {
-        page-break-after: always !important;
-        break-after: page !important;
-        padding: 2cm !important;
-    }
-
-    .contentCard {
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        background: none !important;
-    }
-
-    .disclaimerSection {
-        page-break-before: auto;
-        border-top: 1px solid var(--line) !important;
-        padding-top: 1cm !important;
-    }
-}
-
-/* Disclaimer & Loading Styles */
-.loadingState {
-    display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: 50vh;
-    color: var(--ink-dim);
-    font-size: var(--font-sm);
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.4);
+    border: 1px dashed rgba(0, 0, 0, 0.1);
 }
 
 .disclaimerSection {
-    margin-top: calc(var(--space-xl) * 2);
-    padding: var(--space-lg);
-    border-top: 1px solid var(--line);
-    color: var(--ink-dim);
-    font-size: var(--font-xs);
+    margin-top: 120px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.disclaimerSection p {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
     line-height: 1.6;
-    text-align: center;
 }
 
 .disclaimerEn {
-    margin-top: var(--space-xs);
-    opacity: 0.7;
+    font-size: 0.75rem !important;
     font-style: italic;
 }
 
-/* 반응형 스타일 */
-@media (max-width: 1024px) {
-    .mainLayout {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
+.mobileNavTrigger {
+    display: none;
+}
 
+@media (max-width: 1024px) {
     .sidebar {
-        position: fixed;
-        top: 0;
-        left: -100%;
-        width: 80%;
-        height: 100vh;
-        transition: left 0.3s ease;
-        border-radius: 0;
-        box-shadow: 20px 0 50px color-mix(in srgb, var(--ink) 30%, transparent);
+        display: none;
     }
 
     .sidebarOpen {
+        display: flex;
+        position: fixed;
         left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background: #f7f5f0;
     }
 
-    .closeBtn,
     .mobileNavTrigger {
         display: block;
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 900;
+        background: #1c1c1c;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 40px;
+        font-weight: 700;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
-    .contentCard {
-        padding: 2.5rem 1.5rem;
-        min-height: auto;
-    }
-
-    .sectionTitle {
-        font-size: 1.75rem;
-    }
-
-    .pillarsGrid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+    .mainTitle {
+        font-size: 2.25rem;
     }
 }
 
@@ -3676,13 +4073,10 @@ export const Processing: React.FC = () => {
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { dbInstance as db } from '../lib/firebase';
 import { Container } from '../components/layout/Container';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
-import { ContextBox } from '../components/ui/ContextBox';
-import { AdviceBox } from '../components/ui/AdviceBox';
-import { REPORT_SECTIONS as FALLBACK_SECTIONS } from '../config/reportTemplate';
 import { ShareActions } from '../components/share/ShareActions';
 import styles from './Report.module.css';
 
@@ -3692,6 +4086,45 @@ import styles from './Report.module.css';
  * 2. 렌더링: 서버 제공 섹션 기반 동적 리스트 구성
  * 3. INDEX: 렌더링된 섹션에 맞춰 자동 갱신
  */
+/**
+ * System Audit Report Components
+ */
+function GenesisCodeVisual() {
+    return (
+        <div className={styles.visualBox}>
+            <p className={styles.visualTitle}>Genesis Architecture Diagram</p>
+            <div className={styles.placeholder}>[사주 원국 회로도 시각화 영역]</div>
+        </div>
+    );
+}
+
+
+function BalanceRadarVisual() {
+    return (
+        <div className={styles.visualBox}>
+            <p className={styles.visualTitle}>Energy Balance Radar</p>
+            <div className={styles.placeholder}>[오행 레이더 차트 영역]</div>
+        </div>
+    );
+}
+
+
+/**
+ * Data Hardening Helpers
+ */
+const normalizeSection = (s: any) => {
+    const id = typeof s?.id === 'string' ? s.id : String(s?.id ?? "");
+    const title = typeof s?.title === 'string' ? s.title : String(s?.title ?? "");
+    const content = typeof s?.content === 'string' ? s.content : String(s?.content ?? "");
+    const category = typeof s?.category === 'string' ? s.category : "ANALYSIS";
+    return { ...s, id, title, content, category };
+};
+
+const normalizeSections = (input: any) => {
+    const arr = Array.isArray(input) ? input : [];
+    return arr.map(normalizeSection);
+};
+
 export const Report: React.FC = () => {
     const { reportId } = useParams<{ reportId: string }>();
     const navigate = useNavigate();
@@ -3739,15 +4172,12 @@ export const Report: React.FC = () => {
         return () => mediaQuery.removeEventListener('change', handler);
     }, []);
 
-    // [D3] 동적 섹션 구성 (서버 데이터 우선, 없으면 템플릿 Fallback)
+    // [D3] 동적 섹션 구성 (정규화 적용)
     const activeSections = useMemo(() => {
-        if (reportData?.sections && Array.isArray(reportData.sections)) {
-            return reportData.sections;
-        }
-        return FALLBACK_SECTIONS;
+        return normalizeSections(reportData?.sections);
     }, [reportData]);
 
-    const scrollToSection = useCallback((id: number) => {
+    const scrollToSection = useCallback((id: string) => {
         const element = document.getElementById(`page-${id}`);
         if (element) {
             element.scrollIntoView({
@@ -3770,9 +4200,6 @@ export const Report: React.FC = () => {
         );
     }
 
-    const inputData = reportData?.input;
-    const calc = reportData?.calculation;
-
     return (
         <div className={styles.reportPage}>
             <Header lockupDisplay="en_name" />
@@ -3781,7 +4208,7 @@ export const Report: React.FC = () => {
                 {/* 동적 INDEX 사이드바 */}
                 <aside className={`${styles.sidebar} ${isMenuOpen ? styles.sidebarOpen : ''}`}>
                     <div className={styles.sidebarHeader}>
-                        <h3>INDEX</h3>
+                        <h3>AUDIT INDEX</h3>
                         <button className={styles.closeBtn} onClick={() => setIsMenuOpen(false)}>✕</button>
                     </div>
                     <nav className={styles.nav}>
@@ -3791,7 +4218,9 @@ export const Report: React.FC = () => {
                                 className={styles.navItem}
                                 onClick={() => scrollToSection(section.id)}
                             >
-                                <span className={styles.pageNum}>{String(section.id).padStart(2, '0')}</span>
+                                <span className={styles.pageNum}>
+                                    {section.id.includes('_') ? section.id.split('_')[0] : '??'}
+                                </span>
                                 <span className={styles.pageTitle}>{section.title}</span>
                             </button>
                         ))}
@@ -3803,131 +4232,46 @@ export const Report: React.FC = () => {
                 </button>
 
                 <main className={styles.reportContent}>
+                    <header className={styles.reportHeader}>
+                        <h1 className={styles.mainTitle}>
+                            {reportData?.reportMeta?.title || "SYSTEM AUDIT v5.0"}
+                        </h1>
+                        <p className={styles.mainSummary}>{reportData?.reportMeta?.summary}</p>
+                    </header>
+
                     <ShareActions />
 
-                    {activeSections.map((section: any) => {
-                        // [Stability Patch #1] UI Rendering Defense: Section.type 정규화
-                        const allowedTypes = ["analysis", "action", "context"];
-                        const normalizedType = allowedTypes.includes(section.type) ? section.type : "context";
+                    {activeSections.map((section: any) => (
+                        <section
+                            key={section.id}
+                            id={`page-${section.id}`}
+                            className={styles.pageSection}
+                        >
+                            <div className={styles.pageHeader}>
+                                <span className={styles.categoryTag}>{section.category}</span>
+                                <span className={styles.pageIdentifier}>ID: {section.id}</span>
+                            </div>
 
-                        return (
-                            <section
-                                key={section.id}
-                                id={`page-${section.id}`}
-                                className={`${styles.pageSection} ${styles[`type-${normalizedType}`]}`}
-                            >
-                                <div className={styles.pageHeader}>
-                                    <span className={styles.categoryTag}>{section.category}</span>
-                                    <span className={styles.pageIdentifier}>P. {section.id}</span>
-                                </div>
+                            <Card className={styles.contentCard}>
+                                <h2 className={styles.sectionTitle}>{section.title}</h2>
 
-                                <Card className={styles.contentCard}>
-                                    <h2 className={styles.sectionTitle}>{section.title}</h2>
-                                    <p className={styles.sectionContent}>{section.content}</p>
+                                {section.id === "02_code" && <GenesisCodeVisual />}
+                                {section.id === "07_balance" && <BalanceRadarVisual />}
 
-                                    {normalizedType === 'analysis' && (
-                                        <ContextBox className={styles.primitiveBox}>
-                                            지정된 알고리즘({reportData?.algorithmVersion || 'v1.0'})에 기반한 패턴 결과입니다.
-                                        </ContextBox>
-                                    )}
-
-                                    {normalizedType === 'action' && (
-                                        <AdviceBox className={styles.primitiveBox}>
-                                            사용자의 주도적 의사결정을 지원하기 위한 전략 제안입니다.
-                                        </AdviceBox>
-                                    )}
-
-                                    {/* [Phase 3-C] Pillars Display in Section 2 or 3 */}
-                                    {section.id === 2 && calc?.pillars && (
-                                        <div className={styles.pillarsGrid}>
-                                            <div className={styles.pillarItem}>
-                                                <span className={styles.pillarLabel}>HOUR</span>
-                                                <div className={styles.pillarGanji}>
-                                                    <span className={styles.stem}>{calc.pillars.hour?.stem || '?'}</span>
-                                                    <span className={styles.branch}>{calc.pillars.hour?.branch || '?'}</span>
-                                                </div>
-                                            </div>
-                                            <div className={styles.pillarItem}>
-                                                <span className={styles.pillarLabel}>DAY</span>
-                                                <div className={styles.pillarGanji}>
-                                                    <span className={styles.stem}>{calc.pillars.day?.stem || '?'}</span>
-                                                    <span className={styles.branch}>{calc.pillars.day?.branch || '?'}</span>
-                                                </div>
-                                            </div>
-                                            <div className={styles.pillarItem}>
-                                                <span className={styles.pillarLabel}>MONTH</span>
-                                                {(calc?.pillars?.month?.label === 'UNKNOWN' || !calc?.pillars?.month?.label || calc?.pillars?.month?.stem === '?') ? (
-                                                    <div className={styles.pillarUnknown}>
-                                                        <span className={styles.unknownLabel}>UNKNOWN</span>
-                                                        <span className={styles.unknownHint}>윤달 월주 미제공</span>
-                                                    </div>
-                                                ) : (
-                                                    <div className={styles.pillarGanji}>
-                                                        <span className={styles.stem}>{calc.pillars.month.stem}</span>
-                                                        <span className={styles.branch}>{calc.pillars.month.branch}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className={styles.pillarItem}>
-                                                <span className={styles.pillarLabel}>YEAR</span>
-                                                <div className={styles.pillarGanji}>
-                                                    <span className={styles.stem}>{calc.pillars.year?.stem || '?'}</span>
-                                                    <span className={styles.branch}>{calc.pillars.year?.branch || '?'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {section.id === 3 && inputData && (
-                                        <div className={styles.formDataSummary}>
-                                            <p><strong>BIRTH:</strong> {inputData.birthDate} {inputData.calendar === 'lunar' ? `(음력${inputData.isLeapMonth ? ' 윤달' : ''})` : '(양력)'}</p>
-                                            <p><strong>SEX:</strong> {inputData.sex === 'male' ? '남성' : '여성'}</p>
-                                            <p><strong>NORMALIZED:</strong> {calc?.normalization?.solarDate || 'N/A'} (Solar)</p>
-                                        </div>
-                                    )}
-
-                                    {/* [Phase 3-C] Forensic Time Display in Section 5 */}
-                                    {section.id === 5 && calc?.forensicTime && (
-                                        <div className={styles.forensicDetails}>
-                                            <div className={styles.forensicRow}>
-                                                <span>Local Clock</span>
-                                                <span>{calc.forensicTime.localTime || 'N/A'}</span>
-                                            </div>
-                                            <div className={styles.forensicRow}>
-                                                <span>EoT + Longitude Offset</span>
-                                                <span>{calc.forensicTime.totalOffsetMin ?? '0'}m</span>
-                                            </div>
-                                            <div className={styles.forensicRow}>
-                                                <span>True Solar Time</span>
-                                                <span className={styles.highlight}>{calc.forensicTime.trueSolarHHmm || 'N/A'}</span>
-                                            </div>
-                                            <div className={styles.forensicRow}>
-                                                <span>Classification</span>
-                                                <span>{calc.forensicTime.classification || '일반'}</span>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Warnings Display */}
-                                    {section.id === 12 && calc?.warnings?.length > 0 && (
-                                        <div className={styles.primitiveBox}>
-                                            <AdviceBox>
-                                                <ul style={{ paddingLeft: '1.2rem', margin: 0 }}>
-                                                    {calc.warnings.map((msg: string, i: number) => (
-                                                        <li key={i} style={{ fontSize: '0.9rem' }}>{msg}</li>
-                                                    ))}
-                                                </ul>
-                                            </AdviceBox>
-                                        </div>
-                                    )}
-                                </Card>
-                            </section>
-                        );
-                    })}
+                                {section.id !== "02_code" && section.id !== "07_balance" && (
+                                    <div className={styles.textContent}>
+                                        {section.content.split('\n').map((p: string, i: number) => (
+                                            p.trim() ? <p key={i}>{p}</p> : <br key={i} />
+                                        ))}
+                                    </div>
+                                )}
+                            </Card>
+                        </section>
+                    ))}
 
                     <footer className={styles.disclaimerSection}>
-                        <p>{reportData?.reportMeta?.strategistMeta?.disclaimer || "본 리포트는 통계적 패턴 기반의 제안이며 모든 선택의 책임은 사용자에게 있습니다."}</p>
-                        <p className={styles.disclaimerEn}>This report provides data-informed patterns. Final interpretation and decisions remain the user’s responsibility.</p>
+                        <p>{reportData?.reportMeta?.strategistMeta?.disclaimer}</p>
+                        <p className={styles.disclaimerEn}>This audit provided by Genesis Master interprets human behavior through systemic metaphors. Final operational decisions rest with the user.</p>
                     </footer>
                 </main>
             </Container>
@@ -4134,9 +4478,11 @@ import { useNavigate } from 'react-router-dom';
 import { Container } from '../components/layout/Container';
 import { Card } from '../components/ui/Card';
 import { Header } from '../components/layout/Header';
+import { detectScriptType } from '../lib/text';
 import styles from './Start.module.css';
 
 interface FormData {
+    userName: string;
     birthDate: string;
     birthTime: string;
     timeUnknown: boolean;
@@ -4147,6 +4493,7 @@ interface FormData {
 }
 
 interface Errors {
+    userName?: string;
     birthDate?: string;
     sex?: string;
     calendar?: string;
@@ -4155,6 +4502,7 @@ interface Errors {
 export const Start: React.FC = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
+        userName: '',
         birthDate: '',
         birthTime: '',
         timeUnknown: false,
@@ -4178,6 +4526,17 @@ export const Start: React.FC = () => {
 
     const validate = (name?: string) => {
         const newErrors: Errors = { ...errors };
+
+        if (!name || name === 'userName') {
+            const trimmed = formData.userName.trim();
+            if (trimmed.length === 1) {
+                newErrors.userName = '이름은 최소 2자 이상이어야 합니다.';
+            } else if (trimmed.length > 20) {
+                newErrors.userName = '이름은 최대 20자까지 입력 가능합니다.';
+            } else {
+                delete newErrors.userName;
+            }
+        }
 
         if (!name || name === 'birthDate') {
             if (!formData.birthDate) newErrors.birthDate = '생년월일을 선택해주세요.';
@@ -4221,7 +4580,24 @@ export const Start: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (validate()) {
-            navigate('/processing', { state: formData });
+            const trimmedName = formData.userName.trim();
+            const payload: any = {
+                birthDate: formData.birthDate,
+                birthTime: formData.birthTime,
+                timeUnknown: formData.timeUnknown,
+                sex: formData.sex,
+                calendar: formData.calendar,
+                isLeapMonth: formData.isLeapMonth,
+                timezone: formData.timezone
+            };
+
+            // Only include userName and scriptType if name is provided
+            if (trimmedName.length > 0) {
+                payload.userName = trimmedName;
+                payload.scriptType = detectScriptType(trimmedName);
+            }
+
+            navigate('/processing', { state: payload });
         }
     };
 
@@ -4237,6 +4613,24 @@ export const Start: React.FC = () => {
 
                 <Card className={styles.formCard}>
                     <form onSubmit={handleSubmit} className={styles.form}>
+                        {/* Name */}
+                        <div className={styles.field}>
+                            <label htmlFor="userName" className={styles.label}>성명 (한자 권장, 한글 가능)</label>
+                            <input
+                                type="text"
+                                id="userName"
+                                name="userName"
+                                value={formData.userName}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                placeholder="예: 洪吉童 또는 홍길동"
+                                className={`${styles.input} ${touched.userName && errors.userName ? styles.inputError : ''}`}
+                            />
+                            {touched.userName && errors.userName && (
+                                <span className={styles.errorMsg}>{errors.userName}</span>
+                            )}
+                        </div>
+
                         {/* Birth Date */}
                         <div className={styles.field}>
                             <label htmlFor="birthDate" className={styles.label}>생년월일 (필수)</label>

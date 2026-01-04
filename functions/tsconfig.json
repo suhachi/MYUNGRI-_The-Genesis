@@ -12,7 +12,9 @@
         "allowSyntheticDefaultImports": true,
         "lib": [
             "es2020"
-        ]
+        ],
+        "allowJs": true,
+        "checkJs": false
     },
     "compileOnSave": true,
     "include": [

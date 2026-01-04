@@ -1,13 +1,17 @@
 :root {
-  --bg: #EBE7E0;
-  --card: #FDFCF8;
-  --ink: #1C1C1C;
-  --muted: #5A5A5A;
-  --accent: #D9381E;
-  --line: color-mix(in srgb, var(--ink) 12%, transparent);
+  --bg: #F3F0EB;
+  /* Warm Beige (Hanji) */
+  --card: #FFFFFF;
+  --ink: #2C2C2C;
+  /* Ink Black */
+  --muted: #8C8C8C;
+  /* Muted Ink */
+  --accent: #CC3D3D;
+  /* Cinnabar Red (Inju) */
+  --line: rgba(0, 0, 0, 0.1);
 
   --font-serif: "Noto Serif KR", serif;
-  --font-sans: "Noto Sans KR", "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-sans: "Noto Sans KR", "Inter", system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -20,9 +24,38 @@ body {
   background-color: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  line-height: 1.75;
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Paper Texture Background */
+  background-image: url('/assets/paper-noise.png');
+  background-repeat: repeat;
+  background-size: 150px;
+  background-attachment: fixed;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg);
+  z-index: -1;
+}
+
+/* Texture Blend Layer */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('/assets/paper-noise.png');
+  background-repeat: repeat;
+  background-size: 150px;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: -1;
+  background-attachment: fixed;
 }
 
 h1,
@@ -34,6 +67,7 @@ h6 {
   font-family: var(--font-serif);
   font-weight: 700;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 /* BrandLockup Classes */

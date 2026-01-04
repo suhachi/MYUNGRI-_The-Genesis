@@ -1,12 +1,21 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { setGlobalOptions } = require("firebase-functions/v2");
+const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+const { Timestamp } = require("firebase-admin/firestore");
 const { logger } = require("firebase-functions");
+const { OpenAI } = require("openai");
 const { calculateV1 } = require("./engine/calculation/v1");
 
-// [Stability Patch] App Check Visibility
+// Phase 26: Import generateLuckCalendar
+const { generateLuckCalendar } = require("./generateLuckCalendar");
+
+// [Stability Patch] App Check Visibility & Secrets
 const REGION = "asia-northeast3";
+const { computeDeterminismHash } = require("./engine/hash");
 const ENFORCE_APP_CHECK = process.env.FUNCTIONS_EMULATOR !== "true";
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+const { InputSchema } = require("./contracts/input.schema");
 
 setGlobalOptions({ region: REGION });
 admin.initializeApp();
@@ -15,123 +24,307 @@ logger.info(`[System] App Check Enforced: ${ENFORCE_APP_CHECK} (Emulator: ${proc
 
 /**
  * generateReport (Callable Function v2)
- * Phase 3-C: Real Calculation & Rich Section Generation (Hardened)
- * v3.2.1-H: Zero Tolerance Production Patch
+ * Phase 23: OpenAI JSON Mode & Action Plan Integration
+ * v4.1.0-AI-JSON: Zero Tolerance AI Activation
  */
+/**
+ * Phase 25: System Audit Report Structure
+ */
+export const REPORT_STRUCTURE = [
+    { id: "01_intro", title: "제네시스 오버뷰", category: "SUMMARY" },
+    { id: "02_code", title: "제네시스 코드", category: "ARCH" },
+    { id: "03_logic", title: "분석 알고리즘 명세", category: "SPEC" },
+    { id: "04_os", title: "운영체제 타입", category: "SYSTEM" },
+    { id: "05_core", title: "코어 엘리먼트", category: "CORE" },
+    { id: "06_dual", title: "듀얼 프로세서", category: "CORE" },
+    { id: "07_balance", title: "에너지 구조 및 밸런스", category: "RESOURCE" },
+    { id: "08_bug", title: "고질적 버그 리포트", category: "DEBUG" },
+    { id: "09_crash", title: "반복되는 시스템 충돌", category: "DEBUG" },
+    { id: "10_leak", title: "에너지 누수 구간", category: "DEBUG" },
+    { id: "11_defense", title: "방어 기제 및 방화벽", category: "SECURITY" },
+    { id: "12_killer", title: "킬러 애플리케이션", category: "APP" },
+    { id: "13_process", title: "업무 처리 프로세스", category: "APP" },
+    { id: "14_wealth", title: "리소스 할당 전략", category: "STRATEGY" },
+    { id: "15_decision", title: "의사결정 병목 해결", category: "STRATEGY" },
+    { id: "16_social", title: "인터랙션 프로토콜", category: "NETWORK" },
+    { id: "17_love", title: "호환성 검사", category: "NETWORK" },
+    { id: "18_traffic", title: "네트워크 트래픽 관리", category: "NETWORK" },
+    { id: "19_current", title: "현재 시스템 부하", category: "STATUS" },
+    { id: "20_major", title: "업데이트 일정", category: "ROADMAP" },
+    { id: "21_roadmap", title: "단기 패치 노트", category: "ROADMAP" },
+    { id: "22_wave", title: "바이오리듬 및 파동", category: "STATUS" },
+    { id: "23_boost", title: "시스템 부스팅", category: "PATCH" },
+    { id: "24_archive", title: "시스템 아카이브", category: "META" },
+] as const;
+
+/**
+ * Master Myungri – 시스템 감사관 페르소나
+ */
+const SYSTEM_PROMPT = `
+당신은 "Master Myungri", 선임 시스템 감사관(Senior System Auditor)입니다.
+당신은 인간을 하나의 "Human OS"로 분석합니다.
+
+Mandatory rules:
+- 오직 IT/시스템 메타포만 사용하십시오.
+- 일간(Day Master) = CPU/Kernel
+- 운(Fate) = System Traffic
+- 충(Clash) = System Crash
+- 흉신(Demon God) = Malware
+- 용신(Useful God) = Optimization Patch
+- 논리가 먼저이고 결론이 뒤따라야 합니다.
+- 위로나 점술적인 톤은 배제하십시오. 오직 감사 결과에만 집중합니다.
+- 시스템의 버그를 지적하고 구체적인 Action Plan을 제시하십시오.
+- 각 섹션은 반드시 최소 3-4문단으로 구성하십시오. (매우 중요)
+- 섹션 ID와 제목을 변경하지 마십시오.
+- 리포트 전체 분량을 축소하지 마십시오. 총 공백 제외 30,000자 이상의 밀도 높은 분석을 지향합니다.
+- 반드시 유효한 JSON 형식으로만 응답하며, 마크다운 태그 기입은 금지합니다.
+`;
+
+const SCHEMA_VERSION = "report/v6";
+const APP_VERSION = "v6.0.0";
+const SERVER_BUILD_ID = "v6.0.0-LONGFORM";
+
 exports.generateReport = onCall({
-    enforceAppCheck: ENFORCE_APP_CHECK
+    enforceAppCheck: ENFORCE_APP_CHECK,
+    secrets: [OPENAI_API_KEY],
+    timeoutSeconds: 300, // Increase timeout for longer reports
+    memory: "512MiB"
 }, async (request: any) => {
     const rawData = request.data;
 
-    // 1. 입력 검증 (Fail Fast - Hardened)
-    const allowedSex = ["male", "female"];
-    const allowedCalendar = ["solar", "lunar"];
+    // ... (입력 검증 로직 생략되지 않도록 전체 유지 권장되나 prompt 지시에 따라 변경점 집중)
+    // 실제로는 index.ts 전체를 한 번 읽었으므로 정확한 위치에 삽입
 
-    if (!allowedSex.includes(rawData.sex) || !allowedCalendar.includes(rawData.calendar)) {
-        throw new HttpsError("invalid-argument", "지정된 성별 또는 달력 형식이 유효하지 않습니다.");
+    // [Step 4.1 Implementation]
+    // ... (기존 검증 로직 이후)
+
+
+    // 1. 입력 검증 (Fail Fast - Hardened via Contract)
+    const parseResult = InputSchema.safeParse(rawData);
+
+    if (!parseResult.success) {
+        const errorDetails = parseResult.error.errors.map((e: any) => e.message).join(", ");
+        throw new HttpsError("invalid-argument", `입력 데이터 검증 실패: ${errorDetails}`, parseResult.error.format());
     }
 
-    if (rawData.calendar === "lunar" && typeof rawData.isLeapMonth !== "boolean") {
-        throw new HttpsError("invalid-argument", "음력 선택 시 윤달 여부(isLeapMonth)를 반드시 boolean 값으로 지정해야 합니다.");
-    }
+    const { sanitizeUserName } = require("./shared/nameSanitize");
 
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(rawData.birthDate)) {
-        throw new HttpsError("invalid-argument", "생년월일 형식이 올바르지 않습니다 (YYYY-MM-DD).");
-    }
+    // ... (Input Validation) ...
 
-    const birthYear = parseInt(rawData.birthDate.split('-')[0]);
-    if (birthYear < 1890 || birthYear > 2050) {
-        throw new HttpsError("invalid-argument", "분석 가능한 연도 범위를 벗어났습니다 (1890년 ~ 2050년 지원).");
-    }
+    const validInput = parseResult.data;
 
-    const timeUnknown = !!rawData.timeUnknown;
-    let birthTime = null;
-    if (!timeUnknown) {
-        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-        if (!rawData.birthTime || !timeRegex.test(rawData.birthTime)) {
-            throw new HttpsError("invalid-argument", "출생 시간 형식이 올바르지 않습니다 (HH:mm).");
+    // Optional userName and scriptType logic (Legacy compat or handling derived fields)
+    let userName: string | undefined = validInput.userName;
+    let scriptType: 'hanja' | 'hangul' | 'unknown' | undefined;
+
+    if (userName) {
+        // [ATOMIC-03] Enforce Shared Sanitization (No length blocking)
+        userName = sanitizeUserName(userName).trim();
+
+        if (/\p{Script=Han}/u.test(userName)) {
+            scriptType = 'hanja';
+        } else if (/\p{Script=Hangul}/u.test(userName)) {
+            scriptType = 'hangul';
+        } else {
+            scriptType = 'unknown';
         }
-        birthTime = rawData.birthTime;
     }
 
-    // [Step B] Strict isLeapMonth enforcement for Solar
-    const normalizedIsLeapMonth = rawData.calendar === "solar" ? false : !!rawData.isLeapMonth;
+    // Birth time calculation if exists
+    let birthTime = null;
+    if (!validInput.timeUnknown && validInput.birthTime) {
+        birthTime = validInput.birthTime;
+    }
 
-    const input = {
-        birthDate: rawData.birthDate,
+    // Prepare Calculation Input
+    const input: any = {
+        birthDate: validInput.birthDate,
         birthTime: birthTime,
-        timeUnknown: timeUnknown,
-        sex: rawData.sex,
-        calendar: rawData.calendar,
-        isLeapMonth: normalizedIsLeapMonth,
-        timezone: "Asia/Seoul"
+        timeUnknown: validInput.timeUnknown,
+        sex: validInput.sex,
+        calendar: validInput.calendar,
+        isLeapMonth: validInput.isLeapMonth || false,
+        timezone: validInput.timezone
     };
 
+    if (userName) {
+        input.userName = userName;
+        input.scriptType = scriptType;
+    }
+
     try {
-        // 2. 실계산 실행 (Hardened Engine v1.2)
+        // 2. 사주 실계산 실행
         const calculation = calculateV1(input);
-        const { pillars, forensicTime } = calculation;
+        const { pillars } = calculation;
 
-        // 3. 리포트 섹션 생성 (12개 섹션 고도화)
-        const sections = [
-            { id: 1, title: "GENESIS OVERVIEW", category: "SUMMARY", type: "intro", content: `당신의 고유한 생체 시간적 좌표를 확인했습니다. ${calculation.normalization.solarDate} (True Solar)를 기점으로 분석을 시작합니다.` },
-            { id: 2, title: "THE ARCHETYPE", category: "PILLARS", type: "analysis", content: `당신의 근원적 에너지는 [${pillars.year.label} ${pillars.month.label} ${pillars.day.label}]의 구조를 가집니다.` },
-            { id: 3, title: "CORE ELEMENT: DAY STEM", category: "ANALYSIS", type: "analysis", content: `나를 상징하는 일간(日干)은 '${pillars.day.stem}'입니다. 이는 당신의 본질적인 성향과 가치관의 핵심 엔진입니다.` },
-            { id: 4, title: "TEMPORAL FREQUENCY", category: "ANALYSIS", type: "analysis", content: `태어난 월(${pillars.month.branch})은 당신이 속한 환경의 계절적 압력과 사회적 지향점을 의미합니다.` },
-            {
-                id: 5, title: "TEMPORAL PRECISION", category: "FORENSIC", type: "context", content: forensicTime
-                    ? `현지시각(${forensicTime.localTime})에 진태양시 정정 ${forensicTime.totalOffsetMin}분을 적용하여 '${forensicTime.classification}'로 특정했습니다.`
-                    : "시간 미정 상태로, 일간 중심의 분석을 수행합니다."
-            },
-            { id: 6, title: "ENERGY DYNAMICS", category: "PRACTICAL", type: "analysis", content: "각 요소들 간의 상호작용을 통해 사회적 성취와 개인적 만족의 균형 패턴을 분석합니다." },
-            { id: 7, title: "STRATEGIC BEHAVIOR", category: "BEHAVIOR", type: "action", content: "당신의 패턴은 선제적 대응보다는 상황의 흐름을 파악하고 최적의 시점에 개입하는 전략에 최적화되어 있습니다." },
-            { id: 8, title: "DECISION-MAKING STYLE", category: "BEHAVIOR", type: "action", content: "중요한 경계선에서는 직관보다 데이터와 과거의 경험적 패턴을 신뢰하는 것이 리스크를 최소화합니다." },
-            { id: 9, title: "RESOURCE ALLOCATION", category: "ACTION", type: "action", content: "현재의 에너지 구조에서는 단기적 성과보다 장기적 시스템 구축에 자원을 집중하는 것이 유리합니다." },
-            { id: 10, title: "RISK MANAGEMENT", category: "ACTION", type: "action", content: "불확실성이 높은 환경에서는 고정된 계획보다 유연한 대응 시나리오를 여러 개 준비하는 전략이 권장됩니다." },
-            { id: 11, title: "PROBABILISTIC FUTURE", category: "ACTION", type: "action", content: "통계적으로 유사한 에너지 패턴을 가진 군집에서는 특정 변곡점에서 시스템적 확장이 일어나는 경향을 보입니다." },
-            { id: 12, title: "SYSTEM ARCHIVE", category: "META", type: "context", content: `Algorithm: ${calculation.algorithmVersion} | Schema: ${calculation.schemaVersion} | Forensic standard applied.` }
-        ];
-
-        // 4. 리포트 데이터 영구 보관 (D3)
-        const reportData = {
-            createdAt: admin.firestore.Timestamp.now(),
-            version: "v3.2.1-H",
-            schemaVersion: "report/v1",
+        // [Phase 0] Determinism Hash
+        const determinismPayload = {
             algorithmVersion: calculation.algorithmVersion,
-            input: input,
-            calculation: calculation,
-            reportMeta: {
-                title: "GENESIS ANALYSIS v1.2",
-                summary: "포렌식 시간 보정 및 정규화 간지 기반의 정밀 패턴 분석 결과입니다.",
-                strategistMeta: {
-                    disclaimer: "본 분석은 과학적 보정 공식을 적용한 통계적 제언이며, 실제 삶의 현장에서의 최종 선택은 사용자의 주도적 의지가 결정합니다."
+            normalization: calculation.normalization,
+            pillars: calculation.pillars,
+            forensicTime: calculation.forensicTime
+        };
+        const determinismHash = computeDeterminismHash(determinismPayload);
+
+        // 3. OpenAI 해석 엔진 가동 (gpt-4o)
+        const openai = new OpenAI({
+            apiKey: OPENAI_API_KEY.value(),
+        });
+
+        const modelName = "gpt-4o";
+
+        // [Phase 28: Per-section Segmented Generation]
+        async function generateOneSection(sectionMeta: any, attempt = 1): Promise<any> {
+            const sectionPrompt = `
+섹션 ID: ${sectionMeta.id}
+섹션 제목: ${sectionMeta.title}
+섹션 카테고리: ${sectionMeta.category}
+
+위 섹션에 대해 시스템 감사 보고서를 작성하십시오.
+반드시 아래 JSON 구조를 지키고, 각 필드의 최소 길이를 준수하십시오.
+
+필수 규칙:
+1. result: 핵심 결론 (최소 400자)
+2. explain: 논리적 근거 (최소 600자)
+3. interpretation: 현실적 행동 지침 (최소 400자)
+4. reasonCards: 최소 2개 이상의 객체 배열
+
+IT/시스템 메타포만 사용하고, 한국어로만 작성하십시오.
+`;
+
+            try {
+                const secCompletion = await openai.chat.completions.create({
+                    model: modelName,
+                    messages: [
+                        { role: "system", content: SYSTEM_PROMPT },
+                        {
+                            role: "user",
+                            content: `INPUT DATA:\n${JSON.stringify({
+                                userName: userName || "Anonymous",
+                                pillars,
+                                dayStem: pillars.day.stem,
+                                sex: rawData.sex,
+                                solarDate: calculation.normalization.solarDate
+                            })}\n\nTASK:\n${sectionPrompt}`
+                        }
+                    ],
+                    response_format: { type: "json_object" },
+                    temperature: 0.3,
+                });
+
+                const content = JSON.parse(secCompletion.choices[0]?.message?.content || "{}");
+
+                // Quality Gate: Length check
+                const rLen = (content.result || "").length;
+                const eLen = (content.explain || "").length;
+                const iLen = (content.interpretation || "").length;
+
+                if (attempt < 2 && (rLen < 300 || eLen < 450 || iLen < 300)) {
+                    logger.warn(`[QualityGate] Section ${sectionMeta.id} too short (R:${rLen}, E:${eLen}, I:${iLen}). Retrying...`);
+                    return generateOneSection(sectionMeta, attempt + 1);
                 }
+
+                return {
+                    ...content,
+                    id: sectionMeta.id,
+                    title: sectionMeta.title,
+                    category: sectionMeta.category,
+                    quality: { rLen, eLen, iLen, attempt }
+                };
+            } catch (secErr: any) {
+                logger.error(`[AI-Section] Error in ${sectionMeta.id}:`, secErr);
+                return {
+                    id: sectionMeta.id,
+                    title: sectionMeta.title,
+                    category: sectionMeta.category,
+                    result: "데이터를 생성하는 중 시간 초과 또는 오류가 발생했습니다.",
+                    explain: "시스템 가동 중 일시적인 부하가 감지되었습니다. 재생성을 권장합니다.",
+                    interpretation: "재시도 버튼을 통해 다시 감사해 주십시오.",
+                    reasonCards: [],
+                    error: secErr.message
+                };
+            }
+        }
+
+        // 24개 섹션 순차 생성 (토큰 및 품질 확보)
+        const sections: any[] = [];
+        let totalChars = 0;
+
+        for (const meta of REPORT_STRUCTURE) {
+            // 24_archive는 별도 처리
+            if (meta.id === "24_archive") {
+                sections.push({
+                    id: meta.id,
+                    title: meta.title,
+                    category: meta.category,
+                    result: `Algorithm: ${calculation.algorithmVersion}`,
+                    explain: `Model: ${modelName}\nEngine: ${SERVER_BUILD_ID}\nSchema: ${SCHEMA_VERSION}`,
+                    interpretation: `본 리포트는 섹션별 정밀 감수가 적용된 고밀도 분석 보고서(Phase 28)입니다.`,
+                    reasonCards: [],
+                    type: "analysis"
+                });
+                continue;
+            }
+
+            const secData = await generateOneSection(meta);
+            sections.push({
+                ...secData,
+                type: (meta.id === "01_intro") ? "intro" : "analysis"
+            });
+            totalChars += (secData.result?.length || 0) + (secData.explain?.length || 0) + (secData.interpretation?.length || 0);
+            logger.info(`[Progress] Generated Section: ${meta.id} (Total so far: ${totalChars} chars)`);
+        }
+
+        // 5. Build reportMeta
+        const reportMeta = {
+            title: userName ? `${userName} 님의 SYSTEM AUDIT v5.0` : "SYSTEM AUDIT v5.0",
+            userName: userName,
+            summary: "섹션별 순차 감수가 완료된 고품질 Human OS 인티그리티 리포트입니다.",
+            determinismHash: determinismHash, // [P0-ATOMIC-003]
+            strategistMeta: {
+                disclaimer: "본 감사 보고서는 시스템적 패턴 분석이며, 최종적인 기동 결정은 운영자 본인에게 있습니다."
+            }
+        };
+
+        // 6. 리포트 데이터 영구 보관
+        const reportData = {
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+            userId: request.auth?.uid || "anonymous",
+            version: APP_VERSION,
+            schemaVersion: SCHEMA_VERSION,
+            serverBuildId: SERVER_BUILD_ID,
+            algorithmVersion: "Genesis-V6.0-SEGMENTED",
+            model: modelName,
+            qualityMetrics: {
+                totalChars,
+                sectionCount: sections.length,
+                timestamp: new Date().toISOString()
             },
-            sections: sections
+            input: input,
+            calculation: {
+                ...calculation,
+                forensicTime: (calculation as any).forensicTime ?? null
+            },
+            reportMeta,
+            sections: sections,
+            tableOfContents: REPORT_STRUCTURE.map(meta => ({ id: meta.id, title: meta.title }))
         };
 
         const reportRef = await admin.firestore().collection("reports").add(reportData);
 
         return {
             reportId: reportRef.id,
-            version: reportData.version,
-            schemaVersion: reportData.schemaVersion,
-            algorithmVersion: reportData.algorithmVersion
+            totalChars,
+            sections: sections.map(s => ({ id: s.id, result: s.result ? "OK" : "MISSING" }))
         };
 
-    } catch (error: any) {
-        logger.error("Report Generation Error:", error);
-        if (error instanceof HttpsError) throw error;
-
-        const msg = error.message || "";
-        // [Step B] Error classification for friendly invalid-argument fallback
-        if (msg.includes("range") ||
-            msg.includes("KOR_LUNAR_EXPORT_MISSING:") ||
-            msg.includes("KOR_LUNAR_CONVERT_FAILED:")) {
-            throw new HttpsError("invalid-argument", `입력 데이터 또는 엔진 설정 오류: ${msg}`);
-        }
-
-        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${msg || 'Unknown'}`);
+    } catch (err: any) {
+        logger.error("Report Generation Error:", err);
+        if (err instanceof HttpsError) throw err;
+        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${err.message || 'LLM_INTERPRETATION_FAILED'}`);
     }
 });
+
+// Phase 26: Export generateLuckCalendar
+exports.generateLuckCalendar = generateLuckCalendar;

@@ -3,7 +3,6 @@ import { Container } from '../components/layout/Container';
 import { Card } from '../components/ui/Card';
 import { ContextBox } from '../components/ui/ContextBox';
 import { AdviceBox } from '../components/ui/AdviceBox';
-import { BrandLockup } from '../components/common/BrandLockup';
 import { Link } from 'react-router-dom';
 import styles from './Home.module.css';
 
@@ -14,7 +13,7 @@ export const Home: React.FC = () => {
             <section className={styles.hero}>
                 <Container className={styles.heroGrid}>
                     <div className={styles.heroContent}>
-                        <BrandLockup display="kr_lockup" variant="accent" as="h1" className={styles.heroTitle} />
+                        <h1 className={styles.heroTitle}>命理: The Genesis</h1>
                         <p className={styles.heroSubtitle}>
                             현대적 유산과 초원자 단위 데이터 분석의 만남.<br />
                             명리: 제네시스를 통해 당신의 내일과 소통하십시오.
@@ -26,6 +25,15 @@ export const Home: React.FC = () => {
                     </div>
 
                     <div className={styles.heroVisual}>
+                        <div className={styles.astrolabeContainer}>
+                            <svg className={styles.astrolabeSvg} viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="48" />
+                                <circle cx="50" cy="50" r="30" />
+                                <path d="M50 2 L50 98 M2 50 L98 50" />
+                                <path d="M15 15 L85 85 M85 15 L15 85" />
+                                <circle cx="50" cy="50" r="10" />
+                            </svg>
+                        </div>
                         <div className={styles.kanjiWatermark}>命</div>
                         <Card className={styles.principleCard} hasAccentBar>
                             <h3 className={styles.cardTitle}>서비스 원칙</h3>

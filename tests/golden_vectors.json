@@ -1,0 +1,137 @@
+[
+    {
+        "id": "VEC-001",
+        "desc": "Solar, Male, Time Known (Standard)",
+        "input": {
+            "birthDate": "1990-05-15",
+            "birthTime": "14:30",
+            "timeUnknown": false,
+            "sex": "male",
+            "calendar": "solar",
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "629adcf9baa2c0fe5dd700aa0e98b0bc6e1d2dba0453fa07e59cb7c2161380a8"
+    },
+    {
+        "id": "VEC-002",
+        "desc": "Solar, Female, Time Unknown",
+        "input": {
+            "birthDate": "1985-11-20",
+            "timeUnknown": true,
+            "sex": "female",
+            "calendar": "solar",
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "ffe92567ec25e99ef39777816923629ace3f8eadb715e66b3f77dcd91d9a791f"
+    },
+    {
+        "id": "VEC-003",
+        "desc": "Lunar, Male, Leap Month",
+        "input": {
+            "birthDate": "1988-04-15",
+            "birthTime": "09:00",
+            "timeUnknown": false,
+            "sex": "male",
+            "calendar": "lunar",
+            "isLeapMonth": true,
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "e12df0e5a28a936cbecd0e0c3b259603dca146eb7aa4dd392ec10630f909c9aa"
+    },
+    {
+        "id": "VEC-004",
+        "desc": "Lunar, Female, Non-Leap",
+        "input": {
+            "birthDate": "1995-12-25",
+            "birthTime": "18:45",
+            "timeUnknown": false,
+            "sex": "female",
+            "calendar": "lunar",
+            "isLeapMonth": false,
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "50151bd3a1635b84bf652d3702a7ffe7c5a1974cf26c91fb8b4e15ad26b4ca36"
+    },
+    {
+        "id": "VEC-005",
+        "desc": "Solar, Male, 1900 (Early Date)",
+        "input": {
+            "birthDate": "1900-01-01",
+            "birthTime": "00:00",
+            "timeUnknown": false,
+            "sex": "male",
+            "calendar": "solar",
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "67c4521132104be50f109a228250f2a9183ca357a4da5d930625c5c2dfa10800"
+    },
+    {
+        "id": "VEC-006",
+        "desc": "Solar, Female, 2049 (Late Date)",
+        "input": {
+            "birthDate": "2049-12-31",
+            "birthTime": "23:59",
+            "timeUnknown": false,
+            "sex": "female",
+            "calendar": "solar",
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "c2fe26ec3c3b72e397a9cb64f084c0100c017518c205a9ccfb406fb2ea37a625"
+    },
+    {
+        "id": "VEC-007",
+        "desc": "Solar, Male, Name: Hangul",
+        "input": {
+            "userName": "홍길동",
+            "birthDate": "2000-01-01",
+            "birthTime": "12:00",
+            "timeUnknown": false,
+            "sex": "male",
+            "calendar": "solar",
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "e0d3927f3b1678f7a80f38273f7751e91d227a43009f8b7c5f61fcd94c3e8d6d"
+    },
+    {
+        "id": "VEC-008",
+        "desc": "Solar, Female, Name: Mixed Hanja",
+        "input": {
+            "userName": "金철수",
+            "birthDate": "2000-01-01",
+            "birthTime": "12:00",
+            "timeUnknown": false,
+            "sex": "female",
+            "calendar": "solar",
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "e0d3927f3b1678f7a80f38273f7751e91d227a43009f8b7c5f61fcd94c3e8d6d"
+    },
+    {
+        "id": "VEC-009",
+        "desc": "Solar, Male, Name: English",
+        "input": {
+            "userName": "John Doe",
+            "birthDate": "2000-01-01",
+            "birthTime": "12:00",
+            "timeUnknown": false,
+            "sex": "male",
+            "calendar": "solar",
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "e0d3927f3b1678f7a80f38273f7751e91d227a43009f8b7c5f61fcd94c3e8d6d"
+    },
+    {
+        "id": "VEC-010",
+        "desc": "Solar, Female, 1-char Name",
+        "input": {
+            "userName": "이",
+            "birthDate": "2000-01-01",
+            "birthTime": "12:00",
+            "timeUnknown": false,
+            "sex": "female",
+            "calendar": "solar",
+            "timezone": "Asia/Seoul"
+        },
+        "expectedHash": "e0d3927f3b1678f7a80f38273f7751e91d227a43009f8b7c5f61fcd94c3e8d6d"
+    }
+]

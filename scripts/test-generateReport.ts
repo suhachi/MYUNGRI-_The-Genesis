@@ -10,9 +10,14 @@ import { getFirestore, connectFirestoreEmulator, collection, getDocs } from "fir
  */
 
 const firebaseConfig = {
-    apiKey: "AIzaSyALJ16scYoDyo1bi8_62yQVZ1LzrVxY72c",
-    projectId: "myungri-genesis",
+    apiKey: process.env.VITE_FIREBASE_API_KEY,
+    projectId: process.env.VITE_FIREBASE_PROJECT_ID || "myungri-genesis",
 };
+
+if (!firebaseConfig.apiKey) {
+    console.error("❌ Error: VITE_FIREBASE_API_KEY is missing in environment variables.");
+    process.exit(1);
+}
 
 const app = initializeApp(firebaseConfig);
 const functions = getFunctions(app, 'asia-northeast3');

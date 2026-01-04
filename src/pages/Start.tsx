@@ -3,54 +3,78 @@ import { useNavigate } from 'react-router-dom';
 import { Container } from '../components/layout/Container';
 import { Card } from '../components/ui/Card';
 import { Header } from '../components/layout/Header';
+import { detectScriptType } from '../lib/text';
 import styles from './Start.module.css';
 
 interface FormData {
+    userName: string;
     birthDate: string;
     birthTime: string;
     timeUnknown: boolean;
     sex: 'male' | 'female' | '';
     calendar: 'solar' | 'lunar' | '';
-    isLeapMonth: boolean;
+    isLeapMonth: boolean | null;
     timezone: 'Asia/Seoul';
 }
 
 interface Errors {
+    userName?: string;
     birthDate?: string;
+    birthTime?: string;
     sex?: string;
     calendar?: string;
+    isLeapMonth?: string;
 }
+
+import { sanitizeUserName, NAME_SANITIZE } from '../lib/nameSanitize';
 
 export const Start: React.FC = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
+        userName: '',
         birthDate: '',
         birthTime: '',
         timeUnknown: false,
         sex: '',
         calendar: '',
-        isLeapMonth: false,
+        isLeapMonth: null,
         timezone: 'Asia/Seoul'
     });
 
     const [errors, setErrors] = useState<Errors>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [isValid, setIsValid] = useState(false);
+    const [isComposing, setIsComposing] = useState(false);
 
     useEffect(() => {
+        const leapValid = formData.calendar !== 'lunar' || formData.isLeapMonth !== null;
         const isFormValid =
             formData.birthDate !== '' &&
             formData.sex !== '' &&
-            formData.calendar !== '';
+            formData.calendar !== '' &&
+            leapValid;
         setIsValid(isFormValid);
     }, [formData]);
+
+    useEffect(() => {
+        // timeUnknown 토글 시 즉각 검증/메시지 반영
+        validate('birthTime');
+    }, [formData.timeUnknown]);
 
     const validate = (name?: string) => {
         const newErrors: Errors = { ...errors };
 
         if (!name || name === 'birthDate') {
-            if (!formData.birthDate) newErrors.birthDate = '생년월일을 선택해주세요.';
-            else delete newErrors.birthDate;
+            if (!formData.birthDate) {
+                newErrors.birthDate = '생년월일을 선택해주세요.';
+            } else {
+                const year = parseInt(formData.birthDate.split('-')[0]);
+                if (year < 1900 || year > 2099) {
+                    newErrors.birthDate = '1900년~2099년 사이의 유효한 날짜를 입력하세요.';
+                } else {
+                    delete newErrors.birthDate;
+                }
+            }
         }
 
         if (!name || name === 'sex') {
@@ -61,6 +85,40 @@ export const Start: React.FC = () => {
         if (!name || name === 'calendar') {
             if (!formData.calendar) newErrors.calendar = '달력 종류를 선택해주세요.';
             else delete newErrors.calendar;
+        }
+
+        // [P1-ATOMIC-003] Lunar Calendar & Leap Month Validation
+        if (!name || name === 'calendar' || name === 'isLeapMonth') {
+            if (formData.calendar === 'lunar') {
+                if (formData.isLeapMonth === null) {
+                    newErrors.isLeapMonth = '윤달 여부를 선택해주세요.';
+                } else {
+                    delete newErrors.isLeapMonth;
+                }
+            } else {
+                delete newErrors.isLeapMonth;
+            }
+        }
+
+        // [P1-ATOMIC-004] Time Unknown & Birth Time Validation
+        if (!name || name === 'birthTime' || name === 'timeUnknown') {
+            if (!formData.timeUnknown) {
+                // If time is KNOWN, birthTime is REQUIRED.
+                if (!formData.birthTime) {
+                    newErrors.birthTime = '태어난 시간을 입력해주세요. (모를 경우 "시간 모름" 체크)'; // Korean Error
+                } else {
+                    // Simple format check (HH:mm)
+                    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+                    if (!timeRegex.test(formData.birthTime)) {
+                        newErrors.birthTime = '시간 형식이 올바르지 않습니다 (HH:mm).';
+                    } else {
+                        delete newErrors.birthTime;
+                    }
+                }
+            } else {
+                // If time is UNKNOWN, clear any birthTime errors
+                delete newErrors.birthTime;
+            }
         }
 
         setErrors(newErrors);
@@ -75,22 +133,79 @@ export const Start: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+
+        let filteredValue: string | boolean = value;
+
+        if (name === 'userName') {
+            // [ATOMIC-02] IME Safe: Update raw value immediately. Do NOT sanitize here.
+            filteredValue = value;
+        }
+
+        // Handle Checkboxes
+        if (name === 'isLeapMonth' && type === 'radio') {
+            filteredValue = value === 'true';
+        } else if (type === 'checkbox') {
+            filteredValue = checked;
+        }
+
+        setFormData(prev => ({ ...prev, [name]: filteredValue }));
+
+        if (name === 'isLeapMonth') {
+            setTouched(prev => ({ ...prev, isLeapMonth: true }));
+        }
+    };
+
+    const handleComposition = (e: React.CompositionEvent<HTMLInputElement>) => {
+        if (e.type === 'compositionstart') {
+            setIsComposing(true);
+        } else if (e.type === 'compositionend') {
+            setIsComposing(false);
+            // [P1-ATOMIC-001/002] Final sanitize on composition end using shared utility
+            const finalValue = sanitizeUserName(e.currentTarget.value);
+            setFormData(prev => ({
+                ...prev,
+                userName: finalValue
+            }));
+        }
     };
 
     const handleSegmentChange = (name: string, value: string) => {
-        setFormData(prev => ({ ...prev, [name]: value }));
-        setTouched(prev => ({ ...prev, [name]: true }));
+        setFormData(prev => {
+            if (name === 'calendar') {
+                // 음력 선택 시 윤달 여부를 반드시 다시 선택하도록 초기화
+                const nextLeap = value === 'lunar' ? null : false;
+                return { ...prev, calendar: value as any, isLeapMonth: nextLeap };
+            }
+            return { ...prev, [name]: value };
+        });
+        setTouched(prev => ({ ...prev, [name]: true, ...(name === 'calendar' ? { isLeapMonth: false } : {}) }));
         validate(name);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // [P1-ATOMIC-001/002] Final Sanitize on Submit
+        const safeName = sanitizeUserName(formData.userName).trim();
+
         if (validate()) {
-            navigate('/processing', { state: formData });
+            const payload: any = {
+                birthDate: formData.birthDate,
+                birthTime: formData.birthTime,
+                timeUnknown: formData.timeUnknown,
+                sex: formData.sex,
+                calendar: formData.calendar,
+                isLeapMonth: formData.isLeapMonth,
+                timezone: formData.timezone
+            };
+
+            // Only include userName and scriptType if name is provided
+            if (safeName.length > 0) {
+                payload.userName = safeName;
+                payload.scriptType = detectScriptType(safeName);
+            }
+
+            navigate('/processing', { state: payload });
         }
     };
 
@@ -106,6 +221,26 @@ export const Start: React.FC = () => {
 
                 <Card className={styles.formCard}>
                     <form onSubmit={handleSubmit} className={styles.form}>
+                        {/* Name */}
+                        <div className={styles.field}>
+                            <label htmlFor="userName" className={styles.label}>성명 (한자 권장, 한글 가능)</label>
+                            <input
+                                type="text"
+                                id="userName"
+                                name="userName"
+                                value={formData.userName}
+                                onChange={handleChange}
+                                onCompositionStart={handleComposition}
+                                onCompositionEnd={handleComposition}
+                                onBlur={handleBlur}
+                                placeholder="예: 洪吉童 또는 홍길동"
+                                className={`${styles.input} ${touched.userName && errors.userName ? styles.inputError : ''}`}
+                            />
+                            {touched.userName && errors.userName && (
+                                <span className={styles.errorMsg}>{errors.userName}</span>
+                            )}
+                        </div>
+
                         {/* Birth Date */}
                         <div className={styles.field}>
                             <label htmlFor="birthDate" className={styles.label}>생년월일 (필수)</label>
@@ -149,6 +284,9 @@ export const Start: React.FC = () => {
                                 disabled={formData.timeUnknown}
                                 className={styles.input}
                             />
+                            <p className={styles.helperText}>
+                                QA: 시간을 모르면 반드시 "시간 모름"을 켜고, 시간을 아는 경우에는 토글을 끄고 HH:mm 형식으로 입력해야 제출이 가능해야 합니다. 토글 전환 시 시간 입력란이 즉시 비활성/활성화되는지 확인해주세요.
+                            </p>
                         </div>
 
                         {/* Sex */}
@@ -202,17 +340,35 @@ export const Start: React.FC = () => {
                         {/* Leap Month (Conditional) */}
                         {formData.calendar === 'lunar' && (
                             <div className={styles.field}>
-                                <div className={styles.toggleWrapper}>
-                                    <input
-                                        type="checkbox"
-                                        id="isLeapMonth"
-                                        name="isLeapMonth"
-                                        checked={formData.isLeapMonth}
-                                        onChange={handleChange}
-                                        className={styles.checkbox}
-                                    />
-                                    <label htmlFor="isLeapMonth" className={styles.toggleLabel}>음력 윤달입니다</label>
+                                <span className={styles.label}>윤달 여부 (필수)</span>
+                                <div className={styles.segmentControl}>
+                                    <label className={styles.segmentOption}>
+                                        <input
+                                            type="radio"
+                                            name="isLeapMonth"
+                                            value="false"
+                                            checked={formData.isLeapMonth === false}
+                                            onChange={handleChange}
+                                        />
+                                        평달
+                                    </label>
+                                    <label className={styles.segmentOption}>
+                                        <input
+                                            type="radio"
+                                            name="isLeapMonth"
+                                            value="true"
+                                            checked={formData.isLeapMonth === true}
+                                            onChange={handleChange}
+                                        />
+                                        윤달
+                                    </label>
                                 </div>
+                                <p className={styles.helperText}>
+                                    QA: 음력 선택 시 윤달 여부를 선택하지 않으면 제출 버튼이 비활성화되고 오류 메시지가 노출되는지 확인해주세요.
+                                </p>
+                                {touched.isLeapMonth && errors.isLeapMonth && (
+                                    <span className={styles.errorMsg}>{errors.isLeapMonth}</span>
+                                )}
                             </div>
                         )}
 
