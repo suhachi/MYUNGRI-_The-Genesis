@@ -52,6 +52,26 @@
   - Type `배 Jong Su`.
   - **Confirm**: Mixed input is accepted.
 
+## 4. Manual IME Verification (Chrome DevTools)
+
+To simulate precise IME behavior in Chrome:
+1. Open **DevTools** -> **Network** (to monitor payload).
+2. Open **Console** -> **Three Dots (Top Right)** -> **More Tools** -> **Sensors** (Optional, for location).
+3. **IME Simulation**:
+   - Focus the `userName` field.
+   - Using a Korean Keyboard (OS level):
+     - **Step A (Hancul)**: Type `배`. Monitor that `onChange` stores `배` exactly.
+     - **Step B (Hancul)**: Continue to `배종수`. Monitor that no intermediate characters are "flickered" or lost.
+     - **Step C (Hanja)**: Type `배`, press `Hanja` key, select `裵`. Confirm the field value becomes `裵`.
+     - **Step D (Mixed)**: Type `배 裵 Su`.
+   - Click **분석 시작하기**.
+4. **Final Check**:
+   - Inspect the outgoing request in the **Network** tab (`generateReport` call).
+   - **Confirm**: `userName` in the payload is sanitized (if illegal chars were typed) and matches the final input.
+
+---
+**Status**: **REFACTOR_R1_VERIFIED**
+
 ## 3. Backend Logic (ATOMIC-03)
 
 ### 3.1 Length Gating

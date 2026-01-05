@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { calculateRollingRange } from '../src/engine/rollingRange';
-import { precomputeDailyLuck } from '../src/engine/luckCalendar/precompute';
-import { getDailyDetail } from '../src/engine/luckCalendar/detail';
+import { calculateRollingRange } from '../src/engine/calendar365';
+import { precomputeDailyLuck } from '../src/engine/calendar365/precompute';
+import { getDailyDetail } from '../src/engine/calendar365/detail';
 import { PillarsResult } from '../src/engine/pillars';
 
 // Mock Pillars (Day Master: 甲 Wood)
@@ -14,7 +14,7 @@ const mockPillars: PillarsResult = {
 };
 
 describe('Phase 6: Rolling Luck Calendar', () => {
-    
+
     it('P6-ATOMIC-001: Rolling Range should cover approx 1 year', () => {
         const result = calculateRollingRange('2024-01-01');
         expect(result.startDate).toBe('2024-01-01');
@@ -57,7 +57,7 @@ describe('Phase 6: Rolling Luck Calendar', () => {
     it('P6-ATOMIC-003: Detail Analysis should return guidance', () => {
         const dateKey = '2024-01-01';
         const detail = getDailyDetail(mockPillars, dateKey);
-        
+
         expect(detail.dateKey).toBe(dateKey);
         expect(detail).toHaveProperty('categoryGuidance');
         expect(detail.categoryGuidance.length).toBeGreaterThan(0);
@@ -68,7 +68,7 @@ describe('Phase 6: Rolling Luck Calendar', () => {
         // We need to find a day with 庚 stem.
         const result = precomputeDailyLuck('2024-01-01', mockPillars);
         const chungDay = result.records.find(r => r.ganzhi.day.stem === '庚');
-        
+
         if (chungDay) {
             // 甲-庚 Chung
             // Check eventFlags

@@ -1,44 +1,56 @@
 import { z } from 'zod';
 
-// Basic 3-field structure for every analysis section
-export const AnalysisContentSchema = z.object({
-    result: z.string().min(1, "Result is required"),
-    explain: z.string().min(1, "Explain is required"),
-    interpretation: z.string().min(1, "Interpretation is required"),
-    // Optional fields that might exist
-    reasonCards: z.array(z.any()).optional(),
+/**
+ * Basic 3-field structure for every analysis section.
+ */
+export const AnalysisSectionSchema = z.object({
+    result: z.string().min(1, "결과(result) 필드는 필수입니다."),
+    explain: z.string().min(1, "풀이/근거(explain) 필드는 필수입니다."),
+    interpretation: z.string().min(1, "해석/조언(interpretation) 필드는 필수입니다."),
+    resultFacts: z.any().optional(), // For engine data passing
 });
 
-export const SectionSchema = AnalysisContentSchema.extend({
-    id: z.string(),
+/**
+ * Life Bucket (Daeun/Luck) structure for specific decades.
+ */
+export const LifeBucketSchema = z.object({
+    age: z.number(),
+    result: z.string().optional(),
+    explain: z.string().optional(),
+    interpretation: z.string().optional(),
+});
+
+/**
+ * Report Section Schema.
+ */
+export const ReportSectionSchema = AnalysisSectionSchema.extend({
+    sectionId: z.string(),
     title: z.string(),
-    category: z.string(),
-    type: z.string().optional(),
+    category: z.string().optional(),
+    qualityGuarded: z.boolean().optional(),
+    explainHints: z.any().optional(),      // Legacy compatibility
+    interpretationFacts: z.any().optional(), // Legacy compatibility
 });
 
-// Executive Summary specific validation (9 buckets checks)
-// We might not enforce 9 buckets strictly in the generic schema if it's dynamic, 
-// but the prompt says "ExecutiveSummary must include 9 buckets for 10s..80s"
-// Let's assume ExecutiveSummary overrides or extends generic section if it has specific structure, 
-// OR it puts buckets in `reasonCards` or `explain`. 
-// For now, let's keep it generic but strict on the 3 keys.
-
-export const ReportSchema = z.object({
-    reportId: z.string().optional(),
-    reportMeta: z.object({
-        title: z.string(),
-        userName: z.string().optional(),
-        summary: z.string(),
+/**
+ * Shared Output Schema for Myungri Report.
+ * Enforces required structural components and matches existing engine expectations.
+ */
+export const OutputSchema = z.object({
+    meta: z.object({
+        version: z.string(),
+        generatedAt: z.string(),
     }),
-    sections: z.array(SectionSchema).refine((sections) => {
-        // Validation for required sections
-        // const requiredIds = [...]; 
-        // For P0-ATOMIC-001, we just need basic validation. 
-        return true;
+    sections: z.object({
+        executiveSummary: ReportSectionSchema,
+        originAudit: ReportSectionSchema,
+        lifeFlow: ReportSectionSchema,
+        rolling12: ReportSectionSchema,
+        naming: ReportSectionSchema.optional(),
     }),
-    // Determinism Hash (P0-ATOMIC-003)
     determinismHash: z.string().optional(),
 });
 
-export type OutputReportType = z.infer<typeof ReportSchema>;
-export type SectionType = z.infer<typeof SectionSchema>;
+export type OutputType = z.infer<typeof OutputSchema>;
+export type FullReportData = OutputType;
+export type ReportSection = z.infer<typeof ReportSectionSchema>;

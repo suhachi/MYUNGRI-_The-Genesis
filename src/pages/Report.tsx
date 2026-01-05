@@ -52,57 +52,38 @@ function BalanceRadarVisual() {
 /**
  * Data Hardening Helpers (Phase 26)
  */
-const normalizeSection = (s: any, index: number): Section => {
-    let id = typeof s?.id === 'string' ? s.id.trim() : String(s?.id ?? "");
-    const title = typeof s?.title === 'string' ? s.title.trim() : String(s?.title ?? "제목 없음");
-    const category = typeof s?.category === 'string' ? s.category.trim() : "ANALYSIS";
-
-    // Phase 27: Preserving 3-tier structure (Safe extraction)
-    let result = s?.result ? String(s.result) : undefined;
-    let explain = s?.explain ? String(s.explain) : undefined;
-    let interpretation = s?.interpretation ? String(s.interpretation) : undefined;
-
-    // Synthesize content for legacy display if needed
-    let content = s?.content ? String(s.content) : "";
-    if (!content && (result || explain || interpretation)) {
-        content = [result, explain, interpretation].filter(val => val && val.length > 0).join("\n\n");
+const normalizeSection = (section: any, sectionId: string): Section => {
+    if (!section) {
+        return {
+            id: sectionId,
+            title: "정보 없음",
+            result: "데이터를 불러올 수 없습니다.",
+            explain: "",
+            interpretation: "",
+            category: "ANALYSIS"
+        };
     }
-
-    // 품질 게이트: 3필드가 모두 비어 있으면 안전한 플레이스홀더 삽입
-    let qualityGuarded = false;
-    if (!result && !explain && !interpretation && !content) {
-        qualityGuarded = true;
-        result = PLACEHOLDER_TEXT;
-        explain = "근거 데이터가 충분하지 않습니다.";
-        interpretation = "정확한 해석을 위해 재생성이 필요할 수 있습니다.";
-        content = PLACEHOLDER_TEXT;
-    }
-
-    if (!id || id.length === 0) {
-        id = `unknown_${index}`;
-    }
-
-    id = id.replace(/[^a-zA-Z0-9_-]/g, '_');
 
     return {
-        id,
-        title,
-        content,
-        category,
-        result,
-        explain,
-        interpretation,
-        type: s?.type,
-        reasonCards: s?.reasonCards || [],
-        qualityGuarded
+        id: section.sectionId || sectionId,
+        title: section.title || "분석 섹션",
+        result: section.result || "",
+        explain: section.explain || "",
+        interpretation: section.interpretation || "",
+        category: section.category || "ANALYSIS",
+        reasonCards: section.reasonCards || []
     };
 };
 
 const normalizeSections = (input: any, toc?: any[]): Section[] => {
     let rawSections: Section[] = [];
 
-    if (Array.isArray(input)) { rawSections = input.map((s, i) => normalizeSection(s, i)); }
-    else if (input && typeof input === 'object') { rawSections = Object.values(input).map((s, i) => normalizeSection(s, i)); }
+    if (Array.isArray(input)) {
+        rawSections = input.map((s, i) => normalizeSection(s, `sec_${i}`));
+    }
+    else if (input && typeof input === 'object') {
+        rawSections = Object.entries(input).map(([key, s]) => normalizeSection(s, key));
+    }
 
     if (!toc || !Array.isArray(toc)) return rawSections;
 
@@ -112,11 +93,12 @@ const normalizeSections = (input: any, toc?: any[]): Section[] => {
     const seenIds = new Set<string>();
 
     toc.forEach((item: any) => {
-        const id = item.id?.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const section = sectionMap.get(id);
+        const id = typeof item === 'string' ? item : item.id;
+        const normalizedId = id?.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const section = sectionMap.get(normalizedId);
         if (section) {
             ordered.push(section);
-            seenIds.add(id);
+            seenIds.add(normalizedId);
         }
     });
 
@@ -138,8 +120,6 @@ const safeSplitId = (id: string): string[] => {
     return id.split('_');
 };
 
-
-// Phase 27: Category 한글 매핑
 const CATEGORY_LABELS: Record<string, string> = {
     SUMMARY: '요약',
     ARCH: '아키텍처',
@@ -159,7 +139,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const TIME_UNKNOWN_DISCLAIMER = "※ 태어난 시각을 알 수 없어 '시주(時柱)' 판단을 유보하며, 관련 분석이 배제됩니다. 정확한 시각 입력 시 결과가 달라질 수 있습니다.";
-const PLACEHOLDER_TEXT = "데이터가 제공되지 않았습니다. (품질 게이트 자동 대체)";
 
 export const Report: React.FC = () => {
     const { reportId } = useParams<{ reportId: string }>();
@@ -251,12 +230,9 @@ export const Report: React.FC = () => {
         return () => mediaQuery.removeEventListener('change', handler);
     }, []);
 
-    // [D3] 동적 섹션 구성 (정규화 적용)
     const activeSections = useMemo(() => {
         return normalizeSections(reportData?.sections, reportData?.tableOfContents);
     }, [reportData]);
-
-    const qualityGuardedCount = useMemo(() => activeSections.filter((s: any) => s.qualityGuarded).length, [activeSections]);
 
     const disclaimerText = useMemo(() => {
         if (timeUnknown) {
@@ -329,13 +305,10 @@ export const Report: React.FC = () => {
             <Header lockupDisplay="en_name" />
 
             <Container className={styles.mainLayout}>
-                {(timeUnknown || qualityGuardedCount > 0 || isQualityLow) && (
+                {(timeUnknown || isQualityLow) && (
                     <div className={styles.qualityBanner}>
                         {timeUnknown && (
                             <p>{disclaimerText || TIME_UNKNOWN_DISCLAIMER}</p>
-                        )}
-                        {qualityGuardedCount > 0 && (
-                            <p>일부 섹션은 데이터 누락으로 안전한 대체 문구가 삽입되었습니다. 리포트 재생성을 권장합니다.</p>
                         )}
                         {isQualityLow && (
                             <p>여러 섹션에서 누락/오류 신호가 감지되었습니다. 정밀 재분석을 실행해주세요.</p>

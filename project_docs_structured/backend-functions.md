@@ -2,61 +2,68 @@
 
 > Firebase Functions (generateReport, generateLuckCalendar 등)
 
-**생성 시각**: 2026-01-04T15:48:38.323Z
+**생성 시각**: 2026-01-05T10:21:53.991Z
 
 ---
 
-## 📋 목차 (49개 파일)
+## 📋 목차 (56개 파일)
 
 1. [functions/src/contracts/index.ts](#file-1)
 2. [functions/src/contracts/input.schema.ts](#file-2)
 3. [functions/src/contracts/output.schema.ts](#file-3)
 4. [functions/src/contracts/patterns.ts](#file-4)
-5. [functions/src/engine/assembler/main.ts](#file-5)
-6. [functions/src/engine/assembler/validator.ts](#file-6)
-7. [functions/src/engine/calculation/index.ts](#file-7)
-8. [functions/src/engine/calculation/v1.ts](#file-8)
-9. [functions/src/engine/calendar/astronomy.ts](#file-9)
-10. [functions/src/engine/calendar/converter.ts](#file-10)
-11. [functions/src/engine/calendar/ganzhi.ts](#file-11)
-12. [functions/src/engine/calendar/index.ts](#file-12)
-13. [functions/src/engine/calendar/solarTerms.ts](#file-13)
-14. [functions/src/engine/calendar/time.ts](#file-14)
-15. [functions/src/engine/constants/elements.ts](#file-15)
-16. [functions/src/engine/daewoon.ts](#file-16)
-17. [functions/src/engine/fiveElements.ts](#file-17)
-18. [functions/src/engine/hash.ts](#file-18)
-19. [functions/src/engine/hiddenStems.ts](#file-19)
-20. [functions/src/engine/johuAdjustment.ts](#file-20)
-21. [functions/src/engine/lifeBuckets.ts](#file-21)
-22. [functions/src/engine/luckCalendar/detail.ts](#file-22)
-23. [functions/src/engine/luckCalendar/precompute.ts](#file-23)
-24. [functions/src/engine/name/data/basic.ts](#file-24)
-25. [functions/src/engine/name/fallbackPhonetic.ts](#file-25)
-26. [functions/src/engine/name/hasHan.ts](#file-26)
-27. [functions/src/engine/name/kangxi.ts](#file-27)
-28. [functions/src/engine/pillars.ts](#file-28)
-29. [functions/src/engine/quality/bannedPhrases.ts](#file-29)
-30. [functions/src/engine/quality/densityMetrics.ts](#file-30)
-31. [functions/src/engine/quality/gate.ts](#file-31)
-32. [functions/src/engine/quality/reportValidator.ts](#file-32)
-33. [functions/src/engine/relations/index.ts](#file-33)
-34. [functions/src/engine/relations/rules.ts](#file-34)
-35. [functions/src/engine/reportPackets/lifeFlow.ts](#file-35)
-36. [functions/src/engine/reportUtils.ts](#file-36)
-37. [functions/src/engine/report/assembler.ts](#file-37)
-38. [functions/src/engine/report/validator.ts](#file-38)
-39. [functions/src/engine/rollingRange.ts](#file-39)
-40. [functions/src/engine/schemas/astro.ts](#file-40)
-41. [functions/src/engine/sewoon.ts](#file-41)
-42. [functions/src/engine/strengthScore.ts](#file-42)
-43. [functions/src/engine/tables/hiddenStems.ts](#file-43)
-44. [functions/src/engine/tables/strengthWeights.ts](#file-44)
-45. [functions/src/engine/tenGod.ts](#file-45)
-46. [functions/src/engine/yinYang.ts](#file-46)
-47. [functions/src/generateLuckCalendar.js](#file-47)
-48. [functions/src/index.ts](#file-48)
-49. [functions/src/shared/nameSanitize.ts](#file-49)
+5. [functions/src/contracts/shared/nameSanitize.ts](#file-5)
+6. [functions/src/engine/assembler/main.ts](#file-6)
+7. [functions/src/engine/assembler/validator.ts](#file-7)
+8. [functions/src/engine/calculation/index.ts](#file-8)
+9. [functions/src/engine/calculation/v1.ts](#file-9)
+10. [functions/src/engine/calendar365/detail.ts](#file-10)
+11. [functions/src/engine/calendar365/index.ts](#file-11)
+12. [functions/src/engine/calendar365/precompute.ts](#file-12)
+13. [functions/src/engine/calendar/astronomy.ts](#file-13)
+14. [functions/src/engine/calendar/converter.ts](#file-14)
+15. [functions/src/engine/calendar/ganzhi.ts](#file-15)
+16. [functions/src/engine/calendar/index.ts](#file-16)
+17. [functions/src/engine/calendar/solarTerms.ts](#file-17)
+18. [functions/src/engine/calendar/time.ts](#file-18)
+19. [functions/src/engine/constants/elements.ts](#file-19)
+20. [functions/src/engine/daewoon/index.ts](#file-20)
+21. [functions/src/engine/fiveElements.ts](#file-21)
+22. [functions/src/engine/hash.ts](#file-22)
+23. [functions/src/engine/hiddenStems.ts](#file-23)
+24. [functions/src/engine/index.ts](#file-24)
+25. [functions/src/engine/johuAdjustment.ts](#file-25)
+26. [functions/src/engine/lifeBuckets.ts](#file-26)
+27. [functions/src/engine/naming/data/basic.ts](#file-27)
+28. [functions/src/engine/naming/fallbackPhonetic.ts](#file-28)
+29. [functions/src/engine/naming/hasHan.ts](#file-29)
+30. [functions/src/engine/naming/index.ts](#file-30)
+31. [functions/src/engine/naming/kangxi.ts](#file-31)
+32. [functions/src/engine/narrative/applyPatch.ts](#file-32)
+33. [functions/src/engine/narrative/packetBuilders/main.ts](#file-33)
+34. [functions/src/engine/narrative/patch.schema.ts](#file-34)
+35. [functions/src/engine/narrative/prompt.sections.ts](#file-35)
+36. [functions/src/engine/narrative/prompt.system.ts](#file-36)
+37. [functions/src/engine/narrative/renderer.ts](#file-37)
+38. [functions/src/engine/pillars/index.ts](#file-38)
+39. [functions/src/engine/quality/bannedPhrases.ts](#file-39)
+40. [functions/src/engine/quality/densityMetrics.ts](#file-40)
+41. [functions/src/engine/quality/densityThresholds.ts](#file-41)
+42. [functions/src/engine/quality/gate.ts](#file-42)
+43. [functions/src/engine/quality/reportValidator.ts](#file-43)
+44. [functions/src/engine/relations/index.ts](#file-44)
+45. [functions/src/engine/relations/rules.ts](#file-45)
+46. [functions/src/engine/reportPackets/lifeFlow.ts](#file-46)
+47. [functions/src/engine/reportUtils.ts](#file-47)
+48. [functions/src/engine/schemas/astro.ts](#file-48)
+49. [functions/src/engine/sewoon/index.ts](#file-49)
+50. [functions/src/engine/strengthScore.ts](#file-50)
+51. [functions/src/engine/tables/hiddenStems.ts](#file-51)
+52. [functions/src/engine/tables/strengthWeights.ts](#file-52)
+53. [functions/src/engine/tenGod.ts](#file-53)
+54. [functions/src/engine/yinYang.ts](#file-54)
+55. [functions/src/generateLuckCalendar.js](#file-55)
+56. [functions/src/index.ts](#file-56)
 
 ---
 
@@ -74,31 +81,36 @@ export * from './output.schema';
 
 ## File 2: `functions/src/contracts/input.schema.ts` {#file-2}
 
-**크기**: 1.46 KB | **확장자**: ts
+**크기**: 1.60 KB | **확장자**: ts
 
 ```ts
 import { z } from 'zod';
-import { NAME_VALIDATION_REGEX } from '../shared/nameSanitize';
 
+/**
+ * Shared Input Schema for Myungri Report Generation
+ * 1. Synchronized across Frontend and Backend.
+ * 2. Enforces specific business logic (lunar leap, birth time requirements).
+ * 3. NO length-based gating for userName.
+ */
 export const InputSchema = z.object({
-    userName: z.string()
-        .regex(NAME_VALIDATION_REGEX, "이름은 한글, 한자, 영문, 공백만 입력 가능합니다.")
-        .optional(),
+    userName: z.string().optional(),
     birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "생년월일 형식이 올바르지 않습니다 (YYYY-MM-DD)."),
     birthTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "시간 형식이 올바르지 않습니다 (HH:mm).").optional().nullable(),
     timeUnknown: z.boolean(),
     sex: z.enum(['male', 'female'] as const).describe("성별 (male/female)"),
     calendar: z.enum(['solar', 'lunar'] as const).describe("달력 (solar/lunar)"),
-    isLeapMonth: z.boolean().optional(),
+    isLeapMonth: z.boolean().optional().nullable(),
     timezone: z.literal('Asia/Seoul'),
 }).superRefine((data, ctx) => {
-    if (data.calendar === 'lunar' && typeof data.isLeapMonth !== 'boolean') {
+    // Business Logic: Lunar leap month check
+    if (data.calendar === 'lunar' && data.isLeapMonth === null) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "음력 선택 시 윤달 여부는 필수입니다.",
             path: ["isLeapMonth"],
         });
     }
+    // Business Logic: Birth time requirement
     if (!data.timeUnknown && !data.birthTime) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -116,37 +128,93 @@ export type InputType = z.infer<typeof InputSchema>;
 
 ## File 3: `functions/src/contracts/output.schema.ts` {#file-3}
 
-**크기**: 0.70 KB | **확장자**: ts
+**크기**: 2.83 KB | **확장자**: ts
 
 ```ts
-// P8-ATOMIC-001: Output Schema Definition
+import { z } from 'zod';
 
-export interface ReportSection {
-    sectionId: string;
-    title: string;
-    resultFacts: Record<string, any>;
-    interpretationFacts: Record<string, any>;
-    explainHints: Record<string, any>;
+/**
+ * Basic 3-field structure for every analysis section.
+ */
+export const AnalysisSectionSchema = z.object({
+    result: z.string().min(1, "결과(result) 필드는 필수입니다."),
+    explain: z.string().min(1, "풀이/근거(explain) 필드는 필수입니다."),
+    interpretation: z.string().min(1, "해석/조언(interpretation) 필드는 필수입니다."),
+    resultFacts: z.any().optional(), // For engine data passing
+});
 
-    // Frontend Compatibility Fields (Narrated)
-    result?: string;
-    explain?: string;
-    interpretation?: string;
-}
+/**
+ * Life Bucket (Daeun/Luck) structure for specific decades.
+ */
+export const LifeBucketSchema = z.object({
+    decadeKey: z.string(), // e.g. "10s", "20s"
+    ageRangeLabel: z.string(), // e.g. "15~24세"
+    startAge: z.number(),
+    endAge: z.number(),
+    ganzhi: z.string().optional(), // 대운 간지
+    result: z.string().min(1),
+    explain: z.string().min(1),
+    interpretation: z.string().min(1),
+    resultFacts: z.any().optional(),
+});
 
-export interface FullReportData {
-    meta: {
-        version: string;
-        generatedAt: string;
-    };
-    sections: {
-        executiveSummary: ReportSection;
-        originAudit: ReportSection;
-        lifeFlow: ReportSection;
-        rolling12: ReportSection;
-        naming?: ReportSection; // Conditional
-    };
-}
+/**
+ * Turning Point Item structure.
+ */
+export const TurningPointItemSchema = z.object({
+    age: z.number(),
+    year: z.number().optional(),
+    type: z.string(), // e.g. "CAREER", "HEALTH", "RELATION"
+    title: z.string(),
+    evidenceRefs: z.array(z.string()).optional(),
+    result: z.string().min(1),
+    explain: z.string().min(1),
+    interpretation: z.string().min(1),
+});
+
+/**
+ * Report Section Schema.
+ */
+export const ReportSectionSchema = AnalysisSectionSchema.extend({
+    sectionId: z.string(),
+    title: z.string(),
+    category: z.string().optional(),
+    qualityGuarded: z.boolean().optional(),
+});
+
+/**
+ * Shared Output Schema for Myungri Report (Genesis Only Contract v6).
+ * Enforces REQUIRED sections and structured data.
+ */
+export const OutputSchema = z.object({
+    meta: z.object({
+        version: z.literal("report/v6"),
+        generatedAt: z.string(),
+    }),
+    sections: z.object({
+        executiveSummary: ReportSectionSchema,
+        originAudit: ReportSectionSchema,
+        lifeFlow: z.object({
+            sectionId: z.literal("LIFE_FLOW"),
+            title: z.string(),
+            buckets: z.array(LifeBucketSchema).length(9, "대운 흐름은 반드시 9개 구간(10대~80대)이어야 합니다.")
+        }),
+        turningPoints: z.object({
+            sectionId: z.literal("TURNING_POINTS"),
+            title: z.string(),
+            items: z.array(TurningPointItemSchema).min(5, "전환점은 최소 5개 이상 제안되어야 합니다.")
+        }),
+        rolling12: ReportSectionSchema,
+        luckCalendar: ReportSectionSchema,
+        dateDetail: ReportSectionSchema,
+        naming: ReportSectionSchema.optional(),
+    }),
+    determinismHash: z.string().optional(),
+});
+
+export type OutputType = z.infer<typeof OutputSchema>;
+export type FullReportData = OutputType;
+export type ReportSection = z.infer<typeof ReportSectionSchema>;
 
 ```
 
@@ -167,118 +235,116 @@ export const NAME_VALIDATOR_REGEX = new RegExp(`^[${NAME_PATTERN_SOURCE}]*$`, 'u
 
 ---
 
-## File 5: `functions/src/engine/assembler/main.ts` {#file-5}
+## File 5: `functions/src/contracts/shared/nameSanitize.ts` {#file-5}
 
-**크기**: 3.26 KB | **확장자**: ts
+**크기**: 1.15 KB | **확장자**: ts
+
+```ts
+/**
+ * SSOT for User Name Sanitization (Phase 28+)
+ * Policy: No length-based rejection. Only allowed scripts (Hangul, Hanja, Alpha, Space).
+ */
+
+// Unicode range for scripts. Using descriptive regex for readability.
+// No inline regex should exist outside this file for userName.
+export const NAME_VALIDATION_REGEX = /^[\p{Script=Hangul}\p{Script=Han}a-zA-Z\s]*$/u;
+
+// Fallback for environments where /u or \p is not supported (though rare in modern Node/Browsers)
+export const NAME_SANITIZE_REGEX = /[^\p{Script=Hangul}\p{Script=Han}a-zA-Z\s]/gu;
+
+/**
+ * Sanitizes the user name by removing any character not in the allowed scripts.
+ * Policy: No length checks here.
+ */
+export const sanitizeUserName = (name: string): string => {
+    if (!name) return "";
+    return name.replace(NAME_SANITIZE_REGEX, "");
+};
+
+/**
+ * Identifies the primary script type of the name.
+ */
+export const detectScriptType = (name: string): 'hangul' | 'hanja' | 'alpha' | 'unknown' => {
+    if (/\p{Script=Hangul}/u.test(name)) return 'hangul';
+    if (/\p{Script=Han}/u.test(name)) return 'hanja';
+    if (/[a-zA-Z]/.test(name)) return 'alpha';
+    return 'unknown';
+};
+
+```
+
+---
+
+## File 6: `functions/src/engine/assembler/main.ts` {#file-6}
+
+**크기**: 2.87 KB | **확장자**: ts
 
 ```ts
 import { FullReportData, ReportSection } from '../../contracts/output.schema';
-import { PillarsResult } from '../pillars';
-import { calculateRollingRange } from '../rollingRange';
-import { precomputeDailyLuck } from '../luckCalendar/precompute';
-import { hasHan } from '../name/hasHan';
-// Import other engine modules as needed...
+import { DeterministicPacket } from '../index';
 
-// P8-ATOMIC-001: Report Assembly Pipeline
+/**
+ * [Phase 28] ATOMIC-R2-03: Report Assembly Pipeline
+ * - Maps DeterministicPacket -> Narrative Report Structure
+ * - Whitelist-only access to deterministic data
+ */
 
-export interface AssemblyInput {
-    userName: string;
-    koreanAge: number; // or birthDate
-    analysisDate: string;
-    pillars: PillarsResult;
-    // ... input for other engines
-}
+export function assembleReport(packet: DeterministicPacket): FullReportData {
+    const sections: any = {
+        executiveSummary: assembleBasicSection("EXIT_001", "종합 분석 요약"),
+        originAudit: assembleBasicSection("ORIG_001", "타고난 성향 (원국 감사)"),
+        lifeFlow: {
+            sectionId: "LIFE_FLOW",
+            title: "평생 흐름 (10대~80대 대운)",
+            buckets: packet.daewoon.segments.slice(0, 9).map((s, i) => ({
+                decadeKey: `${(Math.floor(s.startAge / 10) + 1) * 10}s`,
+                ageRangeLabel: `${s.startAge}~${s.endAge}세`,
+                startAge: s.startAge,
+                endAge: s.endAge,
+                ganzhi: s.ganzhi.label,
+                result: "[PENDING]",
+                explain: "[PENDING]",
+                interpretation: "[PENDING]"
+            }))
+        },
+        turningPoints: {
+            sectionId: "TURNING_POINTS",
+            title: "운명의 전환점 지도",
+            items: [
+                { age: 20, type: "CAREER", title: "청년기 사회 진출", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 35, type: "LIFE", title: "가정 및 안정기", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 50, type: "HARVEST", title: "중년의 성과", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 65, type: "WISDOM", title: "장년의 지혜", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 80, type: "LEGACY", title: "평온한 회고", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+            ]
+        },
+        rolling12: assembleBasicSection("ROLL_001", "향후 12개월 흐름"),
+        luckCalendar: assembleBasicSection("CAL_001", "운기 캘린더 (365일)"),
+        dateDetail: assembleBasicSection("DATE_001", "날짜별 상세 분석"),
+    };
 
-export function assembleReport(input: AssemblyInput): FullReportData {
-    // 1. Executive Summary
-    const executiveSummary = assembleExecutiveSummary(input);
-
-    // 2. Origin Audit (Natal Chart)
-    const originAudit = assembleOriginAudit(input.pillars);
-
-    // 3. Life Flow (Daewoon)
-    const lifeFlow = assembleLifeFlow(input);
-
-    // 4. Rolling 12 Months
-    const rolling12 = assembleRolling12(input);
-
-    // 5. Naming (Conditional)
-    let naming: ReportSection | undefined;
-    if (hasHan(input.userName)) {
-        naming = assembleNaming(input.userName);
+    if (packet.naming) {
+        sections.naming = assembleBasicSection("NAME_001", "성명 분석 (이름의 기운)");
     }
 
-    // Assembly
-    const report: FullReportData = {
+    return {
         meta: {
-            version: "1.0.0",
-            generatedAt: new Date().toISOString()
+            version: "report/v6",
+            generatedAt: packet.computedAt,
         },
-        sections: {
-            executiveSummary,
-            originAudit,
-            lifeFlow,
-            rolling12,
-            naming
-        }
-    };
-
-    return report;
-}
-
-// --- Sub-Assemblers (Skeleton for Atomic) ---
-
-function assembleExecutiveSummary(input: AssemblyInput): ReportSection {
-    // TODO: Connect real Logic
-    return {
-        sectionId: "EXIT_001",
-        title: "Executive Summary",
-        resultFacts: { corePattern: "Unknown" },
-        interpretationFacts: { summary: "High potential." },
-        explainHints: { tone: "Professional" }
+        sections,
+        determinismHash: packet.determinismHash
     };
 }
 
-function assembleOriginAudit(pillars: PillarsResult): ReportSection {
+function assembleBasicSection(sectionId: string, title: string) {
     return {
-        sectionId: "ORIG_001",
-        title: "Origin Audit",
-        resultFacts: { pillars },
-        interpretationFacts: { balance: "balanced" },
-        explainHints: { focus: "Earth" }
-    };
-}
-
-function assembleLifeFlow(input: AssemblyInput): ReportSection {
-    return {
-        sectionId: "LIFE_001",
-        title: "Life Flow",
-        resultFacts: { currentDaewoon: "Gap-Ja" },
-        interpretationFacts: { trend: "Rising" },
-        explainHints: { strategy: "Invest" }
-    };
-}
-
-function assembleRolling12(input: AssemblyInput): ReportSection {
-    const range = calculateRollingRange(input.analysisDate);
-    const result = precomputeDailyLuck(input.analysisDate, input.pillars);
-    const records = result.records;
-    return {
-        sectionId: "ROLL_001",
-        title: "Rolling 12 Months",
-        resultFacts: { range, recordCount: records.length, records },
-        interpretationFacts: { bestMonth: "May" },
-        explainHints: { caution: "Winter" }
-    };
-}
-
-function assembleNaming(userName: string): ReportSection {
-    return {
-        sectionId: "NAME_001",
-        title: "Naming Analysis",
-        resultFacts: { hasHan: true },
-        interpretationFacts: { strokes: "Good" },
-        explainHints: { origin: "Hanja" }
+        sectionId,
+        title,
+        result: "[PENDING]",
+        explain: "[PENDING]",
+        interpretation: "[PENDING]",
+        resultFacts: {}
     };
 }
 
@@ -286,7 +352,7 @@ function assembleNaming(userName: string): ReportSection {
 
 ---
 
-## File 6: `functions/src/engine/assembler/validator.ts` {#file-6}
+## File 7: `functions/src/engine/assembler/validator.ts` {#file-7}
 
 **크기**: 1.15 KB | **확장자**: ts
 
@@ -327,7 +393,7 @@ function validateSection(section: ReportSection): void {
 
 ---
 
-## File 7: `functions/src/engine/calculation/index.ts` {#file-7}
+## File 8: `functions/src/engine/calculation/index.ts` {#file-8}
 
 **크기**: 0.82 KB | **확장자**: ts
 
@@ -362,7 +428,7 @@ export const calculateAstroData = (input: {
 
 ---
 
-## File 8: `functions/src/engine/calculation/v1.ts` {#file-8}
+## File 9: `functions/src/engine/calculation/v1.ts` {#file-9}
 
 **크기**: 6.72 KB | **확장자**: ts
 
@@ -565,7 +631,379 @@ export const calculateV1 = (input: AstroInput): AstroCalculationV1 => {
 
 ---
 
-## File 9: `functions/src/engine/calendar/astronomy.ts` {#file-9}
+## File 10: `functions/src/engine/calendar365/detail.ts` {#file-10}
+
+**크기**: 2.37 KB | **확장자**: ts
+
+```ts
+import { PillarsResult } from '../pillars';
+import { DailyLuckRecord, precomputeDailyLuck } from './precompute';
+
+// P6-ATOMIC-003: Detail Analysis for Selected Date
+// Callable function to get deterministic detail analysis.
+
+export interface DailyDetailResult extends DailyLuckRecord {
+    categoryGuidance: string; // No absolute claims
+}
+
+export function getDailyDetail(birthPillars: PillarsResult, dateKey: string): DailyDetailResult {
+    // 1. Generate records (using precompute for consistency)
+    // Optimization: In a real DB scenario, we would query by ID.
+    // Here, we re-compute.
+    const result = precomputeDailyLuck(dateKey, birthPillars);
+    
+    // The precompute generates range starting from dateKey.
+    // So the first record is the one we want.
+    const record = result.records[0];
+
+    if (!record || record.dateKey !== dateKey) {
+        throw new Error(`Failed to compute detail for ${dateKey}`);
+    }
+
+    // 2. Add Category-based Guidance
+    // Deterministic, no absolute claims.
+    const guidance = generateGuidance(record);
+
+    return {
+        ...record,
+        categoryGuidance: guidance
+    };
+}
+
+function generateGuidance(record: DailyLuckRecord): string {
+    const tenGod = record.tenGod.dayStem;
+    
+    // Simple mapping based on TenGod
+    if (tenGod.includes("비견") || tenGod.includes("겁재")) {
+        return "주체성이 강해지는 시기입니다. 독단적인 결정을 주의하고 협력을 모색해보세요.";
+    }
+    if (tenGod.includes("식신") || tenGod.includes("상관")) {
+        return "표현욕구가 높아지는 날입니다. 창의적인 활동에 유리하지만 언행에 신중함이 필요합니다.";
+    }
+    if (tenGod.includes("편재") || tenGod.includes("정재")) {
+        return "실속을 챙기기 좋은 흐름입니다. 재정적인 계획을 점검하거나 결과를 확인해보세요.";
+    }
+    if (tenGod.includes("편관") || tenGod.includes("정관")) {
+        return "책임감과 원칙이 중요해지는 날입니다. 규칙을 준수하고 명예를 지키는 것이 좋습니다.";
+    }
+    if (tenGod.includes("편인") || tenGod.includes("정인")) {
+        return "생각이 깊어지는 하루입니다. 학업이나 연구, 자기 성찰에 시간을 투자해보세요.";
+    }
+
+    return "평온한 마음으로 하루를 보내세요.";
+}
+
+```
+
+---
+
+## File 11: `functions/src/engine/calendar365/index.ts` {#file-11}
+
+**크기**: 2.74 KB | **확장자**: ts
+
+```ts
+// P6-ATOMIC-001: Rolling 12-Month Range Calculation
+import { parseYMDToUTCDate } from '../calendar/time';
+
+export interface RollingRange {
+    startDate: string; // YYYY-MM-DD
+    endDate: string; // YYYY-MM-DD
+    totalDays: number;
+    dates: string[]; // List of all YYYY-MM-DD strings
+}
+
+/**
+ * Calculate a rolling 1 year range starting from analysisDate (inclusive).
+ * Covers exactly 1 year length (e.g., 2024-01-01 -> 2024-12-31).
+ * If leap year is involved, handles 366 days.
+ */
+export function calculateRollingRange(analysisDateYMD: string): RollingRange {
+    const start = parseYMDToUTCDate(analysisDateYMD);
+
+    // Calculate End Date: Same Month/Day next year, minus 1 day.
+    // e.g. Start 2024-01-01 -> Next Year 2025-01-01 -> Minus 1 day -> 2024-12-31.
+    // Logic: Add 1 year to year component, then subtract 1 day.
+
+    // However, simply adding 1 year can be tricky with Feb 29.
+    // 2024-02-29 + 1 year -> 2025-02-28 (automagically? or 03-01?)
+    // Javascript Date usually handles this to 03-01 if 02-29 doesn't exist.
+    // Let's stick to "Add 365 or 366 days"?
+    // Definition of "1 Year":
+    // User expects "Today until same day next year" or "Today until day before same day"?
+    // Usually a "Year Calendar" includes the full cycle. 
+    // Let's iterate day by day to be safe and strictly generate the list.
+
+    // Wait, simpler approach:
+    // Determine target end Date.
+    // Actually, "Rolling 12 months" usually means [Start, End] where End is (Start + 1 Year - 1 Day).
+
+    // Let's just generate the dates array by iterating. It's safer for list generation.
+    const dates: string[] = [];
+    let current = new Date(start.getTime());
+
+    // We stop when we reach the date that is (StartYear + 1, StartMonth, StartDay).
+    const limitYear = start.getUTCFullYear() + 1;
+    const limitMonth = start.getUTCMonth();
+    const limitDay = start.getUTCDate();
+
+    // Safety break: 400 days
+    for (let i = 0; i < 400; i++) {
+        const y = current.getUTCFullYear();
+        const m = current.getUTCMonth();
+        const d = current.getUTCDate();
+
+        if (y === limitYear && m === limitMonth && d === limitDay) {
+            break; // Reached exact same date next year
+        }
+
+        dates.push(formatYMD(current));
+
+        // Next day
+        current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    return {
+        startDate: dates[0],
+        endDate: dates[dates.length - 1],
+        totalDays: dates.length,
+        dates
+    };
+}
+
+function formatYMD(date: Date): string {
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(date.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+```
+
+---
+
+## File 12: `functions/src/engine/calendar365/precompute.ts` {#file-12}
+
+**크기**: 7.19 KB | **확장자**: ts
+
+```ts
+import { calculateRollingRange } from './index';
+import { convertToLunar } from '../calendar/converter';
+import { toHanjaGanji, Ganzhi } from '../calendar/ganzhi';
+import { getTenGod, getElement, Element } from '../tenGod';
+import { PillarsResult } from '../pillars';
+import { RelationsResult, RelationItem } from '../relations';
+import { CHEONGAN_HAB, CHEONGAN_CHUNG, JIJI_YUKHAB, JIJI_CHUNG } from '../relations/rules';
+
+export interface DailyLuckRecord {
+    dateKey: string; // YYYY-MM-DD
+    ganzhi: {
+        year: Ganzhi;
+        month: Ganzhi;
+        day: Ganzhi;
+    };
+    tenGod: {
+        dayStem: string; // TenGod of Day Stem vs Day Master
+        dayBranch: string; // TenGod of Day Branch vs Day Master
+    };
+    fiveElementsDelta: {
+        stem: Element;
+        branch: Element;
+    };
+    eventFlags: {
+        hasHab: boolean;
+        hasChung: boolean;
+        special: string[]; // e.g. "CheonganHab", "JijiChung"
+    };
+    headline: string;
+    evidenceSummary: string;
+    detailAnchorId: string;
+}
+
+export interface PrecomputeResult {
+    range: { start: string; end: string };
+    records: DailyLuckRecord[];
+}
+
+/**
+ * P6-ATOMIC-002: Precompute Daily Luck Records
+ * Generates 365+ daily records for the rolling year.
+ */
+export function precomputeDailyLuck(analysisDate: string, natalPillars: PillarsResult): PrecomputeResult {
+    const range = calculateRollingRange(analysisDate);
+    const records: DailyLuckRecord[] = [];
+
+    const dayMaster = natalPillars.day.stem;
+
+    for (const dateKey of range.dates) {
+        const [y, m, d] = dateKey.split('-').map(Number);
+
+        // 1. Get Lunar/Ganzhi for the day
+        let lunar;
+        try {
+            lunar = convertToLunar(y, m, d);
+        } catch (e) {
+            console.warn(`Skipping date ${dateKey} due to conversion error`);
+            continue;
+        }
+
+        const yearGanji = toHanjaGanji(lunar.secha);
+        const monthGanji = toHanjaGanji(lunar.wolgeon);
+        const dayGanji = toHanjaGanji(lunar.iljin);
+
+        // 2. Ten God (Day Pillar vs Day Master)
+        const stemTenGod = getTenGod(dayMaster, dayGanji.stem);
+        const branchTenGod = getTenGod(dayMaster, dayGanji.branch);
+
+        // 3. Five Elements
+        const stemElem = getElement(dayGanji.stem);
+        const branchElem = getElement(dayGanji.branch);
+
+        // 4. Relations (Luck vs Natal)
+        const relations = checkDailyRelations(dayGanji, natalPillars);
+
+        // 5. Headline & Evidence
+        const { headline, evidence } = generateDailyHeadline(stemTenGod, branchTenGod, relations, stemElem, branchElem);
+
+        records.push({
+            dateKey,
+            ganzhi: {
+                year: yearGanji,
+                month: monthGanji,
+                day: dayGanji
+            },
+            tenGod: {
+                dayStem: stemTenGod,
+                dayBranch: branchTenGod
+            },
+            fiveElementsDelta: {
+                stem: stemElem!,
+                branch: branchElem!
+            },
+            eventFlags: {
+                hasHab: relations.hasHab,
+                hasChung: relations.hasChung,
+                special: relations.list.map(r => r.subtype)
+            },
+            headline,
+            evidenceSummary: evidence,
+            detailAnchorId: `detail-${dateKey}`
+        });
+    }
+
+    return {
+        range: { start: range.startDate, end: range.endDate },
+        records
+    };
+}
+
+// Helper: Check relations between Daily Pillar and Natal Pillars
+function checkDailyRelations(daily: Ganzhi, natal: PillarsResult): RelationsResult {
+    const list: RelationItem[] = [];
+    const targets = [natal.year, natal.month, natal.day, natal.hour].filter(p => p !== null) as Ganzhi[];
+    const targetNames = ['year', 'month', 'day', 'hour']; // Corresponding names
+
+    // Check Stem (Cheongan)
+    targets.forEach((target, idx) => {
+        const pair = daily.stem + target.stem;
+        const pairRev = target.stem + daily.stem;
+
+        // Hab
+        let habVal = CHEONGAN_HAB[pair] || CHEONGAN_HAB[pairRev];
+        if (habVal) {
+            list.push({
+                type: 'Hab', subtype: 'CheonganHab',
+                pillars: ['daily', targetNames[idx]],
+                value: habVal,
+                description: `일운 ${daily.stem}와 원국 ${target.stem}의 합`
+            });
+        }
+
+        // Chung
+        let chungVal = CHEONGAN_CHUNG[pair] || CHEONGAN_CHUNG[pairRev];
+        if (chungVal) {
+            list.push({
+                type: 'Chung', subtype: 'CheonganChung',
+                pillars: ['daily', targetNames[idx]],
+                description: `일운 ${daily.stem}와 원국 ${target.stem}의 충`
+            });
+        }
+    });
+
+    // Check Branch (Jiji)
+    targets.forEach((target, idx) => {
+        const pair = daily.branch + target.branch;
+        const pairRev = target.branch + daily.branch;
+
+        // YukHab
+        let habVal = JIJI_YUKHAB[pair] || JIJI_YUKHAB[pairRev];
+        if (habVal) {
+            list.push({
+                type: 'Hab', subtype: 'YukHab',
+                pillars: ['daily', targetNames[idx]],
+                value: habVal,
+                description: `일운 ${daily.branch}와 원국 ${target.branch}의 육합`
+            });
+        }
+
+        // Chung
+        let chungVal = JIJI_CHUNG[pair] || JIJI_CHUNG[pairRev];
+        if (chungVal) {
+            list.push({
+                type: 'Chung', subtype: 'JijiChung',
+                pillars: ['daily', targetNames[idx]],
+                description: `일운 ${daily.branch}와 원국 ${target.branch}의 충`
+            });
+        }
+    });
+
+    return {
+        list,
+        hasHab: list.some(r => r.type === 'Hab'),
+        hasChung: list.some(r => r.type === 'Chung'),
+        hasGongmang: false
+    };
+}
+
+// Helper: Deterministic Headline Template
+function generateDailyHeadline(
+    stemTenGod: string,
+    branchTenGod: string,
+    relations: RelationsResult,
+    stemElem: Element | null,
+    branchElem: Element | null
+): { headline: string, evidence: string } {
+    let headline = "";
+    let evidence = "";
+
+    // Priority 1: Chung (Conflict)
+    if (relations.hasChung) {
+        const chungItem = relations.list.find(r => r.type === 'Chung');
+        headline = `변화와 충돌이 예상되는 날 (${chungItem?.description})`;
+        evidence = `일운과 원국 사이에 ${chungItem?.subtype}이 발생하여 주의가 필요합니다.`;
+        return { headline, evidence };
+    }
+
+    // Priority 2: Hab (Harmony)
+    if (relations.hasHab) {
+        const habItem = relations.list.find(r => r.type === 'Hab');
+        headline = `조화와 협력이 깃드는 날 (${habItem?.description})`;
+        evidence = `일운과 원국이 합을 이루어 순조로운 흐름이 예상됩니다.`;
+        return { headline, evidence };
+    }
+
+    // Priority 3: Ten God (Dominant Energy)
+    // Use Stem TenGod as primary
+    headline = `${stemTenGod}의 기운이 강한 하루입니다.`;
+    evidence = `천간에 ${stemTenGod}(${stemElem}), 지지에 ${branchTenGod}(${branchElem})이 들어옵니다.`;
+
+    return { headline, evidence };
+}
+
+```
+
+---
+
+## File 13: `functions/src/engine/calendar/astronomy.ts` {#file-13}
 
 **크기**: 6.91 KB | **확장자**: ts
 
@@ -773,7 +1211,7 @@ export const SOLAR_TERM_DEGREES = [
 
 ---
 
-## File 10: `functions/src/engine/calendar/converter.ts` {#file-10}
+## File 14: `functions/src/engine/calendar/converter.ts` {#file-14}
 
 **크기**: 2.07 KB | **확장자**: ts
 
@@ -845,7 +1283,7 @@ export function convertToLunar(year: number, month: number, day: number): LunarR
 
 ---
 
-## File 11: `functions/src/engine/calendar/ganzhi.ts` {#file-11}
+## File 15: `functions/src/engine/calendar/ganzhi.ts` {#file-15}
 
 **크기**: 1.48 KB | **확장자**: ts
 
@@ -900,7 +1338,7 @@ export function toHanjaGanji(label: string): Ganzhi {
 
 ---
 
-## File 12: `functions/src/engine/calendar/index.ts` {#file-12}
+## File 16: `functions/src/engine/calendar/index.ts` {#file-16}
 
 **크기**: 0.09 KB | **확장자**: ts
 
@@ -913,7 +1351,7 @@ export * from './solarTerms';
 
 ---
 
-## File 13: `functions/src/engine/calendar/solarTerms.ts` {#file-13}
+## File 17: `functions/src/engine/calendar/solarTerms.ts` {#file-17}
 
 **크기**: 1.96 KB | **확장자**: ts
 
@@ -974,7 +1412,7 @@ export function getApproxSolarTerm(date: Date): string {
 
 ---
 
-## File 14: `functions/src/engine/calendar/time.ts` {#file-14}
+## File 18: `functions/src/engine/calendar/time.ts` {#file-18}
 
 **크기**: 5.46 KB | **확장자**: ts
 
@@ -1121,59 +1559,50 @@ export function calculateTrueSolarTime(date: Date, birthTimeHHmm: string, timezo
 
 ---
 
-## File 15: `functions/src/engine/constants/elements.ts` {#file-15}
+## File 19: `functions/src/engine/constants/elements.ts` {#file-19}
 
-**크기**: 1.43 KB | **확장자**: ts
+**크기**: 0.97 KB | **확장자**: ts
 
 ```ts
-import { STEMS_HANJA, BRANCHES_HANJA } from '../calendar/ganzhi';
+export type Element = 'Wood' | 'Fire' | 'Earth' | 'Metal' | 'Water';
+export type Polarity = 'Yang' | 'Yin';
 
-// Element mapping for Heavenly Stems and Earthly Branches
-export const ELEMENTS: Record<string, string> = {
-    甲: 'Wood', 乙: 'Wood',
-    丙: 'Fire', 丁: 'Fire',
-    戊: 'Earth', 己: 'Earth',
-    庚: 'Metal', 辛: 'Metal',
-    壬: 'Water', 癸: 'Water',
-    寅: 'Wood', 卯: 'Wood',
-    巳: 'Fire', 午: 'Fire',
-    辰: 'Earth', 戌: 'Earth', 丑: 'Earth', 未: 'Earth',
-    申: 'Metal', 酉: 'Metal',
-    亥: 'Water', 子: 'Water'
+export const ELEMENTS: Record<string, Element> = {
+    // 10 Stems
+    "甲": "Wood", "乙": "Wood",
+    "丙": "Fire", "丁": "Fire",
+    "戊": "Earth", "己": "Earth",
+    "庚": "Metal", "辛": "Metal",
+    "壬": "Water", "癸": "Water",
+    // 12 Branches
+    "寅": "Wood", "卯": "Wood", "辰": "Earth",
+    "巳": "Fire", "午": "Fire", "未": "Earth",
+    "申": "Metal", "酉": "Metal", "戌": "Earth",
+    "亥": "Water", "子": "Water", "丑": "Earth"
 };
 
-// Polarity mapping (Yang/Yin)
-export const POLARITY: Record<string, string> = {
-    甲: 'Yang', 丙: 'Yang', 戊: 'Yang', 庚: 'Yang', 壬: 'Yang',
-    乙: 'Yin', 丁: 'Yin', 己: 'Yin', 辛: 'Yin', 癸: 'Yin',
-    子: 'Yang', 寅: 'Yang', 辰: 'Yang', 午: 'Yang', 申: 'Yang', 戌: 'Yang',
-    丑: 'Yin', 卯: 'Yin', 巳: 'Yin', 未: 'Yin', 酉: 'Yin', 亥: 'Yin'
+export const POLARITY: Record<string, Polarity> = {
+    "甲": "Yang", "丙": "Yang", "戊": "Yang", "庚": "Yang", "壬": "Yang",
+    "乙": "Yin", "丁": "Yin", "己": "Yin", "辛": "Yin", "癸": "Yin",
+    "寅": "Yang", "辰": "Yang", "午": "Yang", "申": "Yang", "戌": "Yang", "子": "Yang",
+    "卯": "Yin", "巳": "Yin", "未": "Yin", "酉": "Yin", "亥": "Yin", "丑": "Yin"
 };
-
-// Integrity guard for Phase2 consistency
-export function assertElementPolarityCompleteness(): void {
-    const missingElements = [...STEMS_HANJA, ...BRANCHES_HANJA].filter(k => ELEMENTS[k] === undefined);
-    const missingPolarity = [...STEMS_HANJA, ...BRANCHES_HANJA].filter(k => POLARITY[k] === undefined);
-    if (missingElements.length || missingPolarity.length) {
-        throw new Error(`ELEMENTS/POLARITY mapping incomplete: elements missing ${missingElements.join(',')} polarity missing ${missingPolarity.join(',')}`);
-    }
-}
 
 ```
 
 ---
 
-## File 16: `functions/src/engine/daewoon.ts` {#file-16}
+## File 20: `functions/src/engine/daewoon/index.ts` {#file-20}
 
-**크기**: 7.67 KB | **확장자**: ts
+**크기**: 7.77 KB | **확장자**: ts
 
 ```ts
-// import { PillarsResult } from './pillars'; // Unused
-import { getSolarTermDate, SOLAR_TERM_DEGREES } from './calendar/astronomy';
-import { Ganzhi, STEMS_HANJA, BRANCHES_HANJA } from './calendar/ganzhi';
-import { POLARITY } from './constants/elements';
-import { getTimeZoneOffsetMinutes } from './calendar/time';
-import { DaewoonInputSchema } from './schemas/astro';
+// import { PillarsResult } from '../pillars'; // Unused
+import { getSolarTermDate, SOLAR_TERM_DEGREES } from '../calendar/astronomy';
+import { Ganzhi, STEMS_HANJA, BRANCHES_HANJA } from '../calendar/ganzhi';
+import { POLARITY } from '../constants/elements';
+import { getTimeZoneOffsetMinutes } from '../calendar/time';
+import { DaewoonInputSchema } from '../schemas/astro';
 
 // P3-ATOMIC-002: Direction
 export type DaewoonDirection = 'forward' | 'backward';
@@ -1228,7 +1657,8 @@ export function calculateDaewoon(input: DaewoonInput): DaewoonResult {
 
     // 1. Local birth time to UTC using provided timezone (default KST)
     const [y, m, d] = input.birthDate.split('-').map(Number);
-    const [hh, mm] = input.birthTime.split(':').map(Number);
+    const timeToSplit = input.birthTime && input.birthTime.includes(':') ? input.birthTime : "12:00";
+    const [hh, mm] = timeToSplit.split(':').map(Number);
     const baseLocal = new Date(Date.UTC(y, m - 1, d, hh, mm));
 
     let offsetMin = 9 * 60;
@@ -1392,7 +1822,7 @@ export function generateDaewoonSegments(
 
 ---
 
-## File 17: `functions/src/engine/fiveElements.ts` {#file-17}
+## File 21: `functions/src/engine/fiveElements.ts` {#file-21}
 
 **크기**: 1.42 KB | **확장자**: ts
 
@@ -1452,41 +1882,51 @@ export function calculateFiveElements(chars: string[]): FiveElementResult {
 
 ---
 
-## File 18: `functions/src/engine/hash.ts` {#file-18}
+## File 22: `functions/src/engine/hash.ts` {#file-22}
 
-**크기**: 0.76 KB | **확장자**: ts
+**크기**: 0.92 KB | **확장자**: ts
 
 ```ts
 import * as crypto from 'crypto';
 
 /**
- * Stable Stringify for JSON
- * Sorts keys recursively to ensure deterministic output.
+ * P0-ATOMIC-003: Determinism Hash Implementation
+ * Generates a SHA-256 hash from a set of key-value pairs or an object.
+ * Used to verify the integrity and consistency of engine outputs.
  */
-function stableStringify(obj: any): string {
-    if (obj === null || typeof obj !== 'object') {
-        return JSON.stringify(obj);
-    }
-    if (Array.isArray(obj)) {
-        return '[' + obj.map(stableStringify).join(',') + ']';
-    }
-    const sortedKeys = Object.keys(obj).sort();
-    const parts = sortedKeys.map(key => {
-        return JSON.stringify(key) + ':' + stableStringify(obj[key]);
-    });
-    return '{' + parts.join(',') + '}';
+export function generateDeterminismHash(data: any): string {
+    // Sort keys to ensure consistent serialization
+    const sortedData = sortObjectKeys(data);
+    const serialized = JSON.stringify(sortedData);
+
+    return crypto
+        .createHash('sha256')
+        .update(serialized)
+        .digest('hex');
 }
 
-export function computeDeterminismHash(payload: any): string {
-    const str = stableStringify(payload);
-    return crypto.createHash('sha256').update(str).digest('hex');
+function sortObjectKeys(obj: any): any {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+
+    if (Array.isArray(obj)) {
+        return obj.map(sortObjectKeys);
+    }
+
+    return Object.keys(obj)
+        .sort()
+        .reduce((acc: any, key) => {
+            acc[key] = sortObjectKeys(obj[key]);
+            return acc;
+        }, {});
 }
 
 ```
 
 ---
 
-## File 19: `functions/src/engine/hiddenStems.ts` {#file-19}
+## File 23: `functions/src/engine/hiddenStems.ts` {#file-23}
 
 **크기**: 0.62 KB | **확장자**: ts
 
@@ -1516,7 +1956,106 @@ export function getHiddenStems(branch: string): string[] {
 
 ---
 
-## File 20: `functions/src/engine/johuAdjustment.ts` {#file-20}
+## File 24: `functions/src/engine/index.ts` {#file-24}
+
+**크기**: 2.81 KB | **확장자**: ts
+
+```ts
+import { calculatePillars, PillarsInput, PillarsResult } from './pillars';
+import { calculateDaewoon, DaewoonResult } from './daewoon';
+import { calculateSewoon, SewoonResult } from './sewoon';
+import { calculateRollingRange, RollingRange } from './calendar365';
+import { precomputeDailyLuck } from './calendar365/precompute';
+import { analyzeNaming, NamingResult } from './naming';
+import { generateDeterminismHash } from './hash';
+
+export interface DeterministicPacket {
+    algorithmVersion: string;
+    computedAt: string;
+    determinismHash: string;
+    input: PillarsInput;
+    pillars: PillarsResult;
+    daewoon: DaewoonResult;
+    sewoon: SewoonResult;
+    calendar365: {
+        range: RollingRange;
+        dailyLuck: any;
+    };
+    naming?: NamingResult;
+}
+
+/**
+ * [Phase 28] ATOMIC-R2-02: Deterministic Engine Entry Point
+ * - No LLM, No Network.
+ * - Pure data packet output.
+ */
+export function generateDeterministicPacket(input: PillarsInput, userName?: string): DeterministicPacket {
+    // 1. Core Pillars (Ipchun-based)
+    const pillars = calculatePillars(input);
+
+    // 2. Daewoon (3 days = 1 year, minute precision)
+    const daewoon = calculateDaewoon({
+        birthDate: pillars.normalization.solarDate,
+        birthTime: input.birthTime,
+        sex: input.sex,
+        yearStem: pillars.year.stem,
+        monthStem: pillars.month.stem,
+        monthBranch: pillars.month.branch,
+        timezone: input.timezone
+    });
+
+    // 3. Sewoon (Current Year)
+    const currentYear = new Date().getUTCFullYear();
+    const sewoon = calculateSewoon(currentYear, pillars);
+
+    // 4. Calendar 365 (Rolling 12 Months)
+    const range = calculateRollingRange(pillars.normalization.solarDate);
+    const dailyLuck = precomputeDailyLuck(pillars.normalization.solarDate, pillars);
+
+    // 5. Naming (Conditional)
+    let naming: NamingResult | undefined;
+    if (userName) {
+        naming = analyzeNaming(userName);
+    }
+
+    // [ATOMIC-R2-05] Determinism Hash
+    const hashData = {
+        input,
+        pillars: {
+            year: pillars.year,
+            month: pillars.month,
+            day: pillars.day,
+            hour: pillars.hour
+        },
+        daewoon: {
+            direction: daewoon.direction,
+            startAge: daewoon.startAge,
+            segments: daewoon.segments.map(s => ({ age: s.startAge, stem: s.ganzhi.stem, branch: s.ganzhi.branch }))
+        }
+    };
+    const determinismHash = generateDeterminismHash(hashData);
+
+    return {
+        algorithmVersion: "Genesis-V6.0-PURE",
+        computedAt: new Date().toISOString(),
+        determinismHash,
+        input,
+        pillars,
+        daewoon,
+        sewoon,
+        calendar365: {
+            range,
+            dailyLuck: dailyLuck.records
+        },
+        naming
+    };
+}
+
+```
+
+---
+
+## File 25: `functions/src/engine/johuAdjustment.ts` {#file-25}
 
 **크기**: 5.40 KB | **확장자**: ts
 
@@ -1663,7 +2202,7 @@ export function applyJohuAdjustment(pillars: PillarsResult, strength: StrengthRe
 
 ---
 
-## File 21: `functions/src/engine/lifeBuckets.ts` {#file-21}
+## File 26: `functions/src/engine/lifeBuckets.ts` {#file-26}
 
 **크기**: 4.00 KB | **확장자**: ts
 
@@ -1768,295 +2307,7 @@ export function generateLifeBuckets(pillars: PillarsResult, daewoon: DaewoonResu
 
 ---
 
-## File 22: `functions/src/engine/luckCalendar/detail.ts` {#file-22}
-
-**크기**: 2.37 KB | **확장자**: ts
-
-```ts
-import { PillarsResult } from '../pillars';
-import { DailyLuckRecord, precomputeDailyLuck } from './precompute';
-
-// P6-ATOMIC-003: Detail Analysis for Selected Date
-// Callable function to get deterministic detail analysis.
-
-export interface DailyDetailResult extends DailyLuckRecord {
-    categoryGuidance: string; // No absolute claims
-}
-
-export function getDailyDetail(birthPillars: PillarsResult, dateKey: string): DailyDetailResult {
-    // 1. Generate records (using precompute for consistency)
-    // Optimization: In a real DB scenario, we would query by ID.
-    // Here, we re-compute.
-    const result = precomputeDailyLuck(dateKey, birthPillars);
-    
-    // The precompute generates range starting from dateKey.
-    // So the first record is the one we want.
-    const record = result.records[0];
-
-    if (!record || record.dateKey !== dateKey) {
-        throw new Error(`Failed to compute detail for ${dateKey}`);
-    }
-
-    // 2. Add Category-based Guidance
-    // Deterministic, no absolute claims.
-    const guidance = generateGuidance(record);
-
-    return {
-        ...record,
-        categoryGuidance: guidance
-    };
-}
-
-function generateGuidance(record: DailyLuckRecord): string {
-    const tenGod = record.tenGod.dayStem;
-    
-    // Simple mapping based on TenGod
-    if (tenGod.includes("비견") || tenGod.includes("겁재")) {
-        return "주체성이 강해지는 시기입니다. 독단적인 결정을 주의하고 협력을 모색해보세요.";
-    }
-    if (tenGod.includes("식신") || tenGod.includes("상관")) {
-        return "표현욕구가 높아지는 날입니다. 창의적인 활동에 유리하지만 언행에 신중함이 필요합니다.";
-    }
-    if (tenGod.includes("편재") || tenGod.includes("정재")) {
-        return "실속을 챙기기 좋은 흐름입니다. 재정적인 계획을 점검하거나 결과를 확인해보세요.";
-    }
-    if (tenGod.includes("편관") || tenGod.includes("정관")) {
-        return "책임감과 원칙이 중요해지는 날입니다. 규칙을 준수하고 명예를 지키는 것이 좋습니다.";
-    }
-    if (tenGod.includes("편인") || tenGod.includes("정인")) {
-        return "생각이 깊어지는 하루입니다. 학업이나 연구, 자기 성찰에 시간을 투자해보세요.";
-    }
-
-    return "평온한 마음으로 하루를 보내세요.";
-}
-
-```
-
----
-
-## File 23: `functions/src/engine/luckCalendar/precompute.ts` {#file-23}
-
-**크기**: 7.24 KB | **확장자**: ts
-
-```ts
-import { calculateRollingRange } from '../rollingRange';
-import { convertToLunar } from '../calendar/converter';
-import { toHanjaGanji, Ganzhi } from '../calendar/ganzhi';
-import { getTenGod, getElement, Element } from '../tenGod';
-import { PillarsResult } from '../pillars';
-import { RelationsResult, RelationItem } from '../relations';
-import { CHEONGAN_HAB, CHEONGAN_CHUNG, JIJI_YUKHAB, JIJI_CHUNG } from '../relations/rules';
-
-export interface DailyLuckRecord {
-    dateKey: string; // YYYY-MM-DD
-    ganzhi: {
-        year: Ganzhi;
-        month: Ganzhi;
-        day: Ganzhi;
-    };
-    tenGod: {
-        dayStem: string; // TenGod of Day Stem vs Day Master
-        dayBranch: string; // TenGod of Day Branch vs Day Master
-    };
-    fiveElementsDelta: {
-        stem: Element;
-        branch: Element;
-    };
-    eventFlags: {
-        hasHab: boolean;
-        hasChung: boolean;
-        special: string[]; // e.g. "CheonganHab", "JijiChung"
-    };
-    headline: string;
-    evidenceSummary: string;
-    detailAnchorId: string;
-}
-
-export interface PrecomputeResult {
-    range: { start: string; end: string };
-    records: DailyLuckRecord[];
-}
-
-/**
- * P6-ATOMIC-002: Precompute Daily Luck Records
- * Generates 365+ daily records for the rolling year.
- */
-export function precomputeDailyLuck(analysisDate: string, natalPillars: PillarsResult): PrecomputeResult {
-    const range = calculateRollingRange(analysisDate);
-    const records: DailyLuckRecord[] = [];
-
-    const dayMaster = natalPillars.day.stem;
-
-    for (const dateKey of range.dates) {
-        const [y, m, d] = dateKey.split('-').map(Number);
-        
-        // 1. Get Lunar/Ganzhi for the day
-        let lunar;
-        try {
-            lunar = convertToLunar(y, m, d);
-        } catch (e) {
-            console.warn(`Skipping date ${dateKey} due to conversion error`);
-            continue;
-        }
-        
-        const yearGanji = toHanjaGanji(lunar.secha);
-        const monthGanji = toHanjaGanji(lunar.wolgeon);
-        const dayGanji = toHanjaGanji(lunar.iljin);
-
-        // 2. Ten God (Day Pillar vs Day Master)
-        const stemTenGod = getTenGod(dayMaster, dayGanji.stem);
-        const branchTenGod = getTenGod(dayMaster, dayGanji.branch);
-
-        // 3. Five Elements
-        const stemElem = getElement(dayGanji.stem);
-        const branchElem = getElement(dayGanji.branch);
-
-        // 4. Relations (Luck vs Natal)
-        const relations = checkDailyRelations(dayGanji, natalPillars);
-        
-        // 5. Headline & Evidence
-        const { headline, evidence } = generateDailyHeadline(stemTenGod, branchTenGod, relations, stemElem, branchElem);
-
-        records.push({
-            dateKey,
-            ganzhi: {
-                year: yearGanji,
-                month: monthGanji,
-                day: dayGanji
-            },
-            tenGod: {
-                dayStem: stemTenGod,
-                dayBranch: branchTenGod
-            },
-            fiveElementsDelta: {
-                stem: stemElem!,
-                branch: branchElem!
-            },
-            eventFlags: {
-                hasHab: relations.hasHab,
-                hasChung: relations.hasChung,
-                special: relations.list.map(r => r.subtype)
-            },
-            headline,
-            evidenceSummary: evidence,
-            detailAnchorId: `detail-${dateKey}`
-        });
-    }
-
-    return {
-        range: { start: range.startDate, end: range.endDate },
-        records
-    };
-}
-
-// Helper: Check relations between Daily Pillar and Natal Pillars
-function checkDailyRelations(daily: Ganzhi, natal: PillarsResult): RelationsResult {
-    const list: RelationItem[] = [];
-    const targets = [natal.year, natal.month, natal.day, natal.hour].filter(p => p !== null) as Ganzhi[];
-    const targetNames = ['year', 'month', 'day', 'hour']; // Corresponding names
-
-    // Check Stem (Cheongan)
-    targets.forEach((target, idx) => {
-        const pair = daily.stem + target.stem;
-        const pairRev = target.stem + daily.stem; 
-        
-        // Hab
-        let habVal = CHEONGAN_HAB[pair] || CHEONGAN_HAB[pairRev];
-        if (habVal) {
-            list.push({
-                type: 'Hab', subtype: 'CheonganHab',
-                pillars: ['daily', targetNames[idx]],
-                value: habVal,
-                description: `일운 ${daily.stem}와 원국 ${target.stem}의 합`
-            });
-        }
-
-        // Chung
-        let chungVal = CHEONGAN_CHUNG[pair] || CHEONGAN_CHUNG[pairRev];
-        if (chungVal) { 
-             list.push({
-                type: 'Chung', subtype: 'CheonganChung',
-                pillars: ['daily', targetNames[idx]],
-                description: `일운 ${daily.stem}와 원국 ${target.stem}의 충`
-            });
-        }
-    });
-
-    // Check Branch (Jiji)
-    targets.forEach((target, idx) => {
-        const pair = daily.branch + target.branch;
-        const pairRev = target.branch + daily.branch;
-
-        // YukHab
-        let habVal = JIJI_YUKHAB[pair] || JIJI_YUKHAB[pairRev];
-        if (habVal) {
-            list.push({
-                type: 'Hab', subtype: 'YukHab',
-                pillars: ['daily', targetNames[idx]],
-                value: habVal,
-                description: `일운 ${daily.branch}와 원국 ${target.branch}의 육합`
-            });
-        }
-
-        // Chung
-        let chungVal = JIJI_CHUNG[pair] || JIJI_CHUNG[pairRev];
-        if (chungVal) {
-            list.push({
-                type: 'Chung', subtype: 'JijiChung',
-                pillars: ['daily', targetNames[idx]],
-                description: `일운 ${daily.branch}와 원국 ${target.branch}의 충`
-            });
-        }
-    });
-
-    return {
-        list,
-        hasHab: list.some(r => r.type === 'Hab'),
-        hasChung: list.some(r => r.type === 'Chung'),
-        hasGongmang: false 
-    };
-}
-
-// Helper: Deterministic Headline Template
-function generateDailyHeadline(
-    stemTenGod: string, 
-    branchTenGod: string, 
-    relations: RelationsResult,
-    stemElem: Element | null,
-    branchElem: Element | null
-): { headline: string, evidence: string } {
-    let headline = "";
-    let evidence = "";
-
-    // Priority 1: Chung (Conflict)
-    if (relations.hasChung) {
-        const chungItem = relations.list.find(r => r.type === 'Chung');
-        headline = `변화와 충돌이 예상되는 날 (${chungItem?.description})`;
-        evidence = `일운과 원국 사이에 ${chungItem?.subtype}이 발생하여 주의가 필요합니다.`;
-        return { headline, evidence };
-    }
-
-    // Priority 2: Hab (Harmony)
-    if (relations.hasHab) {
-        const habItem = relations.list.find(r => r.type === 'Hab');
-        headline = `조화와 협력이 깃드는 날 (${habItem?.description})`;
-        evidence = `일운과 원국이 합을 이루어 순조로운 흐름이 예상됩니다.`;
-        return { headline, evidence };
-    }
-
-    // Priority 3: Ten God (Dominant Energy)
-    // Use Stem TenGod as primary
-    headline = `${stemTenGod}의 기운이 강한 하루입니다.`;
-    evidence = `천간에 ${stemTenGod}(${stemElem}), 지지에 ${branchTenGod}(${branchElem})이 들어옵니다.`;
-
-    return { headline, evidence };
-}
-
-```
-
----
-
-## File 24: `functions/src/engine/name/data/basic.ts` {#file-24}
+## File 27: `functions/src/engine/naming/data/basic.ts` {#file-27}
 
 **크기**: 1.30 KB | **확장자**: ts
 
@@ -2093,7 +2344,7 @@ export const KANGXI_DATA: Record<string, { strokes: number, element: string }> =
 
 ---
 
-## File 25: `functions/src/engine/name/fallbackPhonetic.ts` {#file-25}
+## File 28: `functions/src/engine/naming/fallbackPhonetic.ts` {#file-28}
 
 **크기**: 2.34 KB | **확장자**: ts
 
@@ -2171,7 +2422,7 @@ export function assertReferenceOnly(analysis: FallbackNameAnalysis) {
 
 ---
 
-## File 26: `functions/src/engine/name/hasHan.ts` {#file-26}
+## File 29: `functions/src/engine/naming/hasHan.ts` {#file-29}
 
 **크기**: 0.40 KB | **확장자**: ts
 
@@ -2194,9 +2445,72 @@ export function hasHan(userName: string): boolean {
 
 ---
 
-## File 27: `functions/src/engine/name/kangxi.ts` {#file-27}
+## File 30: `functions/src/engine/naming/index.ts` {#file-30}
 
-**크기**: 1.47 KB | **확장자**: ts
+**크기**: 1.49 KB | **확장자**: ts
+
+```ts
+import { hasHan } from './hasHan';
+import { getKangxiInfo } from './kangxi';
+import { getFallbackAnalysis } from './fallbackPhonetic';
+
+export interface NamingResult {
+    userName: string;
+    hasHanja: boolean;
+    hanjaDetails: {
+        char: string;
+        radical?: string;
+        strokes?: number;
+        meaning?: string;
+        isFallback?: boolean;
+    }[];
+}
+
+/**
+ * [Phase 28] ATOMIC-R2-02: Deterministic Naming Engine
+ * - Pure logic for Hanja analysis and phonetic fallback.
+ */
+export function analyzeNaming(userName: string): NamingResult {
+    const hasHanja = hasHan(userName);
+    const hanjaDetails: NamingResult['hanjaDetails'] = [];
+
+    if (hasHanja) {
+        for (const char of userName) {
+            const data = getKangxiInfo(char);
+            if (!data.missing) {
+                hanjaDetails.push({
+                    char,
+                    radical: data.radical,
+                    strokes: data.strokes,
+                    meaning: data.meaning,
+                    isFallback: false
+                });
+            } else {
+                // [P7 Policy] Reference fallback for missing Kangxi data
+                const fallback = getFallbackAnalysis(char);
+                hanjaDetails.push({
+                    char,
+                    meaning: fallback.note,
+                    isFallback: true
+                });
+            }
+        }
+    }
+
+    return {
+        userName,
+        hasHanja,
+        hanjaDetails
+    };
+}
+
+```
+
+---
+
+## File 31: `functions/src/engine/naming/kangxi.ts` {#file-31}
+
+**크기**: 1.51 KB | **확장자**: ts
 
 ```ts
 import { Element } from '../tenGod';
@@ -2219,6 +2533,7 @@ export interface KangxiInfo {
     strokes: number;
     meaning?: string;
     element?: Element;
+    radical?: string; // Added for R2-02
     sourceMeta?: string;
     missing: boolean;
 }
@@ -2255,15 +2570,290 @@ export function getKangxiInfo(char: string): KangxiInfo {
 
 ---
 
-## File 28: `functions/src/engine/pillars.ts` {#file-28}
+## File 32: `functions/src/engine/narrative/applyPatch.ts` {#file-32}
+
+**크기**: 1.22 KB | **확장자**: ts
+
+```ts
+import { FullReportData } from '../../contracts/output.schema';
+import { ReportPatch } from './patch.schema';
+
+/**
+ * [ATOMIC-3-03-3] Apply Narrative Patch (Recursive Path support)
+ * Merges the LLM-generated strings into the existing report skeleton using JSON Patch logic.
+ * Supports deep paths like /sections/lifeFlow/buckets/0/result
+ */
+export function applyNarrativePatch(report: FullReportData, patch: ReportPatch): FullReportData {
+    const updated = JSON.parse(JSON.stringify(report));
+
+    for (const op of patch) {
+        if (op.op === 'replace') {
+            const parts = op.path.split('/').filter(Boolean);
+            let current = updated;
+
+            for (let i = 0; i < parts.length - 1; i++) {
+                const part = parts[i];
+                if (current && typeof current === 'object' && part in current) {
+                    current = current[part];
+                } else {
+                    current = null;
+                    break;
+                }
+            }
+
+            if (current && typeof current === 'object') {
+                const lastPart = parts[parts.length - 1];
+                current[lastPart] = op.value;
+            }
+        }
+    }
+
+    return updated;
+}
+
+```
+
+---
+
+## File 33: `functions/src/engine/narrative/packetBuilders/main.ts` {#file-33}
+
+**크기**: 1.40 KB | **확장자**: ts
+
+```ts
+import { DeterministicPacket } from '../../index';
+
+/**
+ * [ATOMIC-3-03-1] Narrative Input Packet Builder
+ * Transforms the complex DeterministicPacket into a simplified JSON for LLM consumption.
+ * This ensures the LLM only gets "Facts" and doesn't hallucinate missing data.
+ */
+
+export interface NarrativeInputPacket {
+    userInfo: {
+        sex: string;
+        birthDate: string;
+        timeUnknown: boolean;
+        hasHanjaName: boolean;
+    };
+    deterministicFacts: {
+        pillars: any;
+        daewoon: any;
+        sewoon: any;
+        naming?: any;
+    };
+}
+
+export function buildNarrativeInput(packet: DeterministicPacket): NarrativeInputPacket {
+    return {
+        userInfo: {
+            sex: packet.input.sex,
+            birthDate: packet.pillars.normalization.solarDate,
+            timeUnknown: packet.input.timeUnknown,
+            hasHanjaName: !!(packet.naming as any)?.hanjaAnalysis
+        },
+        deterministicFacts: {
+            pillars: packet.pillars,
+            daewoon: {
+                direction: packet.daewoon.direction,
+                startAge: packet.daewoon.startAge,
+                segments: packet.daewoon.segments.map(s => ({
+                    age: s.startAge,
+                    ganzhi: s.ganzhi.label,
+                }))
+            },
+            sewoon: packet.sewoon,
+            naming: packet.naming
+        }
+    };
+}
+
+```
+
+---
+
+## File 34: `functions/src/engine/narrative/patch.schema.ts` {#file-34}
+
+**크기**: 0.71 KB | **확장자**: ts
+
+```ts
+import { z } from 'zod';
+
+/**
+ * RFC6902 JSON Patch operation schema.
+ * Only 'replace' operations are allowed for target text fields.
+ */
+export const PatchOperationSchema = z.object({
+    op: z.literal('replace'),
+    path: z.string().regex(/^\/sections\/(executiveSummary|originAudit|rolling12|luckCalendar|dateDetail|naming)\/(result|interpretation|explain)$|^\/sections\/lifeFlow\/buckets\/\d+\/(result|interpretation|explain|resultFacts)$|^\/sections\/turningPoints\/items\/\d+\/(result|interpretation|explain|resultFacts)$/),
+    value: z.any() // Can be string or facts object
+});
+
+export const ReportPatchSchema = z.array(PatchOperationSchema);
+
+export type ReportPatch = z.infer<typeof ReportPatchSchema>;
+
+```
+
+---
+
+## File 35: `functions/src/engine/narrative/prompt.sections.ts` {#file-35}
+
+**크기**: 2.14 KB | **확장자**: ts
+
+```ts
+/**
+ * [ATOMIC-3-02-2] Section Prompts
+ * Specific instructions for each report section to ensure maximum density and contract compliance.
+ */
+
+export const SECTION_PROMPTS = {
+    executiveSummary: `
+SECTION: Executive Summary (종합 분석 요약)
+GOAL: Provide a 10,000-foot view of the user's destiny.
+RULES:
+- Summarize the core patterns and decades strategy.
+- Min characters per field: 400.
+`,
+    originAudit: `
+SECTION: Origin Audit (타고난 성향 - 원국)
+GOAL: Audit the natal chart (Four Pillars).
+RULES:
+- Deep dive into Ten Gods, elements balance, and relations (Clashes/Harmonies).
+- Use provided pillars facts Only.
+- Min characters per field: 800.
+`,
+    lifeFlow: `
+SECTION: Life Flow (대운 및 인생의 흐름)
+GOAL: Analyze the 9 life buckets (10s to 80s).
+RULES:
+- For each bucket, translate the daewoon/sewoon combination into dense narrative text.
+- Do NOT skip any of the 9 buckets.
+- Min characters per field: 1,500 total for the entire section.
+`,
+    rolling12: `
+SECTION: Rolling 12 Months (최근 1년 운세 흐름)
+GOAL: Guide the user through the next 12 months.
+RULES:
+- Relate the monthly stem/branch energy to the user's natal chart.
+- Focus on actionable seasonal strategies.
+- Min characters per field: 600.
+`,
+    naming: `
+SECTION: Naming Analysis (성명 분석)
+GOAL: Evaluate the aura of the user's name.
+RULES:
+- If Hanja is missing, strictly state "한자 확정 불가".
+- Explain the phonetic or stroke influence if applicable.
+- Min characters per field: 400.
+`
+};
+
+export const SECTION_PROMPTS_KO = `
+(각 섹션별 핵심 지침 한글 요약)
+- 종합 요약: 전체적인 운명의 흐름과 전략을 400자 이상의 고밀도 문장으로 서술.
+- 원국 감사: 십신, 오행 균형, 합충형해파를 800자 이상의 전문 용어로 분석.
+- 인생 흐름: 10대~80대 9개 버킷 전체를 1,500자 이상의 방대한 분량으로 서술.
+- 12개월 운기: 계절적 에너지와 원국의 상호작용을 600자 이상의 구체적 전략으로 제시.
+- 성명 분석: 한자 부재 시 예외 문구 필수, 성명의 기운을 400자 이상으로 분석.
+`;
+
+```
+
+---
+
+## File 36: `functions/src/engine/narrative/prompt.system.ts` {#file-36}
+
+**크기**: 2.31 KB | **확장자**: ts
+
+```ts
+export const SYSTEM_PROMPT = `당신은 30년 경력의 명리 마스터이자, "MYUNGRI: The Genesis" 리포트의 최종 서술 감사관입니다. 
+당신의 임무는 제공된 결정론적 패킷(Deterministic Packet)의 사실 데이터를 바탕으로 고밀도의 전문적인 한국어 서술 리포트를 완성하는 것입니다.
+
+### 핵심 원칙 (Core Rules)
+1. **NEVER CALCULATE**: 사주 팔자, 대운, 세운 등의 계산은 이미 엔진에서 완료되었습니다. 계산 결과 및 사실 관계를 절대 LLM이 임의로 추론하거나 변경하지 마십시오.
+2. **ZERO HALLUCINATION**: 패킷에 없는 새로운 운명적 사실을 지어내지 마십시오. 오직 주어진 근거(Evidence)와 팩트(Facts) 내에서만 문장을 구성하십시오.
+3. **NO BARNUM STATEMENTS**: "운이 좋습니다", "조심해야 합니다"와 같은 모호하고 일반적인 문구는 배제하십시오. 30p+ 밀도에 걸맞은 구체적이고 전문적인 통찰을 제공하십시오.
+4. **STYLE**: 
+   - [Interpretation]: 명리 전문 용어와 깊이 있는 철학적 분석 중심.
+   - [Explain]: 사용자가 이해하기 쉬운 논리적 근거 중심.
+   - 말투: 정중하고 신뢰감 있는 마스터의 어조 (~입니다/합니다).
+
+### 구조 및 출력 계약 (RFC6902 JSON Patch)
+당신의 모든 출력은 반드시 JSON Patch 배열 형태여야만 합니다. 
+오직 각 섹션의 'result', 'interpretation', 'explain' 필드만 'replace' 연산으로 업데이트할 수 있습니다.
+
+### 정책 준수 (Policy Enforcement)
+- **생시 미상(timeUnknown)**: 관련 모든 섹션(특히 원국, 평생흐름 등)에 반드시 "시주 판단 유보" 문구와 그 의미를 포함하십시오.
+- **성명 한자 미상**: 한자가 확인되지 않는 경우 "한자 확정 불가"이며, 이는 참고용 소리 분석임을 명시하십시오.
+
+### 섹션별 목표
+- **Executive Summary**: 전체 리포트의 정수와 핵심 운로 요약. (최소 4,000자)
+- **Origin Audit**: 명식의 강약, 용신, 오행의 균형에 대한 정밀 감사. (최소 8,000자)
+- **Life Flow**: 10대부터 80대까지 9개 구간에 대한 집요한 흐름 분석. (최소 20,000자 이상)
+- **Luck Calendar**: 하루 단위의 흐름을 꿰뚫는 일진 분석 및 조언. (최소 4,000자)
+`;
+
+```
+
+---
+
+## File 37: `functions/src/engine/narrative/renderer.ts` {#file-37}
+
+**크기**: 1.48 KB | **확장자**: ts
+
+```ts
+import { OpenAI } from 'openai';
+import { SYSTEM_PROMPT } from './prompt.system';
+import { ReportPatch, ReportPatchSchema } from './patch.schema';
+import { NarrativeInputPacket } from './packetBuilders/main';
+
+const openai = new OpenAI();
+
+/**
+ * Renders a narrative patch for the report using OpenAI.
+ * Strict JSON output validated against ReportPatchSchema.
+ */
+export async function renderNarrativePatch(input: NarrativeInputPacket): Promise<ReportPatch> {
+    const userPrompt = `아래 정제된 사주 데이터를 기반으로 리포트 서술 패치를 생성하십시오.
+데이터: ${JSON.stringify(input)}
+결과 형식은 반드시 JSON Patch 배열이어야 합니다.`;
+
+    const response = await openai.chat.completions.create({
+        model: process.env.OPENAI_MODEL || "gpt-4o",
+        messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: userPrompt }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2, // 낮은 온도로 일관성 유지
+    });
+
+    const content = response.choices[0].message.content || "[]";
+    const rawPatch = JSON.parse(content);
+
+    // Zod 검증 (Renderer Contract)
+    const parseResult = ReportPatchSchema.safeParse(Array.isArray(rawPatch) ? rawPatch : (rawPatch.patch || []));
+
+    if (!parseResult.success) {
+        throw new Error(`Narrative Patch validation failed: ${parseResult.error.message}`);
+    }
+
+    return parseResult.data;
+}
+
+```
+
+---
+
+## File 38: `functions/src/engine/pillars/index.ts` {#file-38}
 
 **크기**: 8.46 KB | **확장자**: ts
 
 ```ts
-import { convertToSolar, convertToLunar, SolarResult } from './calendar/converter';
-import { toHanjaGanji, Ganzhi, STEMS_HANJA, BRANCHES_HANJA } from './calendar/ganzhi';
-import { calculateTrueSolarTime, TrueSolarTimeResult, addDaysUTC, parseYMDToUTCDate } from './calendar/time';
-import { getSolarTermDate } from './calendar/astronomy';
+import { convertToSolar, convertToLunar, SolarResult } from '../calendar/converter';
+import { toHanjaGanji, Ganzhi, STEMS_HANJA, BRANCHES_HANJA } from '../calendar/ganzhi';
+import { calculateTrueSolarTime, TrueSolarTimeResult, addDaysUTC, parseYMDToUTCDate } from '../calendar/time';
+import { getSolarTermDate } from '../calendar/astronomy';
 
 export interface Pillar extends Ganzhi {
     // Just the basic ganzhi info
@@ -2474,9 +3064,9 @@ export function calculatePillars(input: PillarsInput): PillarsResult {
 
 ---
 
-## File 29: `functions/src/engine/quality/bannedPhrases.ts` {#file-29}
+## File 39: `functions/src/engine/quality/bannedPhrases.ts` {#file-39}
 
-**크기**: 1.04 KB | **확장자**: ts
+**크기**: 1.20 KB | **확장자**: ts
 
 ```ts
 /**
@@ -2491,7 +3081,12 @@ export const BANNED_PHRASES = [
     "추후 업데이트",
     "Lorem ipsum",
     "TBD",
-    
+    "빈 값",
+    "내용 없음",
+    "[object Object]",
+    "undefined",
+    "null",
+
     // Generic Fortune Telling (Barnum Statements)
     "전반적으로 무난합니다",
     "마음먹기에 달렸습니다",
@@ -2499,26 +3094,31 @@ export const BANNED_PHRASES = [
     "좋은 일이 생길 수도 있고 나쁜 일이 생길 수도 있습니다",
     "대체로 좋습니다",
     "평범한 운세입니다",
-    "조심하는 것이 좋습니다", // Too generic without context
+    "조심하는 것이 좋습니다",
     "모든 것은 당신에게 달려있습니다",
-    
+    "그냥 그렇습니다",
+    "특별한 것이 없습니다",
+
     // Ambiguous/Lazy
     "알 수 없음",
-    "분석 불가", // Unless specific error handled elsewhere
+    "분석 불가",
+    "계산 중...",
     "..."
 ];
 
 export const BANNED_PATTERNS = [
-    /운세.*참고.*바랍니다/i, // Generic disclaimer inside content
+    /운세.*참고.*바랍니다/i,
     /믿거나.*말거나/i,
-    /재미로.*보세요/i
+    /재미로.*보세요/i,
+    /데이터가.*공개되지.*않았습니다/i,
+    /정확한.*분석.*어렵습니다/i
 ];
 
 ```
 
 ---
 
-## File 30: `functions/src/engine/quality/densityMetrics.ts` {#file-30}
+## File 40: `functions/src/engine/quality/densityMetrics.ts` {#file-40}
 
 **크기**: 2.15 KB | **확장자**: ts
 
@@ -2583,147 +3183,188 @@ function checkSectionDensity(section: ReportSection | undefined, name: string, i
 
 ---
 
-## File 31: `functions/src/engine/quality/gate.ts` {#file-31}
+## File 41: `functions/src/engine/quality/densityThresholds.ts` {#file-41}
 
-**크기**: 1.81 KB | **확장자**: ts
+**크기**: 0.95 KB | **확장자**: ts
 
 ```ts
-import { BANNED_PHRASES, BANNED_PATTERNS } from './bannedPhrases';
-
-export interface QualityCheckResult {
-    passed: boolean;
-    repairedText?: string;
-    violation?: string;
-}
+/**
+ * Genesis Only Contract (report/v6) Density Thresholds.
+ * Total target: 45,000+ characters.
+ */
+export const DENSITY_THRESHOLDS = {
+    TOTAL: 45000,
+    SECTIONS: {
+        executiveSummary: 4000,
+        originAudit: 8000,
+        lifeFlow: 20000,
+        turningPoints: 4000,
+        rolling12: 6000,
+        luckCalendar: 4000,
+        dateDetail: 4000,
+        naming: 4000, // If active
+    },
+    FIELDS: {
+        result: 500,
+        interpretation: 1000,
+        explain: 500
+    }
+};
 
 /**
- * P8-ATOMIC-003: Quality Gate with 1-time Repair
+ * Required policy phrases for specific conditions.
  */
-export function checkAndRepairText(text: string, context: string = ""): QualityCheckResult {
-    if (!text || text.trim().length === 0) {
-        return { passed: false, violation: "Empty text" };
+export const POLICY_PHRASES = {
+    TIME_UNKNOWN: "시주 판단 유보",
+    HANJA_MISSING: "한자 확정 불가"
+};
+
+/**
+ * Banned phrases to be stripped by auto-repair.
+ */
+export const BANNED_PHRASES = [
+    "[PENDING_RENDER]",
+    "TBD",
+    "플레이스홀더",
+    "내용을 입력하세요",
+    "무료 운세 수준",
+    "데이터가 없습니다"
+];
+
+```
+
+---
+
+## File 42: `functions/src/engine/quality/gate.ts` {#file-42}
+
+**크기**: 1.31 KB | **확장자**: ts
+
+```ts
+import { FullReportData, ReportSection } from '../../contracts/output.schema';
+import { validateReportStructure } from './reportValidator';
+import { BANNED_PHRASES } from './densityThresholds';
+
+/**
+ * [Phase 3] Quality Gate Entry Point.
+ * - Enforces v6 contract.
+ * - Attempts 1-time repair for banned phrases.
+ */
+export function validateAndRepairReport(report: FullReportData, isTimeUnknown: boolean = false, hasHanja: boolean = true) {
+    // 1. Initial Repair attempt (Banned phrases)
+    for (const section of Object.values(report.sections)) {
+        if (!section) continue;
+        const s = section as ReportSection;
+
+        const fields: (keyof ReportSection)[] = ['result', 'interpretation', 'explain'];
+        fields.forEach(field => {
+            let text = (s as any)[field] || "";
+            for (const banned of BANNED_PHRASES) {
+                if (text.includes(banned)) {
+                    text = text.replace(new RegExp(escapeRegExp(banned), 'g'), "");
+                }
+            }
+            (s as any)[field] = text.trim();
+        });
     }
 
-    const violation = findViolation(text);
-    if (!violation) {
-        return { passed: true };
-    }
+    // 2. Structural & Density Validation
+    validateReportStructure(report, isTimeUnknown, hasHanja);
 
-    // Attempt 1 Repair
-    const repaired = repairText(text, violation);
-    
-    // Re-check
-    const reViolation = findViolation(repaired);
-    if (reViolation) {
-        return { 
-            passed: false, 
-            violation: `Failed to repair: ${reViolation}`,
-            repairedText: repaired 
-        };
-    }
-
-    return { passed: true, repairedText: repaired };
+    return report;
 }
 
-function findViolation(text: string): string | null {
-    for (const phrase of BANNED_PHRASES) {
-        if (text.includes(phrase)) return `Contains banned phrase: "${phrase}"`;
-    }
-    for (const pattern of BANNED_PATTERNS) {
-        if (pattern.test(text)) return `Matches banned pattern: ${pattern}`;
-    }
-    return null;
-}
-
-function repairText(text: string, violation: string): string {
-    let repaired = text;
-
-    for (const phrase of BANNED_PHRASES) {
-        if (repaired.includes(phrase)) {
-            repaired = repaired.replace(phrase, ""); 
-        }
-    }
-
-    for (const pattern of BANNED_PATTERNS) {
-        repaired = repaired.replace(pattern, "");
-    }
-
-    repaired = repaired.replace(/\s+/g, " ").trim();
-
-    if (repaired.length === 0) {
-        return text; // Revert to original to show violation
-    }
-
-    return repaired;
+function escapeRegExp(string: string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 ```
 
 ---
 
-## File 32: `functions/src/engine/quality/reportValidator.ts` {#file-32}
+## File 43: `functions/src/engine/quality/reportValidator.ts` {#file-43}
 
-**크기**: 3.21 KB | **확장자**: ts
+**크기**: 4.51 KB | **확장자**: ts
 
 ```ts
 import { FullReportData, ReportSection } from '../../contracts/output.schema';
+import { DENSITY_THRESHOLDS, POLICY_PHRASES } from './densityThresholds';
 
 export class QualityValidationError extends Error {
     constructor(public details: string[]) {
-        super(`Quality Validation Failed: ${details.join(', ')}`);
+        super(`Quality Validation Failed: ${details.join('; ')}`);
         this.name = 'QualityValidationError';
     }
 }
 
-// const REQUIRED_SECTIONS = ['EXIT_001', 'ORIG_001', 'LIFE_001', 'ROLL_001']; // Unused for now, explicit checks used below
-
-export function validateReportStructure(report: FullReportData): void {
+/**
+ * Validates report structure and density against v6 contract.
+ */
+export function validateReportStructure(report: FullReportData, isTimeUnknown: boolean = false, hasHanja: boolean = true) {
     const errors: string[] = [];
     const sections = report.sections;
 
-    // 1. Required Sections Presence
-    if (!sections.executiveSummary) errors.push("Missing ExecutiveSummary");
-    if (!sections.originAudit) errors.push("Missing OriginAudit");
-    if (!sections.lifeFlow) errors.push("Missing LifeFlow");
-    if (!sections.rolling12) errors.push("Missing Rolling12");
+    // 1. Required Sections Presence (v6 Contract)
+    const requiredSections = [
+        'executiveSummary', 'originAudit', 'lifeFlow',
+        'turningPoints', 'rolling12', 'luckCalendar', 'dateDetail'
+    ];
 
-    if (errors.length > 0) throw new QualityValidationError(errors);
+    for (const secKey of requiredSections) {
+        if (!(sections as any)[secKey]) {
+            errors.push(`Missing mandatory section: ${secKey}`);
+        }
+    }
 
-    // 2. 3-Field Completeness & Section Logic
-    validateSection(sections.executiveSummary, 'ExecutiveSummary', errors);
-    validateSection(sections.originAudit, 'OriginAudit', errors);
+    // 2. Structural Integrity & Field Completeness
+    // Basic Sections
+    const basicSections = ['executiveSummary', 'originAudit', 'rolling12', 'luckCalendar', 'dateDetail'];
+    for (const key of basicSections) {
+        const s = (sections as any)[key] as ReportSection;
+        if (!s) continue;
+        validateFields(s, `sections.${key}`, errors);
+    }
 
-    // LifeFlow Bucket Check
+    // Life Flow (9 Buckets)
     if (sections.lifeFlow) {
-        validateSection(sections.lifeFlow, 'LifeFlow', errors);
-        // Assuming details are in resultFacts or we parse result
-        // For P5 structure, we use resultFacts usually.
-        // P5 lifeBuckets sets resultFacts: { buckets: [...] }
-        const facts = sections.lifeFlow.resultFacts as any;
-        if (!facts || !Array.isArray(facts.buckets) || facts.buckets.length !== 9) {
-            errors.push(`LifeFlow must have 9 buckets (10s..90s), found ${facts?.buckets?.length ?? 0}`);
+        if (!Array.isArray(sections.lifeFlow.buckets) || sections.lifeFlow.buckets.length !== 9) {
+            errors.push(`LifeFlow must have exactly 9 buckets (found: ${sections.lifeFlow.buckets?.length || 0})`);
+        } else {
+            sections.lifeFlow.buckets.forEach((b, i) => {
+                validateFields(b, `sections.lifeFlow.buckets[${i}]`, errors);
+            });
         }
     }
 
-    if (sections.rolling12) {
-        validateSection(sections.rolling12, 'Rolling12', errors);
-    }
-
-    if (sections.naming) {
-        validateSection(sections.naming, 'Naming', errors);
-        // P7 Policy: missingKangxi -> referenceOnly
-        const facts = sections.naming.resultFacts as any;
-        if (facts?.missingKangxi && !facts?.referenceOnly) {
-            errors.push("Naming policy violation: missingKangxi must imply referenceOnly");
+    // Turning Points (Min 5 items)
+    if (sections.turningPoints) {
+        if (!Array.isArray(sections.turningPoints.items) || sections.turningPoints.items.length < 5) {
+            errors.push(`TurningPoints must have at least 5 items (found: ${sections.turningPoints.items?.length || 0})`);
+        } else {
+            sections.turningPoints.items.forEach((item, i) => {
+                validateFields(item, `sections.turningPoints.items[${i}]`, errors);
+            });
         }
     }
 
-    // 3. Meta Policy
-    if (report.meta) { // Usually meta is inside input or wrapper, but schema has meta
-        // Assuming input is also available or passed, but Validator usually checks Output.
-        // Let's check if disclaimer exists in output text if we detect logic?
-        // It's hard to check 'timeUnknown' from output unless it's in resultFacts.
-        // Skip input-dependent checks here unless embedded in output facts.
+    // 3. Total Report Density (45,000+ chars for 30p+ quality)
+    const totalChars = calculateTotalChars(sections);
+    if (totalChars < DENSITY_THRESHOLDS.TOTAL) {
+        errors.push(`Total Report Density: ${totalChars} chars < ${DENSITY_THRESHOLDS.TOTAL} (contract violation)`);
+    }
+
+    // 4. Policy Phrasing Checks
+    if (isTimeUnknown) {
+        const text = JSON.stringify(sections);
+        if (!text.includes(POLICY_PHRASES.TIME_UNKNOWN)) {
+            errors.push(`Policy Violation: 'timeUnknown' report must include "${POLICY_PHRASES.TIME_UNKNOWN}"`);
+        }
+    }
+
+    if (!hasHanja && sections.naming) {
+        const text = JSON.stringify(sections.naming);
+        if (!text.includes(POLICY_PHRASES.HANJA_MISSING)) {
+            errors.push(`Policy Violation: Naming analysis must include "${POLICY_PHRASES.HANJA_MISSING}"`);
+        }
     }
 
     if (errors.length > 0) {
@@ -2731,18 +3372,41 @@ export function validateReportStructure(report: FullReportData): void {
     }
 }
 
-function validateSection(section: ReportSection | undefined, name: string, errors: string[]) {
-    if (!section) return; // Already caught by required check
-    if (!section.result || section.result.trim().length === 0) errors.push(`${name}: missing result`);
-    if (!section.interpretation || section.interpretation.trim().length === 0) errors.push(`${name}: missing interpretation`);
-    if (!section.explain || section.explain.trim().length === 0) errors.push(`${name}: missing explain`);
+function validateFields(obj: any, path: string, errors: string[]) {
+    const fields = ['result', 'interpretation', 'explain'];
+    for (const f of fields) {
+        const val = obj[f] || "";
+        if (typeof val !== 'string' || val.length < 5 || val.includes("[PENDING]")) {
+            errors.push(`Field incomplete or too short: ${path}.${f} (length: ${val.length})`);
+        }
+    }
+}
+
+function calculateTotalChars(sections: any): number {
+    let count = 0;
+    const basic = ['executiveSummary', 'originAudit', 'rolling12', 'luckCalendar', 'dateDetail', 'naming'];
+    for (const k of basic) {
+        const s = sections[k];
+        if (s) count += (s.result?.length || 0) + (s.explain?.length || 0) + (s.interpretation?.length || 0);
+    }
+    if (sections.lifeFlow?.buckets) {
+        for (const b of sections.lifeFlow.buckets) {
+            count += (b.result?.length || 0) + (b.explain?.length || 0) + (b.interpretation?.length || 0);
+        }
+    }
+    if (sections.turningPoints?.items) {
+        for (const item of sections.turningPoints.items) {
+            count += (item.result?.length || 0) + (item.explain?.length || 0) + (item.interpretation?.length || 0);
+        }
+    }
+    return count;
 }
 
 ```
 
 ---
 
-## File 33: `functions/src/engine/relations/index.ts` {#file-33}
+## File 44: `functions/src/engine/relations/index.ts` {#file-44}
 
 **크기**: 6.05 KB | **확장자**: ts
 
@@ -2934,7 +3598,7 @@ export function calculateRelations(pillars: PillarsResult): RelationsResult {
 
 ---
 
-## File 34: `functions/src/engine/relations/rules.ts` {#file-34}
+## File 45: `functions/src/engine/relations/rules.ts` {#file-45}
 
 **크기**: 2.92 KB | **확장자**: ts
 
@@ -3018,7 +3682,7 @@ export const JIJI_BANGHAB = [
 
 ---
 
-## File 35: `functions/src/engine/reportPackets/lifeFlow.ts` {#file-35}
+## File 46: `functions/src/engine/reportPackets/lifeFlow.ts` {#file-46}
 
 **크기**: 0.97 KB | **확장자**: ts
 
@@ -3059,7 +3723,7 @@ export type NarrativeGenerator = (packet: LifeFlowPacket) => string;
 
 ---
 
-## File 36: `functions/src/engine/reportUtils.ts` {#file-36}
+## File 47: `functions/src/engine/reportUtils.ts` {#file-47}
 
 **크기**: 0.79 KB | **확장자**: ts
 
@@ -3096,292 +3760,21 @@ export function validateReportQuality(meta: ReportMeta): boolean {
 
 ---
 
-## File 37: `functions/src/engine/report/assembler.ts` {#file-37}
+## File 48: `functions/src/engine/schemas/astro.ts` {#file-48}
 
-**크기**: 3.83 KB | **확장자**: ts
-
-```ts
-import { PillarsResult } from '../pillars';
-import { ReportSectionOutput, validateReportStructure } from './validator';
-import { checkAndRepairText } from '../quality/gate';
-import { hasHan } from '../name/hasHan';
-
-// Define the fixed ToC
-export const REQUIRED_SECTIONS = [
-    'ExecutiveSummary',
-    'OriginAudit',
-    'LifeFlow',
-    'TurningPoints',
-    'Rolling12',
-    'DateDetail'
-    // 'Naming' is conditional
-];
-
-export interface ReportInput {
-    pillars: PillarsResult;
-    userName?: string;
-    // ... other inputs
-}
-
-export interface ReportAssemblyResult {
-    sections: ReportSectionOutput[];
-    qualityFlags: {
-        needsRegeneration: boolean;
-        details: string[];
-    };
-}
-
-/**
- * P8-ATOMIC-001: Report Assembly Pipeline
- * Single Entry Point
- */
-export function assembleReport(input: ReportInput): ReportAssemblyResult {
-    const sections: ReportSectionOutput[] = [];
-    const qualityDetails: string[] = [];
-    let needsRegeneration = false;
-
-    // 1. Generate Sections (Simulated Generators for Pipeline)
-    // In real impl, these would call specific engines.
-    
-    // ExecutiveSummary
-    sections.push(generateSection('ExecutiveSummary', '요약', 'SUMMARY', input));
-    
-    // OriginAudit
-    sections.push(generateSection('OriginAudit', '원국 분석', 'CORE', input));
-    
-    // LifeFlow
-    sections.push(generateSection('LifeFlow', '대운 흐름', 'STRATEGY', input));
-    
-    // TurningPoints
-    sections.push(generateSection('TurningPoints', '인생의 전환점', 'ROADMAP', input));
-    
-    // Rolling12
-    sections.push(generateSection('Rolling12', '1년 운세', 'STATUS', input));
-    
-    // DateDetail
-    sections.push(generateSection('DateDetail', '일일 상세', 'DEBUG', input));
-
-    // Naming (Conditional)
-    if (input.userName && hasHan(input.userName)) {
-        sections.push(generateSection('Naming', '성명학 분석', 'META', input));
-    }
-
-    // 2. Validate Presence of Required Sections
-    for (const reqId of REQUIRED_SECTIONS) {
-        if (!sections.find(s => s.id === reqId)) {
-            throw new Error(`CRITICAL: Missing required section '${reqId}'. Pipeline failed.`);
-        }
-    }
-
-    // 3. Validate Fields (3-Field Rule)
-    try {
-        validateReportStructure(sections);
-    } catch (e: any) {
-        throw new Error(`CRITICAL: Validation failed - ${e.message}`);
-    }
-
-    // 4. Quality Gate Check
-    for (const section of sections) {
-        const fields = [section.result, section.explain, section.interpretation];
-        for (const text of fields) {
-            const check = checkAndRepairText(text);
-            if (!check.passed) {
-                needsRegeneration = true;
-                qualityDetails.push(`Section ${section.id}: ${check.violation}`);
-            } else if (check.repairedText) {
-                // Apply repair
-                if (text === section.result) section.result = check.repairedText;
-                if (text === section.explain) section.explain = check.repairedText;
-                if (text === section.interpretation) section.interpretation = check.repairedText;
-            }
-        }
-    }
-
-    return {
-        sections,
-        qualityFlags: {
-            needsRegeneration,
-            details: qualityDetails
-        }
-    };
-}
-
-// Mock Generator for Pipeline Testing
-function generateSection(id: string, title: string, category: string, input: any): ReportSectionOutput {
-    // In a real scenario, this would switch on ID and call specific engines.
-    // For now, we return a valid structure to pass the pipeline.
-    return {
-        id,
-        title,
-        category,
-        result: `${title} 결과입니다.`,
-        explain: `${title}에 대한 설명입니다.`,
-        interpretation: `${title}에 대한 해석입니다.`
-    };
-}
-
-```
-
----
-
-## File 38: `functions/src/engine/report/validator.ts` {#file-38}
-
-**크기**: 1.00 KB | **확장자**: ts
-
-```ts
-// import { Section } from '../../../../src/types/report'; // Removed unused
-// Since we are in functions, we might not have access to src/types easily if not shared.
-// Let's define the interface here to match the requirement.
-
-export interface ReportSectionOutput {
-    id: string;
-    title: string;
-    category: string;
-    result: string;
-    explain: string;
-    interpretation: string;
-    // Optional extras
-    reasonCards?: any[];
-}
-
-/**
- * P8-ATOMIC-002: 3-Field Enforcement
- */
-export function validateSectionFields(section: ReportSectionOutput): void {
-    const requiredFields = ['result', 'explain', 'interpretation'] as const;
-
-    for (const field of requiredFields) {
-        if (!section[field] || section[field].trim().length === 0) {
-            throw new Error(`Section ${section.id} missing required field: ${field}`);
-        }
-    }
-}
-
-export function validateReportStructure(sections: ReportSectionOutput[]): void {
-    sections.forEach(validateSectionFields);
-}
-
-```
-
----
-
-## File 39: `functions/src/engine/rollingRange.ts` {#file-39}
-
-**크기**: 2.74 KB | **확장자**: ts
-
-```ts
-// P6-ATOMIC-001: Rolling 12-Month Range Calculation
-import { parseYMDToUTCDate } from './calendar/time';
-
-export interface RollingRange {
-    startDate: string; // YYYY-MM-DD
-    endDate: string; // YYYY-MM-DD
-    totalDays: number;
-    dates: string[]; // List of all YYYY-MM-DD strings
-}
-
-/**
- * Calculate a rolling 1 year range starting from analysisDate (inclusive).
- * Covers exactly 1 year length (e.g., 2024-01-01 -> 2024-12-31).
- * If leap year is involved, handles 366 days.
- */
-export function calculateRollingRange(analysisDateYMD: string): RollingRange {
-    const start = parseYMDToUTCDate(analysisDateYMD);
-
-    // Calculate End Date: Same Month/Day next year, minus 1 day.
-    // e.g. Start 2024-01-01 -> Next Year 2025-01-01 -> Minus 1 day -> 2024-12-31.
-    // Logic: Add 1 year to year component, then subtract 1 day.
-
-    // However, simply adding 1 year can be tricky with Feb 29.
-    // 2024-02-29 + 1 year -> 2025-02-28 (automagically? or 03-01?)
-    // Javascript Date usually handles this to 03-01 if 02-29 doesn't exist.
-    // Let's stick to "Add 365 or 366 days"?
-    // Definition of "1 Year":
-    // User expects "Today until same day next year" or "Today until day before same day"?
-    // Usually a "Year Calendar" includes the full cycle. 
-    // Let's iterate day by day to be safe and strictly generate the list.
-
-    // Wait, simpler approach:
-    // Determine target end Date.
-    // Actually, "Rolling 12 months" usually means [Start, End] where End is (Start + 1 Year - 1 Day).
-
-    // Let's just generate the dates array by iterating. It's safer for list generation.
-    const dates: string[] = [];
-    let current = new Date(start.getTime());
-
-    // We stop when we reach the date that is (StartYear + 1, StartMonth, StartDay).
-    const limitYear = start.getUTCFullYear() + 1;
-    const limitMonth = start.getUTCMonth();
-    const limitDay = start.getUTCDate();
-
-    // Safety break: 400 days
-    for (let i = 0; i < 400; i++) {
-        const y = current.getUTCFullYear();
-        const m = current.getUTCMonth();
-        const d = current.getUTCDate();
-
-        if (y === limitYear && m === limitMonth && d === limitDay) {
-            break; // Reached exact same date next year
-        }
-
-        dates.push(formatYMD(current));
-
-        // Next day
-        current.setUTCDate(current.getUTCDate() + 1);
-    }
-
-    return {
-        startDate: dates[0],
-        endDate: dates[dates.length - 1],
-        totalDays: dates.length,
-        dates
-    };
-}
-
-function formatYMD(date: Date): string {
-    const y = date.getUTCFullYear();
-    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const d = String(date.getUTCDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-}
-
-```
-
----
-
-## File 40: `functions/src/engine/schemas/astro.ts` {#file-40}
-
-**크기**: 1.17 KB | **확장자**: ts
+**크기**: 0.76 KB | **확장자**: ts
 
 ```ts
 import { z } from 'zod';
 
-// Shared schemas for determinism/contracts
 export const AstroInputSchema = z.object({
     birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    birthTime: z.string().nullable(),
+    birthTime: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
     timeUnknown: z.boolean(),
     sex: z.enum(['male', 'female']),
     calendar: z.enum(['solar', 'lunar']),
     isLeapMonth: z.boolean().optional(),
-    timezone: z.string().default('Asia/Seoul')
-});
-
-export const PillarSchema = z.object({
-    stem: z.string(),
-    branch: z.string(),
-    label: z.string()
-});
-
-export const PillarsResultSchema = z.object({
-    year: PillarSchema,
-    month: PillarSchema,
-    day: PillarSchema,
-    hour: PillarSchema.nullable(),
-    normalization: z.object({
-        solarDate: z.string(),
-        isLeapMonth: z.boolean()
-    })
+    timezone: z.string().optional()
 });
 
 export const DaewoonInputSchema = z.object({
@@ -3394,22 +3787,23 @@ export const DaewoonInputSchema = z.object({
     timezone: z.string().optional()
 });
 
-export type AstroInput = z.infer<typeof AstroInputSchema>;
-export type DaewoonInput = z.infer<typeof DaewoonInputSchema>;
+export const SewoonInputSchema = z.object({
+    // targetYear and other sewoon specific inputs can be defined here
+});
 
 ```
 
 ---
 
-## File 41: `functions/src/engine/sewoon.ts` {#file-41}
+## File 49: `functions/src/engine/sewoon/index.ts` {#file-49}
 
 **크기**: 2.28 KB | **확장자**: ts
 
 ```ts
-import { Ganzhi, STEMS_HANJA, BRANCHES_HANJA } from './calendar/ganzhi';
-import { getTenGod, getElement, Element } from './tenGod';
-import { RelationsResult } from './relations';
-import { PillarsResult } from './pillars';
+import { Ganzhi, STEMS_HANJA, BRANCHES_HANJA } from '../calendar/ganzhi';
+import { getTenGod, getElement, Element } from '../tenGod';
+import { RelationsResult } from '../relations';
+import { PillarsResult } from '../pillars';
 
 // P5-ATOMIC-001: Annual Luck (Sewoon) Generation
 // Deterministic generation of execution year context.
@@ -3488,7 +3882,7 @@ export function calculateSewoon(targetYear: number, pillars: PillarsResult): Sew
 
 ---
 
-## File 42: `functions/src/engine/strengthScore.ts` {#file-42}
+## File 50: `functions/src/engine/strengthScore.ts` {#file-50}
 
 **크기**: 3.59 KB | **확장자**: ts
 
@@ -3616,7 +4010,7 @@ export function calculateStrength(pillars: PillarsResult): StrengthResult {
 
 ---
 
-## File 43: `functions/src/engine/tables/hiddenStems.ts` {#file-43}
+## File 51: `functions/src/engine/tables/hiddenStems.ts` {#file-51}
 
 **크기**: 2.47 KB | **확장자**: ts
 
@@ -3703,7 +4097,7 @@ export function getHiddenStems(branch: string): HiddenStem[] {
 
 ---
 
-## File 44: `functions/src/engine/tables/strengthWeights.ts` {#file-44}
+## File 52: `functions/src/engine/tables/strengthWeights.ts` {#file-52}
 
 **크기**: 0.43 KB | **확장자**: ts
 
@@ -3728,7 +4122,7 @@ if (total !== 100) {
 
 ---
 
-## File 45: `functions/src/engine/tenGod.ts` {#file-45}
+## File 53: `functions/src/engine/tenGod.ts` {#file-53}
 
 **크기**: 1.20 KB | **확장자**: ts
 
@@ -3775,7 +4169,7 @@ export function getTenGod(dayStem: string, target: string): string {
 
 ---
 
-## File 46: `functions/src/engine/yinYang.ts` {#file-46}
+## File 54: `functions/src/engine/yinYang.ts` {#file-54}
 
 **크기**: 0.79 KB | **확장자**: ts
 
@@ -3821,7 +4215,7 @@ export function calculateYinYang(chars: string[]): YinYangResult {
 
 ---
 
-## File 47: `functions/src/generateLuckCalendar.js` {#file-47}
+## File 55: `functions/src/generateLuckCalendar.js` {#file-55}
 
 **크기**: 6.90 KB | **확장자**: js
 
@@ -4024,391 +4418,137 @@ function generateActionPlan(grade) {
 
 ---
 
-## File 48: `functions/src/index.ts` {#file-48}
+## File 56: `functions/src/index.ts` {#file-56}
 
-**크기**: 14.12 KB | **확장자**: ts
+**크기**: 4.80 KB | **확장자**: ts
 
 ```ts
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { setGlobalOptions } = require("firebase-functions/v2");
-const { defineSecret } = require("firebase-functions/params");
-const admin = require("firebase-admin");
-const { Timestamp } = require("firebase-admin/firestore");
-const { logger } = require("firebase-functions");
-const { OpenAI } = require("openai");
-const { calculateV1 } = require("./engine/calculation/v1");
+import * as admin from "firebase-admin";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { setGlobalOptions } from "firebase-functions/v2";
+import { defineSecret } from "firebase-functions/params";
+import { logger } from "firebase-functions";
+import { InputSchema } from "./contracts/input.schema";
+import { sanitizeUserName, detectScriptType } from "./contracts/shared/nameSanitize";
 
-// Phase 26: Import generateLuckCalendar
-const { generateLuckCalendar } = require("./generateLuckCalendar");
+// Luck Calendar Export
+import { generateLuckCalendar } from "./generateLuckCalendar";
 
-// [Stability Patch] App Check Visibility & Secrets
 const REGION = "asia-northeast3";
-const { computeDeterminismHash } = require("./engine/hash");
 const ENFORCE_APP_CHECK = process.env.FUNCTIONS_EMULATOR !== "true";
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
-const { InputSchema } = require("./contracts/input.schema");
 
 setGlobalOptions({ region: REGION });
-admin.initializeApp();
 
-logger.info(`[System] App Check Enforced: ${ENFORCE_APP_CHECK} (Emulator: ${process.env.FUNCTIONS_EMULATOR})`);
+if (!admin.apps.length) {
+    admin.initializeApp();
+}
 
-/**
- * generateReport (Callable Function v2)
- * Phase 23: OpenAI JSON Mode & Action Plan Integration
- * v4.1.0-AI-JSON: Zero Tolerance AI Activation
- */
-/**
- * Phase 25: System Audit Report Structure
- */
-export const REPORT_STRUCTURE = [
-    { id: "01_intro", title: "제네시스 오버뷰", category: "SUMMARY" },
-    { id: "02_code", title: "제네시스 코드", category: "ARCH" },
-    { id: "03_logic", title: "분석 알고리즘 명세", category: "SPEC" },
-    { id: "04_os", title: "운영체제 타입", category: "SYSTEM" },
-    { id: "05_core", title: "코어 엘리먼트", category: "CORE" },
-    { id: "06_dual", title: "듀얼 프로세서", category: "CORE" },
-    { id: "07_balance", title: "에너지 구조 및 밸런스", category: "RESOURCE" },
-    { id: "08_bug", title: "고질적 버그 리포트", category: "DEBUG" },
-    { id: "09_crash", title: "반복되는 시스템 충돌", category: "DEBUG" },
-    { id: "10_leak", title: "에너지 누수 구간", category: "DEBUG" },
-    { id: "11_defense", title: "방어 기제 및 방화벽", category: "SECURITY" },
-    { id: "12_killer", title: "킬러 애플리케이션", category: "APP" },
-    { id: "13_process", title: "업무 처리 프로세스", category: "APP" },
-    { id: "14_wealth", title: "리소스 할당 전략", category: "STRATEGY" },
-    { id: "15_decision", title: "의사결정 병목 해결", category: "STRATEGY" },
-    { id: "16_social", title: "인터랙션 프로토콜", category: "NETWORK" },
-    { id: "17_love", title: "호환성 검사", category: "NETWORK" },
-    { id: "18_traffic", title: "네트워크 트래픽 관리", category: "NETWORK" },
-    { id: "19_current", title: "현재 시스템 부하", category: "STATUS" },
-    { id: "20_major", title: "업데이트 일정", category: "ROADMAP" },
-    { id: "21_roadmap", title: "단기 패치 노트", category: "ROADMAP" },
-    { id: "22_wave", title: "바이오리듬 및 파동", category: "STATUS" },
-    { id: "23_boost", title: "시스템 부스팅", category: "PATCH" },
-    { id: "24_archive", title: "시스템 아카이브", category: "META" },
-] as const;
+import { generateDeterministicPacket } from "./engine";
+import { assembleReport } from "./engine/assembler/main";
+import { validateAndRepairReport } from "./engine/quality/gate";
+import { QualityValidationError } from "./engine/quality/reportValidator";
 
 /**
- * Master Myungri – 시스템 감사관 페르소나
+ * [Phase 28] ATOMIC-R2-01: Shared Contract Implementation
+ * - Same runtime schema for FE/BE.
+ * - Deterministic Engine Separation.
  */
-const SYSTEM_PROMPT = `
-당신은 "Master Myungri", 선임 시스템 감사관(Senior System Auditor)입니다.
-당신은 인간을 하나의 "Human OS"로 분석합니다.
-
-Mandatory rules:
-- 오직 IT/시스템 메타포만 사용하십시오.
-- 일간(Day Master) = CPU/Kernel
-- 운(Fate) = System Traffic
-- 충(Clash) = System Crash
-- 흉신(Demon God) = Malware
-- 용신(Useful God) = Optimization Patch
-- 논리가 먼저이고 결론이 뒤따라야 합니다.
-- 위로나 점술적인 톤은 배제하십시오. 오직 감사 결과에만 집중합니다.
-- 시스템의 버그를 지적하고 구체적인 Action Plan을 제시하십시오.
-- 각 섹션은 반드시 최소 3-4문단으로 구성하십시오. (매우 중요)
-- 섹션 ID와 제목을 변경하지 마십시오.
-- 리포트 전체 분량을 축소하지 마십시오. 총 공백 제외 30,000자 이상의 밀도 높은 분석을 지향합니다.
-- 반드시 유효한 JSON 형식으로만 응답하며, 마크다운 태그 기입은 금지합니다.
-`;
-
-const SCHEMA_VERSION = "report/v6";
-const APP_VERSION = "v6.0.0";
-const SERVER_BUILD_ID = "v6.0.0-LONGFORM";
-
-exports.generateReport = onCall({
+export const generateReport = onCall({
     enforceAppCheck: ENFORCE_APP_CHECK,
     secrets: [OPENAI_API_KEY],
-    timeoutSeconds: 300, // Increase timeout for longer reports
-    memory: "512MiB"
+    timeoutSeconds: 300,
+    memory: "1GiB"
 }, async (request: any) => {
     const rawData = request.data;
 
-    // ... (입력 검증 로직 생략되지 않도록 전체 유지 권장되나 prompt 지시에 따라 변경점 집중)
-    // 실제로는 index.ts 전체를 한 번 읽었으므로 정확한 위치에 삽입
-
-    // [Step 4.1 Implementation]
-    // ... (기존 검증 로직 이후)
-
-
-    // 1. 입력 검증 (Fail Fast - Hardened via Contract)
+    // 1. Runtime Schema Validation (Shared Contract)
     const parseResult = InputSchema.safeParse(rawData);
-
     if (!parseResult.success) {
-        const errorDetails = parseResult.error.errors.map((e: any) => e.message).join(", ");
-        throw new HttpsError("invalid-argument", `입력 데이터 검증 실패: ${errorDetails}`, parseResult.error.format());
+        throw new HttpsError(
+            "invalid-argument",
+            "입력 정보가 올바르지 않습니다.",
+            parseResult.error.flatten()
+        );
     }
 
-    const { sanitizeUserName } = require("./shared/nameSanitize");
-
-    // ... (Input Validation) ...
-
-    const validInput = parseResult.data;
-
-    // Optional userName and scriptType logic (Legacy compat or handling derived fields)
-    let userName: string | undefined = validInput.userName;
-    let scriptType: 'hanja' | 'hangul' | 'unknown' | undefined;
-
-    if (userName) {
-        // [ATOMIC-03] Enforce Shared Sanitization (No length blocking)
-        userName = sanitizeUserName(userName).trim();
-
-        if (/\p{Script=Han}/u.test(userName)) {
-            scriptType = 'hanja';
-        } else if (/\p{Script=Hangul}/u.test(userName)) {
-            scriptType = 'hangul';
-        } else {
-            scriptType = 'unknown';
-        }
-    }
-
-    // Birth time calculation if exists
-    let birthTime = null;
-    if (!validInput.timeUnknown && validInput.birthTime) {
-        birthTime = validInput.birthTime;
-    }
-
-    // Prepare Calculation Input
-    const input: any = {
-        birthDate: validInput.birthDate,
-        birthTime: birthTime,
-        timeUnknown: validInput.timeUnknown,
-        sex: validInput.sex,
-        calendar: validInput.calendar,
-        isLeapMonth: validInput.isLeapMonth || false,
-        timezone: validInput.timezone
-    };
-
-    if (userName) {
-        input.userName = userName;
-        input.scriptType = scriptType;
-    }
+    const input = parseResult.data;
+    const userName = (input.userName || "익명").trim();
+    const sanitizedName = sanitizeUserName(userName);
 
     try {
-        // 2. 사주 실계산 실행
-        const calculation = calculateV1(input);
-        const { pillars } = calculation;
+        // [ATOMIC-R2-02] Deterministic Engine Call (A-Stage)
+        const deterministicPacket = generateDeterministicPacket({
+            birthDate: input.birthDate,
+            birthTime: input.birthTime || "",
+            timeUnknown: input.timeUnknown,
+            sex: input.sex,
+            calendar: input.calendar,
+            isLeapMonth: input.isLeapMonth || false,
+            timezone: input.timezone || "Asia/Seoul"
+        }, sanitizedName);
 
-        // [Phase 0] Determinism Hash
-        const determinismPayload = {
-            algorithmVersion: calculation.algorithmVersion,
-            normalization: calculation.normalization,
-            pillars: calculation.pillars,
-            forensicTime: calculation.forensicTime
-        };
-        const determinismHash = computeDeterminismHash(determinismPayload);
+        // [ATOMIC-R3] Phase 3: Narrative Rendering (C-Stage)
+        let finalReport = assembleReport(deterministicPacket);
 
-        // 3. OpenAI 해석 엔진 가동 (gpt-4o)
-        const openai = new OpenAI({
-            apiKey: OPENAI_API_KEY.value(),
+        // 1. Prepare LLM Input
+        const { buildNarrativeInput } = await import("./engine/narrative/packetBuilders/main");
+        const narrativeInput = buildNarrativeInput(deterministicPacket);
+
+        // 2. Render Narrative Patch
+        const { renderNarrativePatch } = await import("./engine/narrative/renderer");
+        const { applyNarrativePatch } = await import("./engine/narrative/applyPatch");
+
+        // Ensure API Key from secret is in env for the library
+        process.env.OPENAI_API_KEY = OPENAI_API_KEY.value();
+
+        try {
+            const patch = await renderNarrativePatch(narrativeInput);
+            finalReport = applyNarrativePatch(finalReport, patch);
+        } catch (narrativeError: any) {
+            logger.error("Narrative Generation Failed:", narrativeError);
+            throw new HttpsError("internal", "리포트 서술 생성 중 오류가 발생했습니다.");
+        }
+
+        // [ATOMIC-R2-04 / R3-04] Quality Gate Enforcement
+        try {
+            const hasHanja = /\p{Script=Han}/u.test(userName);
+            validateAndRepairReport(finalReport, parseResult.data.timeUnknown, hasHanja);
+        } catch (error) {
+            if (error instanceof QualityValidationError) {
+                logger.warn("Quality Gate Rejected Report:", error.details);
+                throw new HttpsError(
+                    "failed-precondition",
+                    "분석 리포트 품질 검증에 실패했습니다. (내용 밀도 또는 정책 위반)",
+                    { violations: error.details }
+                );
+            }
+            throw error;
+        }
+
+        // Save to Firestore
+        const docRef = await admin.firestore().collection("reports").add({
+            input,
+            userName: sanitizedName,
+            scriptType: detectScriptType(sanitizedName),
+            deterministicPacket,
+            report: finalReport,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
 
-        const modelName = "gpt-4o";
-
-        // [Phase 28: Per-section Segmented Generation]
-        async function generateOneSection(sectionMeta: any, attempt = 1): Promise<any> {
-            const sectionPrompt = `
-섹션 ID: ${sectionMeta.id}
-섹션 제목: ${sectionMeta.title}
-섹션 카테고리: ${sectionMeta.category}
-
-위 섹션에 대해 시스템 감사 보고서를 작성하십시오.
-반드시 아래 JSON 구조를 지키고, 각 필드의 최소 길이를 준수하십시오.
-
-필수 규칙:
-1. result: 핵심 결론 (최소 400자)
-2. explain: 논리적 근거 (최소 600자)
-3. interpretation: 현실적 행동 지침 (최소 400자)
-4. reasonCards: 최소 2개 이상의 객체 배열
-
-IT/시스템 메타포만 사용하고, 한국어로만 작성하십시오.
-`;
-
-            try {
-                const secCompletion = await openai.chat.completions.create({
-                    model: modelName,
-                    messages: [
-                        { role: "system", content: SYSTEM_PROMPT },
-                        {
-                            role: "user",
-                            content: `INPUT DATA:\n${JSON.stringify({
-                                userName: userName || "Anonymous",
-                                pillars,
-                                dayStem: pillars.day.stem,
-                                sex: rawData.sex,
-                                solarDate: calculation.normalization.solarDate
-                            })}\n\nTASK:\n${sectionPrompt}`
-                        }
-                    ],
-                    response_format: { type: "json_object" },
-                    temperature: 0.3,
-                });
-
-                const content = JSON.parse(secCompletion.choices[0]?.message?.content || "{}");
-
-                // Quality Gate: Length check
-                const rLen = (content.result || "").length;
-                const eLen = (content.explain || "").length;
-                const iLen = (content.interpretation || "").length;
-
-                if (attempt < 2 && (rLen < 300 || eLen < 450 || iLen < 300)) {
-                    logger.warn(`[QualityGate] Section ${sectionMeta.id} too short (R:${rLen}, E:${eLen}, I:${iLen}). Retrying...`);
-                    return generateOneSection(sectionMeta, attempt + 1);
-                }
-
-                return {
-                    ...content,
-                    id: sectionMeta.id,
-                    title: sectionMeta.title,
-                    category: sectionMeta.category,
-                    quality: { rLen, eLen, iLen, attempt }
-                };
-            } catch (secErr: any) {
-                logger.error(`[AI-Section] Error in ${sectionMeta.id}:`, secErr);
-                return {
-                    id: sectionMeta.id,
-                    title: sectionMeta.title,
-                    category: sectionMeta.category,
-                    result: "데이터를 생성하는 중 시간 초과 또는 오류가 발생했습니다.",
-                    explain: "시스템 가동 중 일시적인 부하가 감지되었습니다. 재생성을 권장합니다.",
-                    interpretation: "재시도 버튼을 통해 다시 감사해 주십시오.",
-                    reasonCards: [],
-                    error: secErr.message
-                };
-            }
-        }
-
-        // 24개 섹션 순차 생성 (토큰 및 품질 확보)
-        const sections: any[] = [];
-        let totalChars = 0;
-
-        for (const meta of REPORT_STRUCTURE) {
-            // 24_archive는 별도 처리
-            if (meta.id === "24_archive") {
-                sections.push({
-                    id: meta.id,
-                    title: meta.title,
-                    category: meta.category,
-                    result: `Algorithm: ${calculation.algorithmVersion}`,
-                    explain: `Model: ${modelName}\nEngine: ${SERVER_BUILD_ID}\nSchema: ${SCHEMA_VERSION}`,
-                    interpretation: `본 리포트는 섹션별 정밀 감수가 적용된 고밀도 분석 보고서(Phase 28)입니다.`,
-                    reasonCards: [],
-                    type: "analysis"
-                });
-                continue;
-            }
-
-            const secData = await generateOneSection(meta);
-            sections.push({
-                ...secData,
-                type: (meta.id === "01_intro") ? "intro" : "analysis"
-            });
-            totalChars += (secData.result?.length || 0) + (secData.explain?.length || 0) + (secData.interpretation?.length || 0);
-            logger.info(`[Progress] Generated Section: ${meta.id} (Total so far: ${totalChars} chars)`);
-        }
-
-        // 5. Build reportMeta
-        const reportMeta = {
-            title: userName ? `${userName} 님의 SYSTEM AUDIT v5.0` : "SYSTEM AUDIT v5.0",
-            userName: userName,
-            summary: "섹션별 순차 감수가 완료된 고품질 Human OS 인티그리티 리포트입니다.",
-            determinismHash: determinismHash, // [P0-ATOMIC-003]
-            strategistMeta: {
-                disclaimer: "본 감사 보고서는 시스템적 패턴 분석이며, 최종적인 기동 결정은 운영자 본인에게 있습니다."
-            }
-        };
-
-        // 6. 리포트 데이터 영구 보관
-        const reportData = {
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-            userId: request.auth?.uid || "anonymous",
-            version: APP_VERSION,
-            schemaVersion: SCHEMA_VERSION,
-            serverBuildId: SERVER_BUILD_ID,
-            algorithmVersion: "Genesis-V6.0-SEGMENTED",
-            model: modelName,
-            qualityMetrics: {
-                totalChars,
-                sectionCount: sections.length,
-                timestamp: new Date().toISOString()
-            },
-            input: input,
-            calculation: {
-                ...calculation,
-                forensicTime: (calculation as any).forensicTime ?? null
-            },
-            reportMeta,
-            sections: sections,
-            tableOfContents: REPORT_STRUCTURE.map(meta => ({ id: meta.id, title: meta.title }))
-        };
-
-        const reportRef = await admin.firestore().collection("reports").add(reportData);
-
         return {
-            reportId: reportRef.id,
-            totalChars,
-            sections: sections.map(s => ({ id: s.id, result: s.result ? "OK" : "MISSING" }))
+            reportId: docRef.id,
+            deterministicPacket,
+            report: finalReport
         };
-
-    } catch (err: any) {
-        logger.error("Report Generation Error:", err);
-        if (err instanceof HttpsError) throw err;
-        throw new HttpsError("internal", `분석 엔진 처리 중 오류: ${err.message || 'LLM_INTERPRETATION_FAILED'}`);
+    } catch (error: any) {
+        if (error instanceof HttpsError) throw error;
+        logger.error("Report generation failed:", error);
+        throw new HttpsError("internal", error.message);
     }
 });
 
-// Phase 26: Export generateLuckCalendar
-exports.generateLuckCalendar = generateLuckCalendar;
-
-```
-
----
-
-## File 49: `functions/src/shared/nameSanitize.ts` {#file-49}
-
-**크기**: 1.31 KB | **확장자**: ts
-
-```ts
-/**
- * ATOMIC-01: Shared Name Sanitize Utility
- * Single Source of Truth for User Name Validation & Sanitization
- */
-
-// 1. Definition of Allowed Characters (Source String)
-// Hangul (Syllables + Jamo), Han (Hanja), English, Whitespace
-export const ALLOWED_CHARS_PATTERN = String.raw`\p{Script=Hangul}\p{Script=Han}a-zA-Z\s`;
-export const ALLOWED_CHARS_FALLBACK = String.raw`ㄱ-ㅎㅏ-ㅣ가-힣一-龥a-zA-Z\s`;
-
-// 2. Validation Regex (Anchored)
-// Used by Zod or other validators to check if a string is fully valid
-export const NAME_VALIDATION_REGEX = (() => {
-    try {
-        return new RegExp(`^[${ALLOWED_CHARS_PATTERN}]*$`, 'u');
-    } catch (e) {
-        return new RegExp(`^[${ALLOWED_CHARS_FALLBACK}]*$`);
-    }
-})();
-
-// 3. Sanitize Regex (Global, Negated)
-// Used to strip invalid characters
-export const NAME_SANITIZE = (() => {
-    try {
-        return new RegExp(`[^${ALLOWED_CHARS_PATTERN}]`, 'gu');
-    } catch (e) {
-        return new RegExp(`[^${ALLOWED_CHARS_FALLBACK}]`, 'g');
-    }
-})();
-
-/**
- * Sanitize User Name
- * Removes any character that is not Hangul, Hanja, English, or Whitespace.
- * @param raw Input string
- * @returns Sanitized string
- */
-export function sanitizeUserName(raw: string): string {
-    if (!raw) return '';
-    return raw.replace(NAME_SANITIZE, '');
-}
+export { generateLuckCalendar };
 
 ```
 

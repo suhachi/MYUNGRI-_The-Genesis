@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { hasHan } from '../src/engine/name/hasHan';
-import { getKangxiInfo } from '../src/engine/name/kangxi';
-import { getFallbackAnalysis, assertReferenceOnly } from '../src/engine/name/fallbackPhonetic';
+import { hasHan } from '../src/engine/naming/hasHan';
+import { getKangxiInfo } from '../src/engine/naming/kangxi';
+import { getFallbackAnalysis, assertReferenceOnly } from '../src/engine/naming/fallbackPhonetic';
 
 describe('Phase 7: Name Analysis', () => {
-    
+
     it('P7-ATOMIC-001: Should detect Han characters correctly', () => {
         expect(hasHan('홍길동')).toBe(false);
         expect(hasHan('洪길동')).toBe(true);

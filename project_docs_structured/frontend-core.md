@@ -2,7 +2,7 @@
 
 > 프론트엔드 핵심 로직 (Firebase, 유틸리티, 타입 정의)
 
-**생성 시각**: 2026-01-04T15:48:38.290Z
+**생성 시각**: 2026-01-05T10:21:53.963Z
 
 ---
 
@@ -174,7 +174,7 @@ export const TRIVIA_LINES = [
 
 ## File 6: `src/types/report.ts` {#file-6}
 
-**크기**: 1.09 KB | **확장자**: ts
+**크기**: 1.12 KB | **확장자**: ts
 
 ```ts
 // Report Types for Phase 26
@@ -196,6 +196,7 @@ export interface Section {
     result?: string;
     explain?: string;
     interpretation?: string;
+    qualityGuarded?: boolean;
 }
 
 export interface ReportMeta {

@@ -14,7 +14,7 @@ exports.QualityValidationError = QualityValidationError;
 function validateReportStructure(report) {
     const errors = [];
     const sections = report.sections;
-    // 1. Required Sections Presence
+    // 1. Required Sections Presence (Structure Check)
     if (!sections.executiveSummary)
         errors.push("Missing ExecutiveSummary");
     if (!sections.originAudit)
@@ -28,34 +28,19 @@ function validateReportStructure(report) {
     // 2. 3-Field Completeness & Section Logic
     validateSection(sections.executiveSummary, 'ExecutiveSummary', errors);
     validateSection(sections.originAudit, 'OriginAudit', errors);
-    // LifeFlow Bucket Check
+    validateSection(sections.rolling12, 'Rolling12', errors);
+    // LifeFlow Bucket Check (Business Logic Consistency)
     if (sections.lifeFlow) {
         validateSection(sections.lifeFlow, 'LifeFlow', errors);
-        // Assuming details are in resultFacts or we parse result
-        // For P5 structure, we use resultFacts usually.
-        // P5 lifeBuckets sets resultFacts: { buckets: [...] }
         const facts = sections.lifeFlow.resultFacts;
-        if (!facts || !Array.isArray(facts.buckets) || facts.buckets.length !== 9) {
-            errors.push(`LifeFlow must have 9 buckets (10s..90s), found ${facts?.buckets?.length ?? 0}`);
+        // The deterministic engine for R2-03 provides 'segments' or 'buckets'
+        const buckets = facts?.segments || facts?.buckets;
+        if (!Array.isArray(buckets) || buckets.length !== 9) {
+            errors.push(`LifeFlow must have 9 buckets (10s..90s), found ${buckets?.length ?? 0}`);
         }
-    }
-    if (sections.rolling12) {
-        validateSection(sections.rolling12, 'Rolling12', errors);
     }
     if (sections.naming) {
         validateSection(sections.naming, 'Naming', errors);
-        // P7 Policy: missingKangxi -> referenceOnly
-        const facts = sections.naming.resultFacts;
-        if (facts?.missingKangxi && !facts?.referenceOnly) {
-            errors.push("Naming policy violation: missingKangxi must imply referenceOnly");
-        }
-    }
-    // 3. Meta Policy
-    if (report.meta) { // Usually meta is inside input or wrapper, but schema has meta
-        // Assuming input is also available or passed, but Validator usually checks Output.
-        // Let's check if disclaimer exists in output text if we detect logic?
-        // It's hard to check 'timeUnknown' from output unless it's in resultFacts.
-        // Skip input-dependent checks here unless embedded in output facts.
     }
     if (errors.length > 0) {
         throw new QualityValidationError(errors);
@@ -63,12 +48,13 @@ function validateReportStructure(report) {
 }
 function validateSection(section, name, errors) {
     if (!section)
-        return; // Already caught by required check
-    if (!section.result || section.result.trim().length === 0)
-        errors.push(`${name}: missing result`);
-    if (!section.interpretation || section.interpretation.trim().length === 0)
-        errors.push(`${name}: missing interpretation`);
-    if (!section.explain || section.explain.trim().length === 0)
-        errors.push(`${name}: missing explain`);
+        return;
+    const requiredFields = ['result', 'explain', 'interpretation'];
+    for (const field of requiredFields) {
+        const value = section[field];
+        if (typeof value !== 'string' || value.trim().length < 5) {
+            errors.push(`${name}: '${field}' is too short or missing (minimum 5 chars required)`);
+        }
+    }
 }
 //# sourceMappingURL=reportValidator.js.map

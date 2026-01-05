@@ -1,109 +1,67 @@
 import { FullReportData, ReportSection } from '../../contracts/output.schema';
-import { PillarsResult } from '../pillars';
-import { calculateRollingRange } from '../rollingRange';
-import { precomputeDailyLuck } from '../luckCalendar/precompute';
-import { hasHan } from '../name/hasHan';
-// Import other engine modules as needed...
+import { DeterministicPacket } from '../index';
 
-// P8-ATOMIC-001: Report Assembly Pipeline
+/**
+ * [Phase 28] ATOMIC-R2-03: Report Assembly Pipeline
+ * - Maps DeterministicPacket -> Narrative Report Structure
+ * - Whitelist-only access to deterministic data
+ */
 
-export interface AssemblyInput {
-    userName: string;
-    koreanAge: number; // or birthDate
-    analysisDate: string;
-    pillars: PillarsResult;
-    // ... input for other engines
-}
+export function assembleReport(packet: DeterministicPacket): FullReportData {
+    const sections: any = {
+        executiveSummary: assembleBasicSection("EXIT_001", "종합 분석 요약"),
+        originAudit: assembleBasicSection("ORIG_001", "타고난 성향 (원국 감사)"),
+        lifeFlow: {
+            sectionId: "LIFE_FLOW",
+            title: "평생 흐름 (10대~80대 대운)",
+            buckets: packet.daewoon.segments.slice(0, 9).map((s, i) => ({
+                decadeKey: `${(Math.floor(s.startAge / 10) + 1) * 10}s`,
+                ageRangeLabel: `${s.startAge}~${s.endAge}세`,
+                startAge: s.startAge,
+                endAge: s.endAge,
+                ganzhi: s.ganzhi.label,
+                result: "[PENDING]",
+                explain: "[PENDING]",
+                interpretation: "[PENDING]"
+            }))
+        },
+        turningPoints: {
+            sectionId: "TURNING_POINTS",
+            title: "운명의 전환점 지도",
+            items: [
+                { age: 20, type: "CAREER", title: "청년기 사회 진출", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 35, type: "LIFE", title: "가정 및 안정기", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 50, type: "HARVEST", title: "중년의 성과", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 65, type: "WISDOM", title: "장년의 지혜", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 80, type: "LEGACY", title: "평온한 회고", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+            ]
+        },
+        rolling12: assembleBasicSection("ROLL_001", "향후 12개월 흐름"),
+        luckCalendar: assembleBasicSection("CAL_001", "운기 캘린더 (365일)"),
+        dateDetail: assembleBasicSection("DATE_001", "날짜별 상세 분석"),
+    };
 
-export function assembleReport(input: AssemblyInput): FullReportData {
-    // 1. Executive Summary
-    const executiveSummary = assembleExecutiveSummary(input);
-
-    // 2. Origin Audit (Natal Chart)
-    const originAudit = assembleOriginAudit(input.pillars);
-
-    // 3. Life Flow (Daewoon)
-    const lifeFlow = assembleLifeFlow(input);
-
-    // 4. Rolling 12 Months
-    const rolling12 = assembleRolling12(input);
-
-    // 5. Naming (Conditional)
-    let naming: ReportSection | undefined;
-    if (hasHan(input.userName)) {
-        naming = assembleNaming(input.userName);
+    if (packet.naming) {
+        sections.naming = assembleBasicSection("NAME_001", "성명 분석 (이름의 기운)");
     }
 
-    // Assembly
-    const report: FullReportData = {
+    return {
         meta: {
-            version: "1.0.0",
-            generatedAt: new Date().toISOString()
+            version: "report/v6",
+            generatedAt: packet.computedAt,
         },
-        sections: {
-            executiveSummary,
-            originAudit,
-            lifeFlow,
-            rolling12,
-            naming
-        }
-    };
-
-    return report;
-}
-
-// --- Sub-Assemblers (Skeleton for Atomic) ---
-
-function assembleExecutiveSummary(input: AssemblyInput): ReportSection {
-    // TODO: Connect real Logic
-    return {
-        sectionId: "EXIT_001",
-        title: "Executive Summary",
-        resultFacts: { corePattern: "Unknown" },
-        interpretationFacts: { summary: "High potential." },
-        explainHints: { tone: "Professional" }
+        sections,
+        determinismHash: packet.determinismHash
     };
 }
 
-function assembleOriginAudit(pillars: PillarsResult): ReportSection {
+function assembleBasicSection(sectionId: string, title: string) {
     return {
-        sectionId: "ORIG_001",
-        title: "Origin Audit",
-        resultFacts: { pillars },
-        interpretationFacts: { balance: "balanced" },
-        explainHints: { focus: "Earth" }
-    };
-}
-
-function assembleLifeFlow(input: AssemblyInput): ReportSection {
-    return {
-        sectionId: "LIFE_001",
-        title: "Life Flow",
-        resultFacts: { currentDaewoon: "Gap-Ja" },
-        interpretationFacts: { trend: "Rising" },
-        explainHints: { strategy: "Invest" }
-    };
-}
-
-function assembleRolling12(input: AssemblyInput): ReportSection {
-    const range = calculateRollingRange(input.analysisDate);
-    const result = precomputeDailyLuck(input.analysisDate, input.pillars);
-    const records = result.records;
-    return {
-        sectionId: "ROLL_001",
-        title: "Rolling 12 Months",
-        resultFacts: { range, recordCount: records.length, records },
-        interpretationFacts: { bestMonth: "May" },
-        explainHints: { caution: "Winter" }
-    };
-}
-
-function assembleNaming(userName: string): ReportSection {
-    return {
-        sectionId: "NAME_001",
-        title: "Naming Analysis",
-        resultFacts: { hasHan: true },
-        interpretationFacts: { strokes: "Good" },
-        explainHints: { origin: "Hanja" }
+        sectionId,
+        title,
+        result: "[PENDING]",
+        explain: "[PENDING]",
+        interpretation: "[PENDING]",
+        resultFacts: {}
     };
 }

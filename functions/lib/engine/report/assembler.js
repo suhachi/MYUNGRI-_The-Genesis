@@ -4,7 +4,7 @@ exports.REQUIRED_SECTIONS = void 0;
 exports.assembleReport = assembleReport;
 const validator_1 = require("./validator");
 const gate_1 = require("../quality/gate");
-const hasHan_1 = require("../name/hasHan");
+const hasHan_1 = require("../naming/hasHan");
 // Define the fixed ToC
 exports.REQUIRED_SECTIONS = [
     'ExecutiveSummary',

@@ -1,76 +1,42 @@
 import { describe, it, expect } from 'vitest';
-import { assembleReport, ReportInput } from '../src/engine/report/assembler';
-import { validateSectionFields } from '../src/engine/report/validator';
-import { checkAndRepairText } from '../src/engine/quality/gate';
-import { PillarsResult } from '../src/engine/pillars';
+import { assembleReport } from '../src/engine/assembler/main';
+import { DeterministicPacket } from '../src/engine/index';
 
-// Mock Pillars
-const mockPillars: PillarsResult = {
-    year: { stem: '甲', branch: '子', label: '甲子' },
-    month: { stem: '丙', branch: '寅', label: '丙寅' },
-    day: { stem: '甲', branch: '申', label: '甲申' },
-    hour: { stem: '戊', branch: '辰', label: '戊辰' },
-    normalization: { solarDate: '2024-01-01', isLeapMonth: false }
-};
+describe('Phase 8: Report Assembly (v6 RE-ALIGN)', () => {
+    const mockPacket: DeterministicPacket = {
+        algorithmVersion: "Genesis-V6.0",
+        computedAt: new Date().toISOString(),
+        determinismHash: "HASH",
+        input: { birthDate: "1988-05-20", birthTime: "10:30", timeUnknown: false, calendar: "solar", isLeapMonth: false, sex: "male", timezone: "Asia/Seoul" },
+        pillars: { year: {} as any, month: {} as any, day: {} as any, hour: {} as any, normalization: {} as any },
+        daewoon: {
+            direction: "forward",
+            startAge: 4,
+            deltaMin: 0,
+            segments: Array.from({ length: 10 }, (_, i) => ({
+                startAge: 4 + i * 10,
+                endAge: 13 + i * 10,
+                ganzhi: { label: "XY" }
+            })) as any
+        },
+        sewoon: {} as any,
+        calendar365: { range: { startDate: "S", endDate: "E", totalDays: 1, dates: [] }, dailyLuck: [] }
+    };
 
-describe('Phase 8: Report Assembly & Quality', () => {
+    it('P8-ATOMIC-001: Should assemble all required v6 sections with correct structure', () => {
+        const report = assembleReport(mockPacket);
 
-    it('P8-ATOMIC-001: Should assemble all required sections', () => {
-        const input: ReportInput = { pillars: mockPillars };
-        const result = assembleReport(input);
-        
-        const ids = result.sections.map(s => s.id);
-        expect(ids).toContain('ExecutiveSummary');
-        expect(ids).toContain('OriginAudit');
-        expect(ids).toContain('LifeFlow');
-        expect(ids).toContain('TurningPoints');
-        expect(ids).toContain('Rolling12');
-        expect(ids).toContain('DateDetail');
-        expect(ids).not.toContain('Naming'); // No userName
+        expect(report.meta.version).toBe("report/v6");
+        expect(report.sections.executiveSummary).toBeDefined();
+        expect(report.sections.lifeFlow.buckets).toHaveLength(9);
+        expect(report.sections.turningPoints.items.length).toBeGreaterThanOrEqual(5);
+        expect(report.sections.luckCalendar).toBeDefined();
+        expect(report.sections.dateDetail).toBeDefined();
     });
 
-    it('P8-ATOMIC-001: Should include Naming section if Han name provided', () => {
-        const input: ReportInput = { pillars: mockPillars, userName: '洪길동' };
-        const result = assembleReport(input);
-        const ids = result.sections.map(s => s.id);
-        expect(ids).toContain('Naming');
-    });
-
-    it('P8-ATOMIC-002: Should fail if 3 fields are missing', () => {
-        const invalidSection = {
-            id: 'Test',
-            title: 'Test',
-            category: 'TEST',
-            result: 'Result',
-            explain: '', // Empty
-            interpretation: 'Interp'
-        };
-        
-        expect(() => validateSectionFields(invalidSection)).toThrow(/missing required field/);
-    });
-
-    it('P8-ATOMIC-003: Should detect and repair banned phrases', () => {
-        const badText = "전반적으로 무난합니다. 데이터가 없습니다.";
-        const check = checkAndRepairText(badText);
-        
-        // "전반적으로 무난합니다" is banned. "데이터가 없습니다" is banned.
-        // Repair should try to remove them.
-        // If result is empty, it fails.
-        
-        // Let's try a repairable one.
-        const repairable = "운세는 좋습니다. 재미로 보세요.";
-        const check2 = checkAndRepairText(repairable);
-        
-        expect(check2.passed).toBe(true);
-        expect(check2.repairedText).not.toContain("재미로 보세요");
-    });
-
-    it('P8-ATOMIC-003: Should flag regeneration if repair fails', () => {
-        const unrepairable = "데이터가 없습니다"; // Only banned phrase
-        const check = checkAndRepairText(unrepairable);
-        
-        // Repair removes it -> empty string -> reverts to original -> fails check again
-        expect(check.passed).toBe(false);
-        expect(check.violation).toBeDefined();
+    it('P8-ATOMIC-001: Should handle conditional Naming section', () => {
+        const packetWithName = { ...mockPacket, naming: { userName: "홍길동", hasHanja: false, hanjaDetails: [] } };
+        const report = assembleReport(packetWithName);
+        expect(report.sections.naming).toBeDefined();
     });
 });

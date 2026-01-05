@@ -1,31 +1,13 @@
 import { z } from 'zod';
 
-// Shared schemas for determinism/contracts
 export const AstroInputSchema = z.object({
     birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    birthTime: z.string().nullable(),
+    birthTime: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
     timeUnknown: z.boolean(),
     sex: z.enum(['male', 'female']),
     calendar: z.enum(['solar', 'lunar']),
     isLeapMonth: z.boolean().optional(),
-    timezone: z.string().default('Asia/Seoul')
-});
-
-export const PillarSchema = z.object({
-    stem: z.string(),
-    branch: z.string(),
-    label: z.string()
-});
-
-export const PillarsResultSchema = z.object({
-    year: PillarSchema,
-    month: PillarSchema,
-    day: PillarSchema,
-    hour: PillarSchema.nullable(),
-    normalization: z.object({
-        solarDate: z.string(),
-        isLeapMonth: z.boolean()
-    })
+    timezone: z.string().optional()
 });
 
 export const DaewoonInputSchema = z.object({
@@ -38,5 +20,6 @@ export const DaewoonInputSchema = z.object({
     timezone: z.string().optional()
 });
 
-export type AstroInput = z.infer<typeof AstroInputSchema>;
-export type DaewoonInput = z.infer<typeof DaewoonInputSchema>;
+export const SewoonInputSchema = z.object({
+    // targetYear and other sewoon specific inputs can be defined here
+});

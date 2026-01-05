@@ -1,68 +1,36 @@
-import { BANNED_PHRASES, BANNED_PATTERNS } from './bannedPhrases';
-
-export interface QualityCheckResult {
-    passed: boolean;
-    repairedText?: string;
-    violation?: string;
-}
+import { FullReportData, ReportSection } from '../../contracts/output.schema';
+import { validateReportStructure } from './reportValidator';
+import { BANNED_PHRASES } from './densityThresholds';
 
 /**
- * P8-ATOMIC-003: Quality Gate with 1-time Repair
+ * [Phase 3] Quality Gate Entry Point.
+ * - Enforces v6 contract.
+ * - Attempts 1-time repair for banned phrases.
  */
-export function checkAndRepairText(text: string, context: string = ""): QualityCheckResult {
-    if (!text || text.trim().length === 0) {
-        return { passed: false, violation: "Empty text" };
+export function validateAndRepairReport(report: FullReportData, isTimeUnknown: boolean = false, hasHanja: boolean = true) {
+    // 1. Initial Repair attempt (Banned phrases)
+    for (const section of Object.values(report.sections)) {
+        if (!section) continue;
+        const s = section as ReportSection;
+
+        const fields: (keyof ReportSection)[] = ['result', 'interpretation', 'explain'];
+        fields.forEach(field => {
+            let text = (s as any)[field] || "";
+            for (const banned of BANNED_PHRASES) {
+                if (text.includes(banned)) {
+                    text = text.replace(new RegExp(escapeRegExp(banned), 'g'), "");
+                }
+            }
+            (s as any)[field] = text.trim();
+        });
     }
 
-    const violation = findViolation(text);
-    if (!violation) {
-        return { passed: true };
-    }
+    // 2. Structural & Density Validation
+    validateReportStructure(report, isTimeUnknown, hasHanja);
 
-    // Attempt 1 Repair
-    const repaired = repairText(text, violation);
-    
-    // Re-check
-    const reViolation = findViolation(repaired);
-    if (reViolation) {
-        return { 
-            passed: false, 
-            violation: `Failed to repair: ${reViolation}`,
-            repairedText: repaired 
-        };
-    }
-
-    return { passed: true, repairedText: repaired };
+    return report;
 }
 
-function findViolation(text: string): string | null {
-    for (const phrase of BANNED_PHRASES) {
-        if (text.includes(phrase)) return `Contains banned phrase: "${phrase}"`;
-    }
-    for (const pattern of BANNED_PATTERNS) {
-        if (pattern.test(text)) return `Matches banned pattern: ${pattern}`;
-    }
-    return null;
-}
-
-function repairText(text: string, violation: string): string {
-    let repaired = text;
-
-    for (const phrase of BANNED_PHRASES) {
-        if (repaired.includes(phrase)) {
-            repaired = repaired.replace(phrase, ""); 
-        }
-    }
-
-    for (const pattern of BANNED_PATTERNS) {
-        repaired = repaired.replace(pattern, "");
-    }
-
-    repaired = repaired.replace(/\s+/g, " ").trim();
-
-    if (repaired.length === 0) {
-        return text; // Revert to original to show violation
-    }
-
-    return repaired;
+function escapeRegExp(string: string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

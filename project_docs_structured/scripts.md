@@ -2,27 +2,107 @@
 
 > 빌드 및 유틸리티 스크립트
 
-**생성 시각**: 2026-01-04T15:48:38.391Z
+**생성 시각**: 2026-01-05T10:21:54.054Z
 
 ---
 
-## 📋 목차 (11개 파일)
+## 📋 목차 (13개 파일)
 
-1. [scripts/check-env.cjs](#file-1)
-2. [scripts/check-golden.mjs](#file-2)
-3. [scripts/ci-gate.cjs](#file-3)
-4. [scripts/gen-build-info.mjs](#file-4)
-5. [scripts/generate-code-docs.cjs](#file-5)
-6. [scripts/generate-design-docs.cjs](#file-6)
-7. [scripts/generate-full-codebase-docs.cjs](#file-7)
-8. [scripts/generate-structured-docs.cjs](#file-8)
-9. [scripts/inspect-kor-lunar.js](#file-9)
-10. [scripts/manual-e2e-guide.mjs](#file-10)
-11. [scripts/test-generateReport.ts](#file-11)
+1. [scripts/audit-ime-policy.mjs](#file-1)
+2. [scripts/check-env.cjs](#file-2)
+3. [scripts/check-golden.mjs](#file-3)
+4. [scripts/ci-gate.cjs](#file-4)
+5. [scripts/gen-build-info.mjs](#file-5)
+6. [scripts/generate-code-docs.cjs](#file-6)
+7. [scripts/generate-design-docs.cjs](#file-7)
+8. [scripts/generate-full-codebase-docs.cjs](#file-8)
+9. [scripts/generate-structured-docs.cjs](#file-9)
+10. [scripts/inspect-kor-lunar.js](#file-10)
+11. [scripts/manual-e2e-guide.mjs](#file-11)
+12. [scripts/sync-contracts.mjs](#file-12)
+13. [scripts/test-generateReport.ts](#file-13)
 
 ---
 
-## File 1: `scripts/check-env.cjs` {#file-1}
+## File 1: `scripts/audit-ime-policy.mjs` {#file-1}
+
+**크기**: 2.11 KB | **확장자**: mjs
+
+```mjs
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.join(__dirname, '..');
+
+const FORBIDDEN_PATTERNS = [
+    {
+        regex: /\.replace\(\/\[\^/g,
+        message: "Inline negated character class replace detected. Use sanitizeUserName() from SSOT instead."
+    },
+    {
+        regex: /const\s+NAME_SANITIZE\s*=\s*\//g,
+        message: "Local NAME_SANITIZE definition detected. Use the shared NAME_SANITIZE from SSOT instead."
+    },
+    {
+        regex: /userName\.replace\(\//g,
+        message: "Direct .replace call on userName detected. Use sanitizeUserName() from SSOT instead."
+    }
+];
+
+const TARGET_FILES = [
+    'src/pages/Start.tsx',
+    'functions/src/index.ts',
+    'functions/src/contracts/input.schema.ts'
+];
+
+const SSOT_FILES = [
+    'src/lib/nameSanitize.ts',
+    'functions/src/shared/nameSanitize.ts'
+];
+
+let hasError = false;
+
+console.log("🔍 Running IME Policy Audit...");
+
+TARGET_FILES.forEach(file => {
+    const filePath = path.join(rootDir, file);
+    if (!fs.existsSync(filePath)) return;
+
+    const content = fs.readFileSync(filePath, 'utf8');
+    const lines = content.split('\n');
+
+    FORBIDDEN_PATTERNS.forEach(pattern => {
+        lines.forEach((line, index) => {
+            if (pattern.regex.test(line)) {
+                // Double check it's not the SSOT file itself if we ever include them
+                if (SSOT_FILES.includes(file)) return;
+
+                console.error(`❌ Policy Violation in ${file}:${index + 1}`);
+                console.error(`   Pattern: ${pattern.regex}`);
+                console.error(`   Message: ${pattern.message}`);
+                console.error(`   Line: ${line.trim()}`);
+                hasError = true;
+            }
+        });
+    });
+});
+
+if (hasError) {
+    console.error("\n🚨 IME Policy Audit FAILED. Please fix the violations to ensure IME safety.");
+    process.exit(1);
+} else {
+    console.log("✅ IME Policy Audit PASSED.");
+    process.exit(0);
+}
+
+```
+
+---
+
+## File 2: `scripts/check-env.cjs` {#file-2}
 
 **크기**: 2.62 KB | **확장자**: cjs
 
@@ -105,7 +185,7 @@ checkEnv();
 
 ---
 
-## File 2: `scripts/check-golden.mjs` {#file-2}
+## File 3: `scripts/check-golden.mjs` {#file-3}
 
 **크기**: 3.70 KB | **확장자**: mjs
 
@@ -218,7 +298,7 @@ if (failed) {
 
 ---
 
-## File 3: `scripts/ci-gate.cjs` {#file-3}
+## File 4: `scripts/ci-gate.cjs` {#file-4}
 
 **크기**: 2.32 KB | **확장자**: cjs
 
@@ -293,7 +373,7 @@ main();
 
 ---
 
-## File 4: `scripts/gen-build-info.mjs` {#file-4}
+## File 5: `scripts/gen-build-info.mjs` {#file-5}
 
 **크기**: 1.08 KB | **확장자**: mjs
 
@@ -337,7 +417,7 @@ console.log(`[BuildInfo] Generated stamp: ${appVersion} at ${buildTimeISO}`);
 
 ---
 
-## File 5: `scripts/generate-code-docs.cjs` {#file-5}
+## File 6: `scripts/generate-code-docs.cjs` {#file-6}
 
 **크기**: 4.34 KB | **확장자**: cjs
 
@@ -477,7 +557,7 @@ generateMarkdown();
 
 ---
 
-## File 6: `scripts/generate-design-docs.cjs` {#file-6}
+## File 7: `scripts/generate-design-docs.cjs` {#file-7}
 
 **크기**: 3.30 KB | **확장자**: cjs
 
@@ -591,7 +671,7 @@ generateDesignMarkdown();
 
 ---
 
-## File 7: `scripts/generate-full-codebase-docs.cjs` {#file-7}
+## File 8: `scripts/generate-full-codebase-docs.cjs` {#file-8}
 
 **크기**: 9.68 KB | **확장자**: cjs
 
@@ -949,7 +1029,7 @@ try {
 
 ---
 
-## File 8: `scripts/generate-structured-docs.cjs` {#file-8}
+## File 9: `scripts/generate-structured-docs.cjs` {#file-9}
 
 **크기**: 10.18 KB | **확장자**: cjs
 
@@ -1264,7 +1344,7 @@ main();
 
 ---
 
-## File 9: `scripts/inspect-kor-lunar.js` {#file-9}
+## File 10: `scripts/inspect-kor-lunar.js` {#file-10}
 
 **크기**: 0.40 KB | **확장자**: js
 
@@ -1286,7 +1366,7 @@ try {
 
 ---
 
-## File 10: `scripts/manual-e2e-guide.mjs` {#file-10}
+## File 11: `scripts/manual-e2e-guide.mjs` {#file-11}
 
 **크기**: 2.56 KB | **확장자**: mjs
 
@@ -1364,7 +1444,42 @@ ask();
 
 ---
 
-## File 11: `scripts/test-generateReport.ts` {#file-11}
+## File 12: `scripts/sync-contracts.mjs` {#file-12}
+
+**크기**: 0.81 KB | **확장자**: mjs
+
+```mjs
+import fs from 'fs';
+import path from 'path';
+
+const rootContracts = path.resolve('contracts');
+const functionsContracts = path.resolve('functions/src/contracts');
+
+function copyRecursive(src, dest) {
+    if (!fs.existsSync(src)) return;
+    if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+
+    const entries = fs.readdirSync(src, { withFileTypes: true });
+    for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+        if (entry.isDirectory()) {
+            copyRecursive(srcPath, destPath);
+        } else {
+            fs.copyFileSync(srcPath, destPath);
+        }
+    }
+}
+
+console.log('Syncing contracts to functions...');
+copyRecursive(rootContracts, functionsContracts);
+console.log('Done.');
+
+```
+
+---
+
+## File 13: `scripts/test-generateReport.ts` {#file-13}
 
 **크기**: 3.84 KB | **확장자**: ts
 

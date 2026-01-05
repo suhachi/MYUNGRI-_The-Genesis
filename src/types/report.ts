@@ -17,6 +17,7 @@ export interface Section {
     result?: string;
     explain?: string;
     interpretation?: string;
+    qualityGuarded?: boolean;
 }
 
 export interface ReportMeta {

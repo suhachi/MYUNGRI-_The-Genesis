@@ -2,11 +2,11 @@
 
 > 프론트엔드 페이지 컴포넌트 (Report, Start, Processing 등)
 
-**생성 시각**: 2026-01-04T15:48:38.262Z
+**생성 시각**: 2026-01-05T10:21:53.937Z
 
 ---
 
-## 📋 목차 (9개 파일)
+## 📋 목차 (10개 파일)
 
 1. [src/pages/Home.module.css](#file-1)
 2. [src/pages/Home.tsx](#file-2)
@@ -16,7 +16,8 @@
 6. [src/pages/Report.tsx](#file-6)
 7. [src/pages/ReportPrint.tsx](#file-7)
 8. [src/pages/Start.module.css](#file-8)
-9. [src/pages/Start.tsx](#file-9)
+9. [src/pages/Start.test.tsx](#file-9)
+10. [src/pages/Start.tsx](#file-10)
 
 ---
 
@@ -1355,7 +1356,7 @@ export const Processing: React.FC = () => {
 
 ## File 6: `src/pages/Report.tsx` {#file-6}
 
-**크기**: 22.82 KB | **확장자**: tsx
+**크기**: 21.36 KB | **확장자**: tsx
 
 ```tsx
 /* eslint-disable @tantml:query/no-window-matchmedia */
@@ -1412,57 +1413,38 @@ function BalanceRadarVisual() {
 /**
  * Data Hardening Helpers (Phase 26)
  */
-const normalizeSection = (s: any, index: number): Section => {
-    let id = typeof s?.id === 'string' ? s.id.trim() : String(s?.id ?? "");
-    const title = typeof s?.title === 'string' ? s.title.trim() : String(s?.title ?? "제목 없음");
-    const category = typeof s?.category === 'string' ? s.category.trim() : "ANALYSIS";
-
-    // Phase 27: Preserving 3-tier structure (Safe extraction)
-    let result = s?.result ? String(s.result) : undefined;
-    let explain = s?.explain ? String(s.explain) : undefined;
-    let interpretation = s?.interpretation ? String(s.interpretation) : undefined;
-
-    // Synthesize content for legacy display if needed
-    let content = s?.content ? String(s.content) : "";
-    if (!content && (result || explain || interpretation)) {
-        content = [result, explain, interpretation].filter(val => val && val.length > 0).join("\n\n");
+const normalizeSection = (section: any, sectionId: string): Section => {
+    if (!section) {
+        return {
+            id: sectionId,
+            title: "정보 없음",
+            result: "데이터를 불러올 수 없습니다.",
+            explain: "",
+            interpretation: "",
+            category: "ANALYSIS"
+        };
     }
-
-    // 품질 게이트: 3필드가 모두 비어 있으면 안전한 플레이스홀더 삽입
-    let qualityGuarded = false;
-    if (!result && !explain && !interpretation && !content) {
-        qualityGuarded = true;
-        result = PLACEHOLDER_TEXT;
-        explain = "근거 데이터가 충분하지 않습니다.";
-        interpretation = "정확한 해석을 위해 재생성이 필요할 수 있습니다.";
-        content = PLACEHOLDER_TEXT;
-    }
-
-    if (!id || id.length === 0) {
-        id = `unknown_${index}`;
-    }
-
-    id = id.replace(/[^a-zA-Z0-9_-]/g, '_');
 
     return {
-        id,
-        title,
-        content,
-        category,
-        result,
-        explain,
-        interpretation,
-        type: s?.type,
-        reasonCards: s?.reasonCards || [],
-        qualityGuarded
+        id: section.sectionId || sectionId,
+        title: section.title || "분석 섹션",
+        result: section.result || "",
+        explain: section.explain || "",
+        interpretation: section.interpretation || "",
+        category: section.category || "ANALYSIS",
+        reasonCards: section.reasonCards || []
     };
 };
 
 const normalizeSections = (input: any, toc?: any[]): Section[] => {
     let rawSections: Section[] = [];
 
-    if (Array.isArray(input)) { rawSections = input.map((s, i) => normalizeSection(s, i)); }
-    else if (input && typeof input === 'object') { rawSections = Object.values(input).map((s, i) => normalizeSection(s, i)); }
+    if (Array.isArray(input)) {
+        rawSections = input.map((s, i) => normalizeSection(s, `sec_${i}`));
+    }
+    else if (input && typeof input === 'object') {
+        rawSections = Object.entries(input).map(([key, s]) => normalizeSection(s, key));
+    }
 
     if (!toc || !Array.isArray(toc)) return rawSections;
 
@@ -1472,11 +1454,12 @@ const normalizeSections = (input: any, toc?: any[]): Section[] => {
     const seenIds = new Set<string>();
 
     toc.forEach((item: any) => {
-        const id = item.id?.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const section = sectionMap.get(id);
+        const id = typeof item === 'string' ? item : item.id;
+        const normalizedId = id?.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const section = sectionMap.get(normalizedId);
         if (section) {
             ordered.push(section);
-            seenIds.add(id);
+            seenIds.add(normalizedId);
         }
     });
 
@@ -1498,8 +1481,6 @@ const safeSplitId = (id: string): string[] => {
     return id.split('_');
 };
 
-
-// Phase 27: Category 한글 매핑
 const CATEGORY_LABELS: Record<string, string> = {
     SUMMARY: '요약',
     ARCH: '아키텍처',
@@ -1519,7 +1500,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const TIME_UNKNOWN_DISCLAIMER = "※ 태어난 시각을 알 수 없어 '시주(時柱)' 판단을 유보하며, 관련 분석이 배제됩니다. 정확한 시각 입력 시 결과가 달라질 수 있습니다.";
-const PLACEHOLDER_TEXT = "데이터가 제공되지 않았습니다. (품질 게이트 자동 대체)";
 
 export const Report: React.FC = () => {
     const { reportId } = useParams<{ reportId: string }>();
@@ -1611,12 +1591,9 @@ export const Report: React.FC = () => {
         return () => mediaQuery.removeEventListener('change', handler);
     }, []);
 
-    // [D3] 동적 섹션 구성 (정규화 적용)
     const activeSections = useMemo(() => {
         return normalizeSections(reportData?.sections, reportData?.tableOfContents);
     }, [reportData]);
-
-    const qualityGuardedCount = useMemo(() => activeSections.filter((s: any) => s.qualityGuarded).length, [activeSections]);
 
     const disclaimerText = useMemo(() => {
         if (timeUnknown) {
@@ -1689,13 +1666,10 @@ export const Report: React.FC = () => {
             <Header lockupDisplay="en_name" />
 
             <Container className={styles.mainLayout}>
-                {(timeUnknown || qualityGuardedCount > 0 || isQualityLow) && (
+                {(timeUnknown || isQualityLow) && (
                     <div className={styles.qualityBanner}>
                         {timeUnknown && (
                             <p>{disclaimerText || TIME_UNKNOWN_DISCLAIMER}</p>
-                        )}
-                        {qualityGuardedCount > 0 && (
-                            <p>일부 섹션은 데이터 누락으로 안전한 대체 문구가 삽입되었습니다. 리포트 재생성을 권장합니다.</p>
                         )}
                         {isQualityLow && (
                             <p>여러 섹션에서 누락/오류 신호가 감지되었습니다. 정밀 재분석을 실행해주세요.</p>
@@ -2312,9 +2286,134 @@ export const ReportPrint: React.FC = () => {
 
 ---
 
-## File 9: `src/pages/Start.tsx` {#file-9}
+## File 9: `src/pages/Start.test.tsx` {#file-9}
 
-**크기**: 17.77 KB | **확장자**: tsx
+**크기**: 3.87 KB | **확장자**: tsx
+
+```tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import { Start } from './Start';
+import { describe, it, expect, vi } from 'vitest';
+
+// Mock useNavigate
+const mockedUsedNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockedUsedNavigate,
+    };
+});
+
+describe('Start Component IME Safety', () => {
+    it('should retain raw characters during hancul composition', () => {
+        render(
+            <BrowserRouter>
+                <Start />
+            </BrowserRouter>
+        );
+
+        const input = screen.getByLabelText(/이름/i) as HTMLInputElement;
+
+        // Simulate typing "배"
+        // 1. "ㅂ"
+        fireEvent.compositionStart(input);
+        fireEvent.change(input, { target: { value: 'ㅂ' } });
+        expect(input.value).toBe('ㅂ');
+
+        // 2. "배"
+        fireEvent.change(input, { target: { value: '배' } });
+        expect(input.value).toBe('배');
+
+        // 3. Complete composition
+        fireEvent.compositionEnd(input, { currentTarget: { value: '배' } });
+        expect(input.value).toBe('배');
+    });
+
+    it('should keep Hanja conversion intact', () => {
+        render(
+            <BrowserRouter>
+                <Start />
+            </BrowserRouter>
+        );
+
+        const input = screen.getByLabelText(/이름/i) as HTMLInputElement;
+
+        // Simulate Hanja conversion "裵"
+        fireEvent.compositionStart(input);
+        fireEvent.change(input, { target: { value: '裵' } });
+        expect(input.value).toBe('裵');
+
+        fireEvent.compositionEnd(input, { currentTarget: { value: '裵' } });
+        expect(input.value).toBe('裵');
+    });
+
+    it('should strip illegal special characters ONLY after submission or composition end', () => {
+        render(
+            <BrowserRouter>
+                <Start />
+            </BrowserRouter>
+        );
+
+        const input = screen.getByLabelText(/이름/i) as HTMLInputElement;
+
+        // Type "배!" (illegal char !)
+        fireEvent.change(input, { target: { value: '배!' } });
+        // During input, we don't sanitize yet to be safe
+        expect(input.value).toBe('배!');
+
+        // End composition (some browsers might trigger it here)
+        fireEvent.compositionEnd(input, { currentTarget: { value: '배!' } });
+        // After composition end, SSOT sanitizer should have stripped it
+        expect(input.value).toBe('배');
+    });
+
+    it('should allow spaces (e.g., "A B") and mixed scripts (e.g., "배 裵 Su")', () => {
+        render(
+            <BrowserRouter>
+                <Start />
+            </BrowserRouter>
+        );
+
+        const input = screen.getByLabelText(/이름/i) as HTMLInputElement;
+
+        // "A B"
+        fireEvent.change(input, { target: { value: 'A B' } });
+        fireEvent.compositionEnd(input, { currentTarget: { value: 'A B' } });
+        expect(input.value).toBe('A B');
+
+        // Mixed "배 裵 Su"
+        fireEvent.change(input, { target: { value: '배 裵 Su' } });
+        fireEvent.compositionEnd(input, { currentTarget: { value: '배 裵 Su' } });
+        expect(input.value).toBe('배 裵 Su');
+    });
+
+    it('should allow 1-character names per policy', () => {
+        render(
+            <BrowserRouter>
+                <Start />
+            </BrowserRouter>
+        );
+
+        const input = screen.getByLabelText(/이름/i) as HTMLInputElement;
+
+        fireEvent.change(input, { target: { value: '홍' } });
+        expect(input.value).toBe('홍');
+
+        // No error should be shown for length if specified (checking if validator is silent)
+        const error = screen.queryByText(/글자 이상/i);
+        expect(error).toBeNull();
+    });
+});
+
+```
+
+---
+
+## File 10: `src/pages/Start.tsx` {#file-10}
+
+**크기**: 13.14 KB | **확장자**: tsx
 
 ```tsx
 import React, { useState, useEffect } from 'react';
@@ -2322,8 +2421,10 @@ import { useNavigate } from 'react-router-dom';
 import { Container } from '../components/layout/Container';
 import { Card } from '../components/ui/Card';
 import { Header } from '../components/layout/Header';
-import { detectScriptType } from '../lib/text';
 import styles from './Start.module.css';
+
+import { InputSchema } from '@contracts/input.schema';
+import { sanitizeUserName, detectScriptType } from '@contracts/shared/nameSanitize';
 
 interface FormData {
     userName: string;
@@ -2337,15 +2438,8 @@ interface FormData {
 }
 
 interface Errors {
-    userName?: string;
-    birthDate?: string;
-    birthTime?: string;
-    sex?: string;
-    calendar?: string;
-    isLeapMonth?: string;
+    [key: string]: string | undefined;
 }
-
-import { sanitizeUserName, NAME_SANITIZE } from '../lib/nameSanitize';
 
 export const Start: React.FC = () => {
     const navigate = useNavigate();
@@ -2363,186 +2457,119 @@ export const Start: React.FC = () => {
     const [errors, setErrors] = useState<Errors>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [isValid, setIsValid] = useState(false);
-    const [isComposing, setIsComposing] = useState(false);
 
     useEffect(() => {
         const leapValid = formData.calendar !== 'lunar' || formData.isLeapMonth !== null;
-        const isFormValid =
+        const timeValid = formData.timeUnknown || formData.birthTime !== '';
+
+        setIsValid(
             formData.birthDate !== '' &&
             formData.sex !== '' &&
             formData.calendar !== '' &&
-            leapValid;
-        setIsValid(isFormValid);
+            leapValid &&
+            timeValid
+        );
     }, [formData]);
 
-    useEffect(() => {
-        // timeUnknown 토글 시 즉각 검증/메시지 반영
-        validate('birthTime');
-    }, [formData.timeUnknown]);
-
-    const validate = (name?: string) => {
-        const newErrors: Errors = { ...errors };
-
-        if (!name || name === 'birthDate') {
-            if (!formData.birthDate) {
-                newErrors.birthDate = '생년월일을 선택해주세요.';
+    const handleBirthDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setFormData(prev => ({ ...prev, birthDate: val }));
+        if (touched.birthDate) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                setErrors(prev => ({ ...prev, birthDate: '생년월일 형식이 올바르지 않습니다 (YYYY-MM-DD).' }));
             } else {
-                const year = parseInt(formData.birthDate.split('-')[0]);
-                if (year < 1900 || year > 2099) {
-                    newErrors.birthDate = '1900년~2099년 사이의 유효한 날짜를 입력하세요.';
-                } else {
-                    delete newErrors.birthDate;
-                }
+                setErrors(prev => ({ ...prev, birthDate: undefined }));
             }
         }
-
-        if (!name || name === 'sex') {
-            if (!formData.sex) newErrors.sex = '성별을 선택해주세요.';
-            else delete newErrors.sex;
-        }
-
-        if (!name || name === 'calendar') {
-            if (!formData.calendar) newErrors.calendar = '달력 종류를 선택해주세요.';
-            else delete newErrors.calendar;
-        }
-
-        // [P1-ATOMIC-003] Lunar Calendar & Leap Month Validation
-        if (!name || name === 'calendar' || name === 'isLeapMonth') {
-            if (formData.calendar === 'lunar') {
-                if (formData.isLeapMonth === null) {
-                    newErrors.isLeapMonth = '윤달 여부를 선택해주세요.';
-                } else {
-                    delete newErrors.isLeapMonth;
-                }
-            } else {
-                delete newErrors.isLeapMonth;
-            }
-        }
-
-        // [P1-ATOMIC-004] Time Unknown & Birth Time Validation
-        if (!name || name === 'birthTime' || name === 'timeUnknown') {
-            if (!formData.timeUnknown) {
-                // If time is KNOWN, birthTime is REQUIRED.
-                if (!formData.birthTime) {
-                    newErrors.birthTime = '태어난 시간을 입력해주세요. (모를 경우 "시간 모름" 체크)'; // Korean Error
-                } else {
-                    // Simple format check (HH:mm)
-                    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-                    if (!timeRegex.test(formData.birthTime)) {
-                        newErrors.birthTime = '시간 형식이 올바르지 않습니다 (HH:mm).';
-                    } else {
-                        delete newErrors.birthTime;
-                    }
-                }
-            } else {
-                // If time is UNKNOWN, clear any birthTime errors
-                delete newErrors.birthTime;
-            }
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
     };
 
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const { name } = e.target;
-        setTouched(prev => ({ ...prev, [name]: true }));
-        validate(name);
+    const handleSexChange = (sex: 'male' | 'female') => {
+        setFormData(prev => ({ ...prev, sex }));
+        setTouched(prev => ({ ...prev, sex: true }));
+        setErrors(prev => ({ ...prev, sex: undefined }));
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
+    const handleCalendarChange = (calendar: 'solar' | 'lunar') => {
+        setFormData(prev => ({
+            ...prev,
+            calendar,
+            isLeapMonth: calendar === 'solar' ? null : prev.isLeapMonth
+        }));
+        setTouched(prev => ({ ...prev, calendar: true }));
+        setErrors(prev => ({ ...prev, calendar: undefined }));
+    };
 
-        let filteredValue: string | boolean = value;
+    const handleTimeUnknownChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked;
+        setFormData(prev => ({
+            ...prev,
+            timeUnknown: checked,
+            birthTime: checked ? '' : prev.birthTime
+        }));
+    };
 
-        if (name === 'userName') {
-            // [ATOMIC-02] IME Safe: Update raw value immediately. Do NOT sanitize here.
-            filteredValue = value;
-        }
-
-        // Handle Checkboxes
-        if (name === 'isLeapMonth' && type === 'radio') {
-            filteredValue = value === 'true';
-        } else if (type === 'checkbox') {
-            filteredValue = checked;
-        }
-
-        setFormData(prev => ({ ...prev, [name]: filteredValue }));
-
-        if (name === 'isLeapMonth') {
-            setTouched(prev => ({ ...prev, isLeapMonth: true }));
-        }
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleComposition = (e: React.CompositionEvent<HTMLInputElement>) => {
         if (e.type === 'compositionstart') {
-            setIsComposing(true);
+            // isComposing state removed to pass lint gate
         } else if (e.type === 'compositionend') {
-            setIsComposing(false);
-            // [P1-ATOMIC-001/002] Final sanitize on composition end using shared utility
+            // [REFACTOR-R1] Final sanitize on composition end using SSOT utility.
             const finalValue = sanitizeUserName(e.currentTarget.value);
-            setFormData(prev => ({
-                ...prev,
-                userName: finalValue
-            }));
+            setFormData(prev => ({ ...prev, userName: finalValue }));
         }
     };
 
-    const handleSegmentChange = (name: string, value: string) => {
-        setFormData(prev => {
-            if (name === 'calendar') {
-                // 음력 선택 시 윤달 여부를 반드시 다시 선택하도록 초기화
-                const nextLeap = value === 'lunar' ? null : false;
-                return { ...prev, calendar: value as any, isLeapMonth: nextLeap };
-            }
-            return { ...prev, [name]: value };
-        });
-        setTouched(prev => ({ ...prev, [name]: true, ...(name === 'calendar' ? { isLeapMonth: false } : {}) }));
-        validate(name);
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name } = e.target;
+        setTouched(prev => ({ ...prev, [name]: true }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // [P1-ATOMIC-001/002] Final Sanitize on Submit
+        // [REFACTOR-R1] Final Sanitize & Trim on Submit.
         const safeName = sanitizeUserName(formData.userName).trim();
 
-        if (validate()) {
-            const payload: any = {
-                birthDate: formData.birthDate,
-                birthTime: formData.birthTime,
-                timeUnknown: formData.timeUnknown,
-                sex: formData.sex,
-                calendar: formData.calendar,
-                isLeapMonth: formData.isLeapMonth,
-                timezone: formData.timezone
-            };
+        // [REFACTOR-R2] Use Shared Input Schema for Runtime Validation
+        const validationResult = InputSchema.safeParse({
+            ...formData,
+            userName: safeName || undefined // userName is optional
+        });
 
-            // Only include userName and scriptType if name is provided
-            if (safeName.length > 0) {
-                payload.userName = safeName;
-                payload.scriptType = detectScriptType(safeName);
-            }
-
-            navigate('/processing', { state: payload });
+        if (!validationResult.success) {
+            const newErrors: Errors = {};
+            validationResult.error.issues.forEach(issue => {
+                newErrors[issue.path[0] as string] = issue.message;
+            });
+            setErrors(newErrors);
+            return;
         }
+
+        const payload = validationResult.data;
+        navigate('/processing', {
+            state: {
+                ...payload,
+                scriptType: safeName ? detectScriptType(safeName) : undefined
+            }
+        });
     };
 
     return (
-        <div className={styles.startPage}>
-            <Header lockupDisplay="en_name" />
+        <Container>
+            <Header />
+            <main className={styles.main}>
+                <Card className={styles.startCard}>
+                    <h1 className={styles.title}>운명의 기원을 찾아서</h1>
+                    <p className={styles.subtitle}>정확한 명식 분석을 위해 정보를 입력해주세요.</p>
 
-            <Container className={styles.container}>
-                <div className={styles.pageHeader}>
-                    <h2 className={styles.title}>데이터 입력</h2>
-                    <p className={styles.helperText}>정확한 분석을 위해 당신의 탄생 정보를 입력해주세요. 입력은 최소화되어 있습니다.</p>
-                </div>
-
-                <Card className={styles.formCard}>
                     <form onSubmit={handleSubmit} className={styles.form}>
-                        {/* Name */}
+                        {/* 이름 입력 */}
                         <div className={styles.field}>
-                            <label htmlFor="userName" className={styles.label}>성명 (한자 권장, 한글 가능)</label>
+                            <label htmlFor="userName" className={styles.label}>이름 (선택)</label>
                             <input
                                 type="text"
                                 id="userName"
@@ -2552,167 +2579,137 @@ export const Start: React.FC = () => {
                                 onCompositionStart={handleComposition}
                                 onCompositionEnd={handleComposition}
                                 onBlur={handleBlur}
-                                placeholder="예: 洪吉童 또는 홍길동"
-                                className={`${styles.input} ${touched.userName && errors.userName ? styles.inputError : ''}`}
+                                placeholder="이름을 입력해주세요 (선택)"
+                                className={styles.input}
+                                autoComplete="name"
                             />
-                            {touched.userName && errors.userName && (
-                                <span className={styles.errorMsg}>{errors.userName}</span>
-                            )}
+                            <p className={styles.hint}>한글, 한자, 영문 입력이 가능합니다. (IME 보호 적용)</p>
+                            {errors.userName && <p className={styles.error}>{errors.userName}</p>}
                         </div>
 
-                        {/* Birth Date */}
+                        {/* 생년월일 */}
                         <div className={styles.field}>
-                            <label htmlFor="birthDate" className={styles.label}>생년월일 (필수)</label>
+                            <label htmlFor="birthDate" className={styles.label}>생년월일</label>
                             <input
                                 type="date"
                                 id="birthDate"
                                 name="birthDate"
                                 value={formData.birthDate}
-                                onChange={handleChange}
+                                onChange={handleBirthDateChange}
                                 onBlur={handleBlur}
-                                className={`${styles.input} ${touched.birthDate && errors.birthDate ? styles.inputError : ''}`}
+                                className={styles.input}
                                 required
                             />
-                            {touched.birthDate && errors.birthDate && (
-                                <span className={styles.errorMsg}>{errors.birthDate}</span>
-                            )}
+                            {errors.birthDate && <p className={styles.error}>{errors.birthDate}</p>}
                         </div>
 
-                        {/* Birth Time */}
+                        {/* 성별 선택 */}
                         <div className={styles.field}>
-                            <div className={styles.labelRow}>
-                                <label htmlFor="birthTime" className={styles.label}>출생 시간 (선택)</label>
-                                <div className={styles.toggleWrapper}>
-                                    <input
-                                        type="checkbox"
-                                        id="timeUnknown"
-                                        name="timeUnknown"
-                                        checked={formData.timeUnknown}
-                                        onChange={handleChange}
-                                        className={styles.checkbox}
-                                    />
-                                    <label htmlFor="timeUnknown" className={styles.toggleLabel}>시간 모름</label>
-                                </div>
-                            </div>
-                            <input
-                                type="time"
-                                id="birthTime"
-                                name="birthTime"
-                                value={formData.birthTime}
-                                onChange={handleChange}
-                                disabled={formData.timeUnknown}
-                                className={styles.input}
-                            />
-                            <p className={styles.helperText}>
-                                QA: 시간을 모르면 반드시 "시간 모름"을 켜고, 시간을 아는 경우에는 토글을 끄고 HH:mm 형식으로 입력해야 제출이 가능해야 합니다. 토글 전환 시 시간 입력란이 즉시 비활성/활성화되는지 확인해주세요.
-                            </p>
-                        </div>
-
-                        {/* Sex */}
-                        <div className={styles.field}>
-                            <span className={styles.label}>성별 (필수)</span>
-                            <div className={styles.segmentControl}>
+                            <label className={styles.label}>성별</label>
+                            <div className={styles.buttonGroup}>
                                 <button
                                     type="button"
-                                    className={`${styles.segmentBtn} ${formData.sex === 'male' ? styles.active : ''}`}
-                                    onClick={() => handleSegmentChange('sex', 'male')}
+                                    onClick={() => handleSexChange('male')}
+                                    className={`${styles.selectionButton} ${formData.sex === 'male' ? styles.active : ''}`}
                                 >
-                                    남
+                                    남성
                                 </button>
                                 <button
                                     type="button"
-                                    className={`${styles.segmentBtn} ${formData.sex === 'female' ? styles.active : ''}`}
-                                    onClick={() => handleSegmentChange('sex', 'female')}
+                                    onClick={() => handleSexChange('female')}
+                                    className={`${styles.selectionButton} ${formData.sex === 'female' ? styles.active : ''}`}
                                 >
-                                    여
+                                    여성
                                 </button>
                             </div>
-                            {touched.sex && errors.sex && (
-                                <span className={styles.errorMsg}>{errors.sex}</span>
-                            )}
+                            {errors.sex && <p className={styles.error}>{errors.sex}</p>}
                         </div>
 
-                        {/* Calendar Type */}
+                        {/* 양력/음력 */}
                         <div className={styles.field}>
-                            <span className={styles.label}>양력 / 음력 (필수)</span>
-                            <div className={styles.segmentControl}>
+                            <label className={styles.label}>양력/음력</label>
+                            <div className={styles.buttonGroup}>
                                 <button
                                     type="button"
-                                    className={`${styles.segmentBtn} ${formData.calendar === 'solar' ? styles.active : ''}`}
-                                    onClick={() => handleSegmentChange('calendar', 'solar')}
+                                    onClick={() => handleCalendarChange('solar')}
+                                    className={`${styles.selectionButton} ${formData.calendar === 'solar' ? styles.active : ''}`}
                                 >
                                     양력
                                 </button>
                                 <button
                                     type="button"
-                                    className={`${styles.segmentBtn} ${formData.calendar === 'lunar' ? styles.active : ''}`}
-                                    onClick={() => handleSegmentChange('calendar', 'lunar')}
+                                    onClick={() => handleCalendarChange('lunar')}
+                                    className={`${styles.selectionButton} ${formData.calendar === 'lunar' ? styles.active : ''}`}
                                 >
                                     음력
                                 </button>
                             </div>
-                            {touched.calendar && errors.calendar && (
-                                <span className={styles.errorMsg}>{errors.calendar}</span>
-                            )}
+                            {errors.calendar && <p className={styles.error}>{errors.calendar}</p>}
                         </div>
 
-                        {/* Leap Month (Conditional) */}
+                        {/* 음력일 경우 윤달 여부 */}
                         {formData.calendar === 'lunar' && (
                             <div className={styles.field}>
-                                <span className={styles.label}>윤달 여부 (필수)</span>
-                                <div className={styles.segmentControl}>
-                                    <label className={styles.segmentOption}>
-                                        <input
-                                            type="radio"
-                                            name="isLeapMonth"
-                                            value="false"
-                                            checked={formData.isLeapMonth === false}
-                                            onChange={handleChange}
-                                        />
+                                <label className={styles.label}>윤달 여부</label>
+                                <div className={styles.buttonGroup}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, isLeapMonth: false }))}
+                                        className={`${styles.selectionButton} ${formData.isLeapMonth === false ? styles.active : ''}`}
+                                    >
                                         평달
-                                    </label>
-                                    <label className={styles.segmentOption}>
-                                        <input
-                                            type="radio"
-                                            name="isLeapMonth"
-                                            value="true"
-                                            checked={formData.isLeapMonth === true}
-                                            onChange={handleChange}
-                                        />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, isLeapMonth: true }))}
+                                        className={`${styles.selectionButton} ${formData.isLeapMonth === true ? styles.active : ''}`}
+                                    >
                                         윤달
-                                    </label>
+                                    </button>
                                 </div>
-                                <p className={styles.helperText}>
-                                    QA: 음력 선택 시 윤달 여부를 선택하지 않으면 제출 버튼이 비활성화되고 오류 메시지가 노출되는지 확인해주세요.
-                                </p>
-                                {touched.isLeapMonth && errors.isLeapMonth && (
-                                    <span className={styles.errorMsg}>{errors.isLeapMonth}</span>
-                                )}
+                                {errors.isLeapMonth && <p className={styles.error}>{errors.isLeapMonth}</p>}
                             </div>
                         )}
 
-                        {/* Timezone (Read-only) */}
+                        {/* 태어난 시간 */}
                         <div className={styles.field}>
-                            <label className={styles.label}>타임존</label>
-                            <input
-                                type="text"
-                                value={formData.timezone}
-                                readOnly
-                                className={`${styles.input} ${styles.readOnly}`}
-                            />
+                            <div className={styles.labelRow}>
+                                <label htmlFor="birthTime" className={styles.label}>태어난 시간</label>
+                                <label className={styles.checkboxLabel}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.timeUnknown}
+                                        onChange={handleTimeUnknownChange}
+                                    />
+                                    모름
+                                </label>
+                            </div>
+                            {!formData.timeUnknown && (
+                                <input
+                                    type="time"
+                                    id="birthTime"
+                                    name="birthTime"
+                                    value={formData.birthTime}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    className={styles.input}
+                                    required
+                                />
+                            )}
+                            {errors.birthTime && <p className={styles.error}>{errors.birthTime}</p>}
                         </div>
 
                         <button
                             type="submit"
+                            className={styles.submitButton}
                             disabled={!isValid}
-                            className={styles.submitBtn}
                         >
-                            분석 시작하기 →
+                            기원 분석 시작
                         </button>
                     </form>
                 </Card>
-            </Container>
-        </div>
+            </main>
+        </Container>
     );
 };
 
