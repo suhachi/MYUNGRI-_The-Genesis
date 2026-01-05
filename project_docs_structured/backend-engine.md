@@ -2,11 +2,11 @@
 
 > 명리 계산 엔진 (사주 계산, 일진 계산 등)
 
-**생성 시각**: 2026-01-05T10:21:54.021Z
+**생성 시각**: 2026-01-05T11:35:22.072Z
 
 ---
 
-## 📋 목차 (49개 파일)
+## 📋 목차 (54개 파일)
 
 1. [functions/src/engine/assembler/main.ts](#file-1)
 2. [functions/src/engine/assembler/validator.ts](#file-2)
@@ -50,13 +50,18 @@
 40. [functions/src/engine/relations/rules.ts](#file-40)
 41. [functions/src/engine/reportPackets/lifeFlow.ts](#file-41)
 42. [functions/src/engine/reportUtils.ts](#file-42)
-43. [functions/src/engine/schemas/astro.ts](#file-43)
-44. [functions/src/engine/sewoon/index.ts](#file-44)
-45. [functions/src/engine/strengthScore.ts](#file-45)
-46. [functions/src/engine/tables/hiddenStems.ts](#file-46)
-47. [functions/src/engine/tables/strengthWeights.ts](#file-47)
-48. [functions/src/engine/tenGod.ts](#file-48)
-49. [functions/src/engine/yinYang.ts](#file-49)
+43. [functions/src/engine/report/narrative/applyPatch.ts](#file-43)
+44. [functions/src/engine/report/narrative/packetBuilders/main.ts](#file-44)
+45. [functions/src/engine/report/narrative/patch.schema.ts](#file-45)
+46. [functions/src/engine/report/narrative/prompt.system.ts](#file-46)
+47. [functions/src/engine/report/narrative/renderer.ts](#file-47)
+48. [functions/src/engine/schemas/astro.ts](#file-48)
+49. [functions/src/engine/sewoon/index.ts](#file-49)
+50. [functions/src/engine/strengthScore.ts](#file-50)
+51. [functions/src/engine/tables/hiddenStems.ts](#file-51)
+52. [functions/src/engine/tables/strengthWeights.ts](#file-52)
+53. [functions/src/engine/tenGod.ts](#file-53)
+54. [functions/src/engine/yinYang.ts](#file-54)
 
 ---
 
@@ -99,7 +104,7 @@ export function assembleReport(packet: DeterministicPacket): FullReportData {
                 { age: 20, type: "CAREER", title: "청년기 사회 진출", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
                 { age: 35, type: "LIFE", title: "가정 및 안정기", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
                 { age: 50, type: "HARVEST", title: "중년의 성과", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
-                { age: 65, type: "WISDOM", title: "장년의 지혜", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 65, type: "WISDOM", title: "장년의 지례", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
                 { age: 80, type: "LEGACY", title: "평온한 회고", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
             ]
         },
@@ -2357,7 +2362,7 @@ export function getKangxiInfo(char: string): KangxiInfo {
 
 ## File 27: `functions/src/engine/narrative/applyPatch.ts` {#file-27}
 
-**크기**: 1.22 KB | **확장자**: ts
+**크기**: 2.07 KB | **확장자**: ts
 
 ```ts
 import { FullReportData } from '../../contracts/output.schema';
@@ -2367,8 +2372,10 @@ import { ReportPatch } from './patch.schema';
  * [ATOMIC-3-03-3] Apply Narrative Patch (Recursive Path support)
  * Merges the LLM-generated strings into the existing report skeleton using JSON Patch logic.
  * Supports deep paths like /sections/lifeFlow/buckets/0/result
+ * Correctly handles array indices and nested objects.
  */
 export function applyNarrativePatch(report: FullReportData, patch: ReportPatch): FullReportData {
+    // Deep clone to ensure immutability
     const updated = JSON.parse(JSON.stringify(report));
 
     for (const op of patch) {
@@ -2378,8 +2385,20 @@ export function applyNarrativePatch(report: FullReportData, patch: ReportPatch):
 
             for (let i = 0; i < parts.length - 1; i++) {
                 const part = parts[i];
-                if (current && typeof current === 'object' && part in current) {
-                    current = current[part];
+
+                // Determine if we are dealing with an array or object
+                if (current && typeof current === 'object') {
+                    // Check if part is a numeric index for an array
+                    const index = parseInt(part, 10);
+                    if (Array.isArray(current) && !isNaN(index)) {
+                        current = current[index];
+                    } else if (part in current) {
+                        current = (current as any)[part];
+                    } else {
+                        // Path not found, break early
+                        current = null;
+                        break;
+                    }
                 } else {
                     current = null;
                     break;
@@ -2388,7 +2407,13 @@ export function applyNarrativePatch(report: FullReportData, patch: ReportPatch):
 
             if (current && typeof current === 'object') {
                 const lastPart = parts[parts.length - 1];
-                current[lastPart] = op.value;
+                const index = parseInt(lastPart, 10);
+
+                if (Array.isArray(current) && !isNaN(index)) {
+                    current[index] = op.value;
+                } else {
+                    (current as any)[lastPart] = op.value;
+                }
             }
         }
     }
@@ -3545,7 +3570,220 @@ export function validateReportQuality(meta: ReportMeta): boolean {
 
 ---
 
-## File 43: `functions/src/engine/schemas/astro.ts` {#file-43}
+## File 43: `functions/src/engine/report/narrative/applyPatch.ts` {#file-43}
+
+**크기**: 1.66 KB | **확장자**: ts
+
+```ts
+import { FullReportData } from '../../../contracts/output.schema';
+import { ReportPatch } from './patch.schema';
+
+/**
+ * Apply Narrative Patch with recursive path navigation.
+ * Supports array indices and deep objects.
+ */
+export function applyNarrativePatch(report: FullReportData, patch: ReportPatch): FullReportData {
+    const updated = JSON.parse(JSON.stringify(report));
+
+    for (const op of patch) {
+        if (op.op === 'replace') {
+            const parts = op.path.split('/').filter(Boolean);
+            let current = updated;
+
+            for (let i = 0; i < parts.length - 1; i++) {
+                const part = parts[i];
+                if (current && typeof current === 'object') {
+                    const index = parseInt(part, 10);
+                    if (Array.isArray(current) && !isNaN(index)) {
+                        current = current[index];
+                    } else if (part in current) {
+                        current = (current as any)[part];
+                    } else {
+                        current = null;
+                        break;
+                    }
+                } else {
+                    current = null;
+                    break;
+                }
+            }
+
+            if (current && typeof current === 'object') {
+                const lastPart = parts[parts.length - 1];
+                const index = parseInt(lastPart, 10);
+                if (Array.isArray(current) && !isNaN(index)) {
+                    current[index] = op.value;
+                } else {
+                    (current as any)[lastPart] = op.value;
+                }
+            }
+        }
+    }
+
+    return updated;
+}
+
+```
+
+---
+
+## File 44: `functions/src/engine/report/narrative/packetBuilders/main.ts` {#file-44}
+
+**크기**: 1.11 KB | **확장자**: ts
+
+```ts
+import { DeterministicPacket } from '../../../index';
+
+export interface NarrativeInputPacket {
+    userInfo: {
+        sex: string; birthDate: string; timeUnknown: boolean; hasHanjaName: boolean;
+    };
+    deterministicFacts: {
+        pillars: any; daewoon: any; sewoon: any; naming?: any;
+    };
+}
+
+export function buildNarrativeInput(packet: DeterministicPacket): NarrativeInputPacket {
+    return {
+        userInfo: {
+            sex: packet.input.sex,
+            birthDate: packet.pillars.normalization.solarDate,
+            timeUnknown: packet.input.timeUnknown,
+            hasHanjaName: !!(packet.naming as any)
+        },
+        deterministicFacts: {
+            pillars: packet.pillars,
+            daewoon: {
+                direction: packet.daewoon.direction,
+                startAge: packet.daewoon.startAge,
+                segments: packet.daewoon.segments.map((s: any) => ({
+                    age: s.startAge,
+                    ganzhi: s.ganzhi.label,
+                }))
+            },
+            sewoon: packet.sewoon,
+            naming: packet.naming
+        }
+    };
+}
+
+```
+
+---
+
+## File 45: `functions/src/engine/report/narrative/patch.schema.ts` {#file-45}
+
+**크기**: 0.60 KB | **확장자**: ts
+
+```ts
+import { z } from 'zod';
+
+export const PatchOperationSchema = z.object({
+    op: z.literal('replace'),
+    path: z.string().regex(/^\/sections\/(executiveSummary|originAudit|rolling12|luckCalendar|dateDetail|naming)\/(result|interpretation|explain)$|^\/sections\/lifeFlow\/buckets\/\d+\/(result|interpretation|explain)$|^\/sections\/turningPoints\/items\/\d+\/(result|interpretation|explain|title)$/),
+    value: z.string().min(1, "내용은 비어있을 수 없습니다.")
+});
+
+export const ReportPatchSchema = z.array(PatchOperationSchema);
+
+export type ReportPatch = z.infer<typeof ReportPatchSchema>;
+
+```
+
+---
+
+## File 46: `functions/src/engine/report/narrative/prompt.system.ts` {#file-46}
+
+**크기**: 1.58 KB | **확장자**: ts
+
+```ts
+export const SYSTEM_PROMPT = `
+You are a "30-year Myungri Master" and a "System Audit Specialist". 
+Your goal is to interpret deterministic astrological data (The Genesis Engine results) and provide a professional, dense, and insight-heavy narrative report.
+
+[CRITICAL RULES]
+1. ZERO HALLUCINATION: Only use facts provided in the input. If data is missing for a specific field, write "확정 불가" or "필단 유보" as per system safety policy.
+2. TONE: Use a highly professional, expert tone (전문가 풍). Avoid casual language.
+3. OUTPUT FORMAT: You must output a strictly valid JSON array of Patch Operations matching the following schema:
+   [
+     { "op": "replace", "path": "/sections/.../result", "value": "..." },
+     { "op": "replace", "path": "/sections/lifeFlow/buckets/0/result", "value": "..." }
+   ]
+4. V6 STRUCTURE:
+   - Executive Summary (EXIT_001)
+   - Origin Audit (ORIG_001)
+   - Life Flow: fill ALL 9 buckets (10s to 80s).
+   - Turning Points: fill 5 items.
+   - Rolling 12, Luck Calendar, Date Detail.
+5. DENSITY: Every narrative block (result, interpretation, explain) must be rich in content. Total characters across the report should aim for 45,000+.
+
+[POLITICAL PHRASES]
+- IF isTimeUnknown is true: You MUST include "시주 판단 유보로 인한 분석의 한계가 존재함" in the Executive Summary or Origin Audit.
+- IF hasHanja is false: You MUST include "한자 확정 불가로 인한 성명학적 해석 제한" in the Naming section.
+
+Ensure every /result, /explain, and /interpretation field is filled and follows the 3-layer narrative depth.
+`;
+
+```
+
+---
+
+## File 47: `functions/src/engine/report/narrative/renderer.ts` {#file-47}
+
+**크기**: 1.40 KB | **확장자**: ts
+
+```ts
+import { OpenAI } from 'openai';
+import { SYSTEM_PROMPT } from './prompt.system';
+import { ReportPatchSchema, ReportPatch } from './patch.schema';
+
+let openai: OpenAI | null = null;
+
+function getClient() {
+    if (!openai) {
+        openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+        });
+    }
+    return openai;
+}
+
+/**
+ * Generate Narrative Patch using LLM.
+ * Genesis Only - Hyper-precise 9-bucket support.
+ */
+export async function generateNarrativePatch(input: any): Promise<ReportPatch> {
+    const client = getClient();
+
+    const response = await client.chat.completions.create({
+        model: "gpt-4o", // High density requirement
+        messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: JSON.stringify(input) }
+        ],
+        response_format: { type: "json_object" }
+    });
+
+    const content = response.choices[0].message.content || "{}";
+    const parsed = JSON.parse(content);
+
+    // Some models wrap in a 'patches' key or similar, ensure we get the array
+    const patchArray = Array.isArray(parsed) ? parsed : (parsed.patches || []);
+
+    const result = ReportPatchSchema.safeParse(patchArray);
+    if (!result.success) {
+        console.error("Invalid Patch from LLM:", result.error);
+        throw new Error("LLM Generated invalid patch structure.");
+    }
+
+    return result.data;
+}
+
+```
+
+---
+
+## File 48: `functions/src/engine/schemas/astro.ts` {#file-48}
 
 **크기**: 0.76 KB | **확장자**: ts
 
@@ -3580,7 +3818,7 @@ export const SewoonInputSchema = z.object({
 
 ---
 
-## File 44: `functions/src/engine/sewoon/index.ts` {#file-44}
+## File 49: `functions/src/engine/sewoon/index.ts` {#file-49}
 
 **크기**: 2.28 KB | **확장자**: ts
 
@@ -3667,7 +3905,7 @@ export function calculateSewoon(targetYear: number, pillars: PillarsResult): Sew
 
 ---
 
-## File 45: `functions/src/engine/strengthScore.ts` {#file-45}
+## File 50: `functions/src/engine/strengthScore.ts` {#file-50}
 
 **크기**: 3.59 KB | **확장자**: ts
 
@@ -3795,7 +4033,7 @@ export function calculateStrength(pillars: PillarsResult): StrengthResult {
 
 ---
 
-## File 46: `functions/src/engine/tables/hiddenStems.ts` {#file-46}
+## File 51: `functions/src/engine/tables/hiddenStems.ts` {#file-51}
 
 **크기**: 2.47 KB | **확장자**: ts
 
@@ -3882,7 +4120,7 @@ export function getHiddenStems(branch: string): HiddenStem[] {
 
 ---
 
-## File 47: `functions/src/engine/tables/strengthWeights.ts` {#file-47}
+## File 52: `functions/src/engine/tables/strengthWeights.ts` {#file-52}
 
 **크기**: 0.43 KB | **확장자**: ts
 
@@ -3907,7 +4145,7 @@ if (total !== 100) {
 
 ---
 
-## File 48: `functions/src/engine/tenGod.ts` {#file-48}
+## File 53: `functions/src/engine/tenGod.ts` {#file-53}
 
 **크기**: 1.20 KB | **확장자**: ts
 
@@ -3954,7 +4192,7 @@ export function getTenGod(dayStem: string, target: string): string {
 
 ---
 
-## File 49: `functions/src/engine/yinYang.ts` {#file-49}
+## File 54: `functions/src/engine/yinYang.ts` {#file-54}
 
 **크기**: 0.79 KB | **확장자**: ts
 

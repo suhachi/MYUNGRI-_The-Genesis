@@ -2,7 +2,7 @@
 
 > 프론트엔드 핵심 로직 (Firebase, 유틸리티, 타입 정의)
 
-**생성 시각**: 2026-01-05T10:21:53.963Z
+**생성 시각**: 2026-01-05T11:35:21.997Z
 
 ---
 
@@ -174,7 +174,7 @@ export const TRIVIA_LINES = [
 
 ## File 6: `src/types/report.ts` {#file-6}
 
-**크기**: 1.12 KB | **확장자**: ts
+**크기**: 2.09 KB | **확장자**: ts
 
 ```ts
 // Report Types for Phase 26
@@ -226,6 +226,50 @@ export interface LuckCalendar {
     year: number;
     generatedAt: string | any; // Supports ISO String or Timestamp object
     calendar: DayEntry[];
+}
+export interface LifeBucket {
+    decadeKey: string;
+    ageRangeLabel: string;
+    startAge: number;
+    endAge: number;
+    ganzhi?: string;
+    result: string;
+    explain: string;
+    interpretation: string;
+}
+
+export interface TurningPointItem {
+    age: number;
+    type: string;
+    title: string;
+    result: string;
+    explain: string;
+    interpretation: string;
+}
+
+export interface FullReportData {
+    meta: {
+        version: string;
+        generatedAt: string;
+    };
+    sections: {
+        executiveSummary: Section;
+        originAudit: Section;
+        lifeFlow: {
+            sectionId: string;
+            title: string;
+            buckets: LifeBucket[];
+        };
+        turningPoints: {
+            sectionId: string;
+            title: string;
+            items: TurningPointItem[];
+        };
+        rolling12: Section;
+        luckCalendar: Section;
+        dateDetail: Section;
+        naming?: Section;
+    };
 }
 
 ```

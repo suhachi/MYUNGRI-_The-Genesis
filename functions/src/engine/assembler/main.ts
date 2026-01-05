@@ -32,7 +32,7 @@ export function assembleReport(packet: DeterministicPacket): FullReportData {
                 { age: 20, type: "CAREER", title: "청년기 사회 진출", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
                 { age: 35, type: "LIFE", title: "가정 및 안정기", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
                 { age: 50, type: "HARVEST", title: "중년의 성과", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
-                { age: 65, type: "WISDOM", title: "장년의 지혜", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
+                { age: 65, type: "WISDOM", title: "장년의 지례", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
                 { age: 80, type: "LEGACY", title: "평온한 회고", result: "[PENDING]", explain: "[PENDING]", interpretation: "[PENDING]" },
             ]
         },

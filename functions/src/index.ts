@@ -67,18 +67,18 @@ export const generateReport = onCall({
         let finalReport = assembleReport(deterministicPacket);
 
         // 1. Prepare LLM Input
-        const { buildNarrativeInput } = await import("./engine/narrative/packetBuilders/main");
+        const { buildNarrativeInput } = await import("./engine/report/narrative/packetBuilders/main");
         const narrativeInput = buildNarrativeInput(deterministicPacket);
 
         // 2. Render Narrative Patch
-        const { renderNarrativePatch } = await import("./engine/narrative/renderer");
-        const { applyNarrativePatch } = await import("./engine/narrative/applyPatch");
+        const { generateNarrativePatch } = await import("./engine/report/narrative/renderer");
+        const { applyNarrativePatch } = await import("./engine/report/narrative/applyPatch");
 
         // Ensure API Key from secret is in env for the library
         process.env.OPENAI_API_KEY = OPENAI_API_KEY.value();
 
         try {
-            const patch = await renderNarrativePatch(narrativeInput);
+            const patch = await generateNarrativePatch(narrativeInput);
             finalReport = applyNarrativePatch(finalReport, patch);
         } catch (narrativeError: any) {
             logger.error("Narrative Generation Failed:", narrativeError);

@@ -48,3 +48,47 @@ export interface LuckCalendar {
     generatedAt: string | any; // Supports ISO String or Timestamp object
     calendar: DayEntry[];
 }
+export interface LifeBucket {
+    decadeKey: string;
+    ageRangeLabel: string;
+    startAge: number;
+    endAge: number;
+    ganzhi?: string;
+    result: string;
+    explain: string;
+    interpretation: string;
+}
+
+export interface TurningPointItem {
+    age: number;
+    type: string;
+    title: string;
+    result: string;
+    explain: string;
+    interpretation: string;
+}
+
+export interface FullReportData {
+    meta: {
+        version: string;
+        generatedAt: string;
+    };
+    sections: {
+        executiveSummary: Section;
+        originAudit: Section;
+        lifeFlow: {
+            sectionId: string;
+            title: string;
+            buckets: LifeBucket[];
+        };
+        turningPoints: {
+            sectionId: string;
+            title: string;
+            items: TurningPointItem[];
+        };
+        rolling12: Section;
+        luckCalendar: Section;
+        dateDetail: Section;
+        naming?: Section;
+    };
+}

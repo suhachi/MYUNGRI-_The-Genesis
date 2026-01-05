@@ -92,14 +92,17 @@ export const Start: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
+        if (name === 'userName' && isComposing) return;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const [isComposing, setIsComposing] = useState(false);
+
     const handleComposition = (e: React.CompositionEvent<HTMLInputElement>) => {
         if (e.type === 'compositionstart') {
-            // isComposing state removed to pass lint gate
+            setIsComposing(true);
         } else if (e.type === 'compositionend') {
-            // [REFACTOR-R1] Final sanitize on composition end using SSOT utility.
+            setIsComposing(false);
             const finalValue = sanitizeUserName(e.currentTarget.value);
             setFormData(prev => ({ ...prev, userName: finalValue }));
         }

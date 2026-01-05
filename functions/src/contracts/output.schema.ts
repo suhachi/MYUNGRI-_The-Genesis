@@ -19,9 +19,9 @@ export const LifeBucketSchema = z.object({
     startAge: z.number(),
     endAge: z.number(),
     ganzhi: z.string().optional(), // 대운 간지
-    result: z.string().min(1),
-    explain: z.string().min(1),
-    interpretation: z.string().min(1),
+    result: z.string().min(1, "결과 필드는 필수입니다."),
+    explain: z.string().min(1, "풀이 필드는 필수입니다."),
+    interpretation: z.string().min(1, "해석 필드는 필수입니다."),
     resultFacts: z.any().optional(),
 });
 
@@ -32,26 +32,29 @@ export const TurningPointItemSchema = z.object({
     age: z.number(),
     year: z.number().optional(),
     type: z.string(), // e.g. "CAREER", "HEALTH", "RELATION"
-    title: z.string(),
+    title: z.string().min(1, "제목 필드는 필수입니다."),
     evidenceRefs: z.array(z.string()).optional(),
-    result: z.string().min(1),
-    explain: z.string().min(1),
-    interpretation: z.string().min(1),
+    result: z.string().min(1, "결과 필드는 필수입니다."),
+    explain: z.string().min(1, "풀이 필드는 필수입니다."),
+    interpretation: z.string().min(1, "해석 필드는 필수입니다."),
 });
 
 /**
  * Report Section Schema.
  */
-export const ReportSectionSchema = AnalysisSectionSchema.extend({
+export const ReportSectionSchema = z.object({
     sectionId: z.string(),
     title: z.string(),
     category: z.string().optional(),
+    result: z.string().min(1),
+    explain: z.string().min(1),
+    interpretation: z.string().min(1),
+    resultFacts: z.any().optional(),
     qualityGuarded: z.boolean().optional(),
 });
 
 /**
  * Shared Output Schema for Myungri Report (Genesis Only Contract v6).
- * Enforces REQUIRED sections and structured data.
  */
 export const OutputSchema = z.object({
     meta: z.object({

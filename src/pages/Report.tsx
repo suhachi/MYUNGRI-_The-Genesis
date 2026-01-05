@@ -31,6 +31,54 @@ import styles from './Report.module.css';
 /**
  * System Audit Report Visual Components
  */
+/**
+ * Helper to render 3-layer narrative blocks
+ */
+function SectionNarrative({ section, isNested = false }: { section: any, isNested?: boolean }) {
+    return (
+        <>
+            {section.result && (
+                <div className={styles.sectionBlock}>
+                    <div className={isNested ? styles.nestedResult : styles.resultBlock}>
+                        <div className={styles.textContent}>
+                            {section.result.split('\n').map((p: string, i: number) => (
+                                p.trim() ? <p key={i}>{p}</p> : <br key={i} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {section.explain && (
+                <div className={styles.sectionBlock}>
+                    <ContextBox title={isNested ? undefined : "분석 근거 및 원리"} className={styles.explainBlock}>
+                        <div className={styles.textContent}>
+                            {section.explain.split('\n').map((p: string, i: number) => (
+                                p.trim() ? <p key={i}>{p}</p> : <br key={i} />
+                            ))}
+                        </div>
+                        {section.reasonCards && section.reasonCards.length > 0 && (
+                            <ReasonCards cards={section.reasonCards} />
+                        )}
+                    </ContextBox>
+                </div>
+            )}
+
+            {section.interpretation && (
+                <div className={styles.sectionBlock}>
+                    <AdviceBox badgeText={isNested ? undefined : "Action Plan"} className={styles.interpretationBlock}>
+                        <div className={styles.textContent}>
+                            {section.interpretation.split('\n').map((p: string, i: number) => (
+                                p.trim() ? <p key={i}>{p}</p> : <br key={i} />
+                            ))}
+                        </div>
+                    </AdviceBox>
+                </div>
+            )}
+        </>
+    );
+}
+
 function GenesisCodeVisual() {
     return (
         <div className={styles.visualBox}>
@@ -382,20 +430,9 @@ export const Report: React.FC = () => {
 
                     <ShareActions />
 
-                    {activeSections.map((section) => (
-                        <section
-                            key={section.id}
-                            id={`page-${section.id}`}
-                            className={styles.pageSection}
-                        >
-                            <div className={styles.pageHeader}>
-                                <span className={styles.categoryTag}>
-                                    {CATEGORY_LABELS[section.category] || section.category}
-                                </span>
-                                <span className={styles.pageIdentifier}>섹션: {section.id}</span>
-                            </div>
-
-                            <Card className={styles.contentCard}>
+                    {activeSections.map((section: any) => (
+                        <section key={section.id} id={`page-${section.id}`} className={styles.sectionPage}>
+                            <Card className={styles.fullCard}>
                                 <h2 className={styles.sectionTitle}>{section.title}</h2>
 
                                 {section.id === "02_code" && <GenesisCodeVisual />}
@@ -403,51 +440,39 @@ export const Report: React.FC = () => {
 
                                 {section.id !== "02_code" && section.id !== "07_balance" && (
                                     <>
-                                        {/* Phase 27: 3단 구조 렌더링 */}
-                                        {section.result && (
-                                            <div className={styles.sectionBlock}>
-                                                <div className={styles.resultBlock}>
-                                                    <div className={styles.textContent}>
-                                                        {section.result.split('\n').map((p: string, i: number) => (
-                                                            p.trim() ? <p key={i}>{p}</p> : <br key={i} />
-                                                        ))}
+                                        {/* Standard Sections */}
+                                        {!["LIFE_FLOW", "TURNING_POINTS"].includes(section.id) && (
+                                            <SectionNarrative section={section} />
+                                        )}
+
+                                        {/* Structured Life Flow */}
+                                        {section.id === "LIFE_FLOW" && section.buckets && (
+                                            <div className={styles.bucketsContainer}>
+                                                {section.buckets.map((bucket: any, idx: number) => (
+                                                    <div key={idx} className={styles.bucketItem}>
+                                                        <h3 className={styles.bucketHeader}>
+                                                            <span className={styles.decade}>{bucket.decadeKey}</span>
+                                                            <span className={styles.age}>({bucket.ageRangeLabel})</span>
+                                                            {bucket.ganzhi && <span className={styles.ganzhiLabel}>{bucket.ganzhi} 대운</span>}
+                                                        </h3>
+                                                        <SectionNarrative section={bucket} isNested />
                                                     </div>
-                                                </div>
+                                                ))}
                                             </div>
                                         )}
 
-                                        {section.explain && (
-                                            <div className={styles.sectionBlock}>
-                                                <ContextBox title="분석 근거 및 원리" className={styles.explainBlock}>
-                                                    <div className={styles.textContent}>
-                                                        {section.explain.split('\n').map((p: string, i: number) => (
-                                                            p.trim() ? <p key={i}>{p}</p> : <br key={i} />
-                                                        ))}
+                                        {/* Structured Turning Points */}
+                                        {section.id === "TURNING_POINTS" && section.items && (
+                                            <div className={styles.itemsContainer}>
+                                                {section.items.map((item: any, idx: number) => (
+                                                    <div key={idx} className={styles.turningPointItem}>
+                                                        <h4 className={styles.itemHeader}>
+                                                            <span className={styles.itemAge}>{item.age}세</span>
+                                                            <span className={styles.itemType}>{item.type}</span>
+                                                            <span className={styles.itemTitle}>{item.title}</span>
+                                                        </h4>
+                                                        <SectionNarrative section={item} isNested />
                                                     </div>
-                                                    {section.reasonCards && section.reasonCards.length > 0 && (
-                                                        <ReasonCards cards={section.reasonCards} />
-                                                    )}
-                                                </ContextBox>
-                                            </div>
-                                        )}
-
-                                        {section.interpretation && (
-                                            <div className={styles.sectionBlock}>
-                                                <AdviceBox badgeText="Action Plan" className={styles.interpretationBlock}>
-                                                    <div className={styles.textContent}>
-                                                        {section.interpretation.split('\n').map((p: string, i: number) => (
-                                                            p.trim() ? <p key={i}>{p}</p> : <br key={i} />
-                                                        ))}
-                                                    </div>
-                                                </AdviceBox>
-                                            </div>
-                                        )}
-
-                                        {/* Legacy support */}
-                                        {!section.result && !section.explain && !section.interpretation && section.content && (
-                                            <div className={styles.textContent}>
-                                                {section.content.split('\n').map((p: string, i: number) => (
-                                                    p.trim() ? <p key={i}>{p}</p> : <br key={i} />
                                                 ))}
                                             </div>
                                         )}
